@@ -1,69 +1,121 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { Button } from "@/components/ui/Button";
+import { storage, SessionHistoryItem } from "@/lib/storage";
+import { SessionCard } from "@/components/ui/SessionCard";
+import { SituationCard } from "@/components/ui/SituationCard";
+import sessionsData from "@/generated/sessions.json";
+import { getSituation, getAvailableSituations } from "@/lib/sessions";
+
+export default function HomePage() {
+  const router = useRouter();
+  const [isOnboarded, setIsOnboarded] = useState<boolean>(() => storage.getOnboardingCompleted());
+  const [firstName] = useState<string>(() => storage.getProfile().firstName);
+  const [recentSessions] = useState<SessionHistoryItem[]>(() => storage.getHistory().slice(0, 2));
+  const [inProgress] = useState<SessionHistoryItem | null>(() => storage.getInProgressSession());
+
+  const handleCompleteOnboarding = () => {
+    storage.setOnboardingCompleted(true);
+    setIsOnboarded(true);
+  };
+
+  if (!isOnboarded) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-creme p-marge text-center">
+        <BrandLogo variant="icon" className="w-[86px] h-[86px] mb-8" />
+        <h1 className="font-poppins font-light text-[26px] leading-[1.2] mb-4">
+          La méditation qu&apos;il vous faut, maintenant.
+        </h1>
+        <p className="text-gris-2 text-[15px] mb-8 max-w-[280px]">
+          Choisissez ce dont vous avez besoin, indiquez le temps disponible. Liela propose une séance.
+        </p>
+        <Button className="w-full mt-auto mb-4" onClick={handleCompleteOnboarding}>
+          Commencer
+        </Button>
+      </div>
+    );
+  }
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    const greeting = hour >= 18 || hour < 5 ? "Bonsoir" : "Bonjour";
+    return firstName ? `${greeting} ${firstName}` : greeting;
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="p-marge pb-8 flex flex-col flex-1">
+      {/* Header with prominent Logo */}
+      <div className="flex justify-between items-center pt-2 mb-6">
+        <BrandLogo variant="horizontal" width={110} className="h-8 w-auto" />
+      </div>
+      
+      <h1 className="font-poppins font-light text-[24px] leading-[1.2] mb-1">
+        {getGreeting()}
+      </h1>
+      <p className="text-[13px] text-gris-2 mb-5">De quoi avez-vous besoin maintenant ?</p>
+
+      {/* Situations Grid directly on Home (only situations with existing sessions) */}
+      <div className="grid grid-cols-2 gap-2.5 mb-6">
+        {getAvailableSituations().map((situation) => (
+          <SituationCard
+            key={situation.id}
+            situation={situation}
+            onClick={() => router.push(`/check-in/duration?situation=${situation.id}`)}
+          />
+        ))}
+      </div>
+
+      {inProgress && (
+        <div className="mb-6">
+          <div className="flex justify-between items-end mb-3">
+            <h3 className="font-semibold text-[14px]">Reprendre</h3>
+          </div>
+          {(() => {
+            const session = sessionsData.find(s => s.id === inProgress.sessionId);
+            if (!session) return null;
+            const situation = getSituation(session.metadata.situation);
+            const progress = inProgress.lastPosition / session.metadata.durationSeconds;
+            return (
+              <SessionCard
+                title={session.metadata.title}
+                duration={session.metadata.durationSeconds}
+                situationName={situation?.shortLabel}
+                situationColor={situation?.color}
+                situationVoile={situation?.voile}
+                progress={progress}
+                onClick={() => router.push(`/player?id=${session.id}`)}
+              />
+            );
+          })()}
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      )}
+
+      {recentSessions.length > 0 && !inProgress && (
+        <div className="mb-4">
+          <h3 className="font-semibold text-[14px] mb-3">Récemment</h3>
+          <div className="flex flex-col gap-3">
+            {recentSessions.map((historyItem, idx) => {
+              const session = sessionsData.find(s => s.id === historyItem.sessionId);
+              if (!session) return null;
+              const situation = getSituation(session.metadata.situation);
+              return (
+                <SessionCard
+                  key={`${historyItem.sessionId}-${idx}`}
+                  title={session.metadata.title}
+                  duration={session.metadata.durationSeconds}
+                  situationName={situation?.shortLabel}
+                  situationColor={situation?.color}
+                  situationVoile={situation?.voile}
+                  onClick={() => router.push(`/player?id=${session.id}`)}
+                />
+              );
+            })}
+          </div>
         </div>
-      </main>
+      )}
     </div>
   );
 }

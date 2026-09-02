@@ -3,8 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "sync:sessions": "tsx scripts/sync-sessions.ts",
+    "predev": "npm run sync:sessions",
+    "prebuild": "npm run sync:sessions",
+    "dev": "next dev --webpack",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint"
   },
@@ -14,13 +17,15 @@
     "react-dom": "19.2.8"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "autoprefixer": "^10.5.4",
     "eslint": "^9",
     "eslint-config-next": "16.3.4",
-    "tailwindcss": "^4",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^3.4.19",
+    "tsx": "^4.23.13",
     "typescript": "^5"
   }
 }

@@ -1,0 +1,163 @@
+{
+  "id": "faire-de-la-place-dans-son-esprit-10min",
+  "metadata": {
+    "title": "Faire de la place dans son esprit",
+    "category": "focus",
+    "durationTargetSeconds": 600,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "focus",
+    "volumeDb": -36,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "soft-air",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous de façon stable. Si vous préférez garder les yeux ouverts, laissez le regard reposer sur un point simple devant vous. Prenez quelques secondes pour laisser le corps se poser.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "anchor-1",
+      "type": "voice",
+      "text": "Choisissez une ancre unique pour cette séance. Peut-être la respiration naturelle, le contact des mains, ou un point visuel. Prenez celle qui demande le moins d'effort.",
+      "silenceAfter": {
+        "durationSeconds": 20,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "focus-1",
+      "type": "voice",
+      "text": "Commencez maintenant à rester avec cette ancre. Il n'est pas nécessaire de serrer l'attention. Laissez-la se poser, puis revenez chaque fois que vous réalisez qu'elle est partie.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "focus-silence-1",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "distraction-1",
+      "type": "voice",
+      "text": "Observez la façon dont une distraction apparaît. Une pensée, une envie de bouger, un son, une anticipation. Dès que vous le remarquez, ne poursuivez pas l'histoire. Revenez à l'ancre.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "focus-silence-2",
+      "type": "silence",
+      "durationSeconds": 50,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "focus-2",
+      "type": "voice",
+      "text": "Vous pouvez maintenant laisser un peu plus de temps entre les rappels. Chaque retour est une répétition utile : remarquer, relâcher, revenir.",
+      "silenceAfter": {
+        "durationSeconds": 40,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "focus-silence-3",
+      "type": "silence",
+      "durationSeconds": 65,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "focus-3",
+      "type": "voice",
+      "text": "Si l'attention devient trop tendue, élargissez-la quelques instants aux sensations du corps entier, puis revenez à votre ancre principale avec moins d'effort.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "focus-silence-4",
+      "type": "silence",
+      "durationSeconds": 55,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "focus-silence-5",
+      "type": "silence",
+      "durationSeconds": 65,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Commencez à élargir l'attention vers la pièce. Gardez cependant une petite part de cette stabilité. Choisissez une tâche concrète que vous allez faire juste après.",
+      "silenceAfter": {
+        "durationSeconds": 15,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Lorsque vous êtes prêt, reprenez votre activité en essayant de faire une seule chose à la fois pendant quelques minutes.",
+      "silenceAfter": {
+        "durationSeconds": 6,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "soft-chime",
+      "trigger": "session_start",
+      "volumeDb": -17
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

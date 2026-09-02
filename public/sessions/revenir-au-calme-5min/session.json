@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "id": "revenir-au-calme-5min",
+  "metadata": {
+    "title": "Revenir au calme",
+    "category": "stress",
+    "language": "fr-FR",
+    "durationSeconds": 285.28,
+    "level": null,
+    "shortDescription": null,
+    "technique": null
+  },
+  "audio": {
+    "voice": "audio/voice.wav",
+    "music": {
+      "id": "deep-relax",
+      "file": "audio/music.wav",
+      "defaultVolume": 0.02
+    },
+    "ambience": {
+      "id": "rain-gentle",
+      "file": "audio/ambience.wav",
+      "defaultVolume": 0.02
+    },
+    "cues": {
+      "file": "audio/cues.wav",
+      "defaultVolume": 1
+    },
+    "final": "audio/final.mp3"
+  },
+  "mix": {
+    "voiceDefaultVolume": 1,
+    "musicDefaultVolume": 0.02,
+    "ambienceDefaultVolume": 0.02,
+    "cuesDefaultVolume": 1
+  },
+  "cues": [
+    {
+      "asset": "soft-chime",
+      "timeSeconds": 255.16
+    },
+    {
+      "asset": "singing-bowl",
+      "timeSeconds": 0
+    },
+    {
+      "asset": "soft-bell",
+      "timeSeconds": 285.28
+    }
+  ],
+  "generation": {
+    "ttsProvider": "google-gemini",
+    "ttsModel": "gemini-3.1-flash-tts-preview",
+    "voiceId": "Algenib"
+  }
+}

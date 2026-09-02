@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liela — Charte graphique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500&family=Hanken+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* base relevée dans le logo */
+  --creme:#FDF9F0;
+  --coquille:#F8EFE4;
+  --sable:#F0E5D6;
+  --filet:#E5D9C7;
+  --bord:#D8CAB4;
+  --gris-3:#9A8E7C;
+  --gris-2:#7A6E5E;
+  --encre:#433528;
+
+  --sauge:#919780;
+  --sauge-p:#5F6A52;
+  --sauge-voile:#E7E9DF;
+  --terre:#D09B83;
+  --terre-p:#A26248;
+  --terre-voile:#F5E4DA;
+
+  --dormir:#5D6A78;
+  --stress:#A26248;
+  --ruminer:#6E6257;
+  --concentrer:#5F6A52;
+  --energie:#94702B;
+  --recuperer:#7A5560;
+
+  --succes:#4E7259; --erreur:#A0483C; --attention:#8E6A1C; --info:#4A6474;
+
+  --r-xs:6px; --r-sm:12px; --r-md:18px; --r-lg:26px; --r-full:999px;
+  --p1:0 1px 2px rgba(67,53,40,.05), 0 10px 26px -14px rgba(67,53,40,.16);
+  --p2:0 2px 5px rgba(67,53,40,.06), 0 26px 52px -22px rgba(67,53,40,.24);
+
+  --pop:"Poppins","Hanken Grotesk",system-ui,sans-serif;
+  --sans:"Hanken Grotesk","Segoe UI",system-ui,sans-serif;
+  --mono:ui-monospace,Menlo,monospace;
+  --marge:clamp(20px,5vw,72px);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--creme);color:var(--encre);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-weight:500}
+p{margin:0}
+ul{margin:0;padding:0;list-style:none}
+.page{max-width:1200px;margin:0 auto;padding:0 var(--marge)}
+section{padding:clamp(56px,8vw,116px) 0;border-top:1px solid var(--filet)}
+.tete{display:flex;gap:20px;align-items:baseline;margin-bottom:32px;flex-wrap:wrap}
+.num{font-family:var(--mono);font-size:12px;color:var(--gris-3);padding-top:7px}
+.tete h2{font-family:var(--pop);font-weight:300;font-size:clamp(26px,3.4vw,40px);letter-spacing:-.01em;line-height:1.1}
+.chapo{max-width:64ch;color:var(--gris-2);font-size:16.5px}
+.note{font-size:13px;line-height:1.5;color:var(--gris-3)}
+.st{font-size:17px;font-weight:600;margin:38px 0 16px}
+.grille{display:grid;gap:clamp(16px,2.2vw,28px)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:1000px){.g4{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.g4,.g3,.g2{grid-template-columns:1fr}}
+.bloc{background:#fff;border:1px solid var(--filet);border-radius:var(--r-md);padding:24px}
+.bloc h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.bloc p{font-size:14.5px;color:var(--gris-2)}
+.plat{background:var(--coquille);border-radius:var(--r-md);padding:24px}
+.plat h3{font-size:16px;font-weight:600;margin-bottom:8px}
+.plat p{font-size:14.5px;color:var(--gris-2)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--filet);vertical-align:top}
+th{font-weight:600;font-size:12.5px;color:var(--gris-3)}
+td code,code.m{font-family:var(--mono);font-size:12px;color:var(--gris-2)}
+.pc{display:inline-block;width:16px;height:16px;border-radius:5px;vertical-align:-3px;margin-right:9px;box-shadow:inset 0 0 0 1px rgba(67,53,40,.12)}
+.ok{color:var(--succes);font-weight:600;font-size:12.5px}
+.lim{color:var(--attention);font-weight:600;font-size:12.5px}
+.mot{font-family:var(--pop);font-weight:400;letter-spacing:-.01em;color:var(--encre)}
+.marque{display:inline-flex;align-items:center;gap:.42em}
+.demo{display:flex;align-items:center;justify-content:center;border-radius:var(--r-md);min-height:170px}
+.d-creme{background:var(--creme);border:1px solid var(--filet)}
+.d-blanc{background:#fff;border:1px solid var(--filet)}
+.d-sombre{background:#2B231B}
+.d-sauge{background:var(--sauge)}
+.appicon{border-radius:26%;background:var(--coquille);box-shadow:var(--p1);display:flex;align-items:center;justify-content:center}
+.interdit{position:relative;background:var(--coquille);border-radius:var(--r-sm);min-height:112px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.interdit::after{content:"";position:absolute;inset:0;background:linear-gradient(to bottom right,transparent calc(50% - .5px),var(--erreur) calc(50% - .5px),var(--erreur) calc(50% + .5px),transparent calc(50% + .5px));opacity:.45}
+.lg{font-size:12.5px;color:var(--gris-2);margin-top:8px;line-height:1.4}
+.specimen{border-bottom:1px solid var(--filet);padding:22px 0;display:grid;grid-template-columns:1fr 232px;gap:26px;align-items:baseline}
+@media(max-width:780px){.specimen{grid-template-columns:1fr;gap:8px}}
+.fiche{font-family:var(--mono);font-size:11.5px;color:var(--gris-3);line-height:1.9}
+.fiche b{color:var(--gris-2);font-weight:500}
+
+/* composants UI */
+.btn{display:inline-flex;align-items:center;justify-content:center;font-family:var(--sans);font-weight:600;font-size:15px;border:0;border-radius:var(--r-sm);padding:15px 24px;background:var(--encre);color:var(--creme);cursor:default}
+.btn-2{background:transparent;color:var(--encre);box-shadow:inset 0 0 0 1px var(--bord)}
+.btn-3{background:transparent;color:var(--sauge-p);padding:12px 6px;font-weight:600}
+.champ{width:100%;background:var(--coquille);border:1px solid transparent;border-radius:var(--r-sm);padding:14px 16px;font-family:var(--sans);font-size:15px;color:var(--gris-3)}
+.champ.actif{background:#fff;border-color:var(--bord);color:var(--encre)}
+.tag{display:inline-block;font-size:12px;font-weight:600;padding:5px 11px;border-radius:var(--r-xs);background:var(--sauge-voile);color:var(--sauge-p)}
+.puce{display:inline-flex;align-items:center;justify-content:center;font-size:14px;padding:9px 17px;border-radius:var(--r-full);background:#fff;box-shadow:inset 0 0 0 1px var(--bord);color:var(--gris-2)}
+.puce.on{background:var(--encre);color:var(--creme);box-shadow:none}
+.barre{height:3px;background:var(--sable);border-radius:var(--r-full);overflow:hidden}
+.barre i{display:block;height:100%;background:var(--sauge-p);border-radius:var(--r-full)}
+.carte{background:#fff;border-radius:var(--r-md);padding:18px;box-shadow:var(--p1)}
+.carte h4{font-family:var(--pop);font-weight:400;font-size:19px;margin:10px 0 3px}
+.carte .meta{font-size:13px;color:var(--gris-2)}
+.cat{border-radius:var(--r-md);padding:18px;min-height:104px;display:flex;flex-direction:column;justify-content:space-between}
+.cat b{font-family:var(--pop);font-weight:400;font-size:16px}
+
+/* téléphone */
+.tel{width:100%;max-width:264px;aspect-ratio:264/544;background:var(--creme);border-radius:32px;box-shadow:var(--p2);overflow:hidden;position:relative;display:flex;flex-direction:column;padding:26px 18px 16px;margin:0 auto}
+.tel .haut{font-size:10.5px;color:var(--gris-3);display:flex;justify-content:space-between;margin-bottom:14px}
+.tel h5{font-family:var(--pop);font-weight:300;font-size:21px;line-height:1.2;margin:0}
+.tel .p{font-size:12px;color:var(--gris-2);line-height:1.5}
+.nav{margin-top:auto;display:flex;justify-content:space-around;padding-top:12px;border-top:1px solid var(--filet)}
+.telcap{text-align:center;font-size:12.5px;color:var(--gris-2);margin-top:12px}
+
+/* youtube */
+.vignette{aspect-ratio:16/9;border-radius:10px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;color:#FDF9F0;position:relative;overflow:hidden}
+.vignette .t{font-family:var(--pop);font-weight:300;font-size:clamp(15px,1.9vw,21px);line-height:1.15;letter-spacing:-.01em}
+.vignette .d{font-size:11px;opacity:.82}
+.baniere{border-radius:12px;background:var(--coquille);height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+
+/* social */
+.post{aspect-ratio:1;border-radius:12px;padding:22px;display:flex;flex-direction:column;justify-content:space-between}
+.story{aspect-ratio:9/16;border-radius:12px;padding:20px;display:flex;flex-direction:column;justify-content:flex-end;gap:10px}
+
+.pied{padding:56px 0 96px;border-top:1px solid var(--filet);color:var(--gris-2);font-size:15px}
+@media(prefers-reduced-motion:no-preference){.couv .wm{animation:e .9s cubic-bezier(.22,.61,.36,1) both}}
+@keyframes e{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<!-- ============ COUVERTURE ============ -->
+<div class="page couv" style="min-height:82vh;display:flex;flex-direction:column;justify-content:space-between;padding-top:clamp(28px,5vw,52px);padding-bottom:clamp(40px,6vw,72px)">
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:20px">
+    <span class="note">Charte graphique</span>
+    <span class="note">Septembre 2026 · v1</span>
+  </div>
+  <div class="wm" style="padding:clamp(40px,9vh,110px) 0">
+    <div class="marque" style="gap:.3em">
+      <svg width="120" height="120" viewBox="0 0 100 100" aria-label="Symbole Liela">
+        <path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/>
+        <path fill="#D09B83" stroke="#FDF9F0" stroke-width="2.4" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/>
+        <path fill="none" stroke="#FDF9F0" stroke-width="1.5" stroke-linecap="round" opacity=".85" d="M49 73 C55 64 63 55 74 48"/>
+      </svg>
+      <span class="mot" style="font-size:clamp(72px,13vw,148px);line-height:.9">liela</span>
+    </div>
+    <p style="font-family:var(--pop);font-weight:300;font-size:clamp(20px,3vw,32px);line-height:1.25;margin-top:clamp(20px,3vw,34px);max-width:17ch">La méditation qu'il vous faut, maintenant.</p>
+  </div>
+  <p class="note" style="max-width:52ch">Identité visuelle de Liela — application mobile de méditation et chaîne YouTube. Logo, couleur, typographie, formes, interface, écrans, YouTube, réseaux sociaux, stores.</p>
+</div>
+
+<!-- ============ 01 ESSENCE ============ -->
+<section class="page">
+  <div class="tete"><span class="num">01</span><h2>Essence de marque</h2></div>
+  <div class="grille g2" style="align-items:start">
+    <div>
+      <p style="font-family:var(--pop);font-weight:300;font-size:clamp(24px,3vw,34px);line-height:1.25;max-width:16ch">Faire de la place, tout de suite.</p>
+      <p class="chapo" style="margin-top:22px">Liela ne demande pas de croire à quelque chose ni d'apprendre une discipline. Elle répond à une situation : je n'arrive pas à dormir, je rumine, je dois me concentrer dans dix minutes. La marque doit avoir la même qualité que la promesse — arriver vite, prendre peu de place, ne rien exiger.</p>
+      <p class="chapo" style="margin-top:16px">Le système graphique en découle : un fond crème qui respire, une seule famille de gestes courbes, deux couleurs de marque employées avec parcimonie, et une typographie géométrique claire. Rien à décoder, rien à expliquer.</p>
+    </div>
+    <div class="grille" style="gap:14px">
+      <div class="bloc">
+        <h3>Principes visuels</h3>
+        <ul style="font-size:14.5px;color:var(--gris-2);line-height:1.8;margin-top:6px">
+          <li>Le vide est le matériau principal : on enlève avant d'ajouter.</li>
+          <li>Une seule famille de courbes, celle du symbole.</li>
+          <li>La chaleur vient de la matière, pas de la saturation.</li>
+          <li>La couleur a toujours un rôle : marque, situation ou action.</li>
+          <li>Un seul niveau de titre visible par écran.</li>
+        </ul>
+      </div>
+      <div class="grille g2" style="gap:14px">
+        <div class="plat"><h3>Émotions visées</h3><p>Soulagement, netteté, chaleur, maîtrise de soi.</p></div>
+        <div class="plat"><h3>Jamais</h3><p>Lotus, mandala, bouddha, dégradés mystiques, esthétique spa, froideur tech.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 LOGO ============ -->
+<section class="page">
+  <div class="tete"><span class="num">02</span><h2>Logo</h2></div>
+  <p class="chapo" style="margin-bottom:34px">Le symbole est un L dont le trait s'épaissit en haut et s'affine en sortant de la courbe, avec une feuille posée dans le coude. Une réserve crème d'une demi-épaisseur sépare toujours la feuille du trait vert : c'est elle qui garantit la lisibilité en petit.</p>
+
+  <div class="grille g2" style="margin-bottom:26px">
+    <div class="demo d-creme" style="min-height:230px">
+      <div class="marque">
+        <svg width="86" height="86" viewBox="0 0 100 100"><path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" stroke="#FDF9F0" stroke-width="2.4" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/><path fill="none" stroke="#FDF9F0" stroke-width="1.5" stroke-linecap="round" opacity=".85" d="M49 73 C55 64 63 55 74 48"/></svg>
+        <span class="mot" style="font-size:74px">liela</span>
+      </div>
+    </div>
+    <div class="demo d-blanc" style="min-height:230px;flex-direction:column;gap:14px">
+      <svg width="96" height="96" viewBox="0 0 100 100"><path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" stroke="#FFFFFF" stroke-width="2.4" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/><path fill="none" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" opacity=".85" d="M49 73 C55 64 63 55 74 48"/></svg>
+      <span class="note">Symbole seul — avatar, favicon</span>
+    </div>
+  </div>
+
+  <div class="grille g4" style="margin-bottom:34px">
+    <div>
+      <div class="demo d-sombre"><div class="marque"><svg width="40" height="40" viewBox="0 0 100 100"><path fill="#A8AE96" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" stroke="#2B231B" stroke-width="2.4" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg><span class="mot" style="font-size:38px;color:#FDF9F0">liela</span></div></div>
+      <p class="lg">Fond sombre — le vert est éclairci d'un cran pour tenir le contraste.</p>
+    </div>
+    <div>
+      <div class="demo d-creme"><div class="marque"><svg width="40" height="40" viewBox="0 0 100 100"><path fill="#433528" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#433528" stroke="#FDF9F0" stroke-width="2.6" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg><span class="mot" style="font-size:38px">liela</span></div></div>
+      <p class="lg">Monochrome encre — presse, tampon, gravure, partenaires.</p>
+    </div>
+    <div>
+      <div class="demo d-sauge"><div class="marque"><svg width="40" height="40" viewBox="0 0 100 100"><path fill="#FDF9F0" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#FDF9F0" stroke="#919780" stroke-width="2.6" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg><span class="mot" style="font-size:38px;color:#FDF9F0">liela</span></div></div>
+      <p class="lg">Monochrome crème — sur aplat de couleur uniquement.</p>
+    </div>
+    <div>
+      <div class="demo d-creme" style="gap:16px">
+        <span class="appicon" style="width:86px;height:86px"><svg width="62" height="62" viewBox="0 0 100 100"><path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" stroke="#F8EFE4" stroke-width="2.4" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg></span>
+        <span class="appicon" style="width:44px;height:44px"><svg width="32" height="32" viewBox="0 0 100 100"><path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" stroke="#F8EFE4" stroke-width="3" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg></span>
+      </div>
+      <p class="lg">Icône d'application — squircle, fond coquille, symbole à 58 % de la largeur.</p>
+    </div>
+  </div>
+
+  <div class="grille g3">
+    <div class="bloc"><h3>Espace de protection</h3><p>Marge minimale sur les quatre côtés égale à la hauteur du « l » du wordmark. Aucun élément, filet ni bord d'image n'entre dans cette zone.</p></div>
+    <div class="bloc"><h3>Tailles minimales</h3><p>Ensemble symbole + wordmark : 96 px de large à l'écran, 24 mm en impression. Wordmark seul : 68 px. Symbole seul : 20 px. En dessous, la nervure de la feuille est supprimée et la réserve crème passe à une épaisseur pleine.</p></div>
+    <div class="bloc"><h3>Verrouillage</h3><p>Symbole aligné sur la hauteur d'x du wordmark, hauteur du symbole égale à 1,6 × cette hauteur d'x. Écart entre les deux : la largeur du « i ». Alignement optique sur la ligne de base.</p></div>
+  </div>
+
+  <h3 class="st">Usages interdits</h3>
+  <div class="grille g4">
+    <div><div class="interdit"><span class="mot" style="font-size:32px;letter-spacing:.16em">liela</span></div><p class="lg">Ne pas modifier l'approche du wordmark.</p></div>
+    <div><div class="interdit"><span class="mot" style="font-size:32px;font-weight:500">Liela</span></div><p class="lg">Ni capitale initiale, ni graisse supérieure.</p></div>
+    <div><div class="interdit"><svg width="60" height="60" viewBox="0 0 100 100"><path fill="#7A9FCB" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#C9D66B" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg></div><p class="lg">Aucune recolorisation hors des versions prévues.</p></div>
+    <div><div class="interdit"><svg width="60" height="60" viewBox="0 0 100 100" style="transform:rotate(-14deg)"><path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg></div><p class="lg">Pas de rotation, pas d'ombre, pas de déformation.</p></div>
+  </div>
+</section>
+
+<!-- ============ 03 COULEURS ============ -->
+<section class="page">
+  <div class="tete"><span class="num">03</span><h2>Couleurs</h2></div>
+  <p class="chapo" style="margin-bottom:16px">
+    Le sauge et la terre rosée du logo sont des couleurs de <b style="font-weight:600">marque</b>, pas des couleurs d'interface :
+    à 3,0 : 1 sur blanc, aucune des deux ne peut porter du texte ni un bouton. Chacune a donc une version approfondie,
+    seule autorisée dès qu'il faut lire ou toucher. C'est la règle la plus importante de cette section.
+  </p>
+  <p class="chapo" style="margin-bottom:34px">Répartition cible à l'écran : 70 % crème, 18 % surfaces blanches et coquille, 9 % encre, 3 % couleur.</p>
+
+  <div class="grille g2" style="align-items:start">
+    <div>
+      <h3 class="st" style="margin-top:0">Marque</h3>
+      <table>
+        <thead><tr><th>Jeton</th><th>Rôle</th><th>HEX / RGB</th><th>Sur blanc</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pc" style="background:#919780"></span>sauge</td><td>Logo, aplats, illustration</td><td><code>#919780</code><br><code>145 151 128</code></td><td><span class="lim">3,0 — décor</span></td></tr>
+          <tr><td><span class="pc" style="background:#5F6A52"></span>sauge&#8209;profond</td><td>Texte de marque, liens, progression</td><td><code>#5F6A52</code><br><code>95 106 82</code></td><td><span class="ok">5,7 — AA</span></td></tr>
+          <tr><td><span class="pc" style="background:#E7E9DF"></span>sauge&#8209;voile</td><td>Fond de tag, surface teintée</td><td><code>#E7E9DF</code><br><code>231 233 223</code></td><td>—</td></tr>
+          <tr><td><span class="pc" style="background:#D09B83"></span>terre</td><td>Logo, accent illustratif</td><td><code>#D09B83</code><br><code>208 155 131</code></td><td><span class="lim">2,4 — décor</span></td></tr>
+          <tr><td><span class="pc" style="background:#A26248"></span>terre&#8209;profonde</td><td>Accent lisible, état « stress »</td><td><code>#A26248</code><br><code>162 98 72</code></td><td><span class="ok">4,8 — AA</span></td></tr>
+          <tr><td><span class="pc" style="background:#F5E4DA"></span>terre&#8209;voile</td><td>Surface chaude, mise en avant</td><td><code>#F5E4DA</code><br><code>245 228 218</code></td><td>—</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="st">États fonctionnels</h3>
+      <table>
+        <tbody>
+          <tr><td><span class="pc" style="background:#4E7259"></span>succès</td><td>Séance terminée</td><td><code>#4E7259</code></td><td><span class="ok">5,4 — AA</span></td></tr>
+          <tr><td><span class="pc" style="background:#A0483C"></span>erreur</td><td>Lecture impossible, champ invalide</td><td><code>#A0483C</code></td><td><span class="ok">6,0 — AA</span></td></tr>
+          <tr><td><span class="pc" style="background:#8E6A1C"></span>attention</td><td>Hors ligne, téléchargement interrompu</td><td><code>#8E6A1C</code></td><td><span class="ok">5,0 — AA</span></td></tr>
+          <tr><td><span class="pc" style="background:#4A6474"></span>information</td><td>Rappel, nouveauté</td><td><code>#4A6474</code></td><td><span class="ok">6,3 — AA</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div>
+      <h3 class="st" style="margin-top:0">Neutres</h3>
+      <table>
+        <thead><tr><th>Jeton</th><th>Rôle</th><th>HEX / RGB</th><th>Sur crème</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pc" style="background:#FDF9F0"></span>crème</td><td>Fond d'écran</td><td><code>#FDF9F0</code><br><code>253 249 240</code></td><td>—</td></tr>
+          <tr><td><span class="pc" style="background:#FFFFFF"></span>surface</td><td>Cartes, player, modal</td><td><code>#FFFFFF</code></td><td>—</td></tr>
+          <tr><td><span class="pc" style="background:#F8EFE4"></span>coquille</td><td>Champs au repos, icône d'app</td><td><code>#F8EFE4</code><br><code>248 239 228</code></td><td>—</td></tr>
+          <tr><td><span class="pc" style="background:#F0E5D6"></span>sable</td><td>Zones groupées, états inactifs</td><td><code>#F0E5D6</code></td><td>—</td></tr>
+          <tr><td><span class="pc" style="background:#E5D9C7"></span>filet</td><td>Séparateurs, bordures</td><td><code>#E5D9C7</code></td><td>—</td></tr>
+          <tr><td><span class="pc" style="background:#D8CAB4"></span>bord</td><td>Contour actif, bouton secondaire</td><td><code>#D8CAB4</code></td><td>—</td></tr>
+          <tr><td><span class="pc" style="background:#9A8E7C"></span>gris‑3</td><td>Légendes, texte désactivé</td><td><code>#9A8E7C</code></td><td><span class="lim">3,0 — grand texte</span></td></tr>
+          <tr><td><span class="pc" style="background:#7A6E5E"></span>gris‑2</td><td>Texte secondaire</td><td><code>#7A6E5E</code></td><td><span class="ok">4,7 — AA</span></td></tr>
+          <tr><td><span class="pc" style="background:#433528"></span>encre</td><td>Texte principal, bouton principal</td><td><code>#433528</code><br><code>67 53 40</code></td><td><span class="ok">11,2 — AAA</span></td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="st">Les six situations</h3>
+      <p class="note" style="margin-bottom:12px">Six situations, six teintes désaturées dans la même bande de luminosité, donc interchangeables sans retoucher un composant. Une teinte est attachée à une situation pour toute la durée de vie de la marque : c'est ce qui rend une miniature YouTube identifiable en un coup d'œil.</p><table style="margin-bottom:14px"><tbody><tr><td><span class="pc" style="background:#A26248"></span>Calmer le stress</td><td class="note">« J'ai besoin de redescendre »</td><td><code>#A26248</code></td></tr><tr><td><span class="pc" style="background:#5D6A78"></span>Trouver le sommeil</td><td class="note">« Je veux mieux m'endormir »</td><td><code>#5D6A78</code></td></tr><tr><td><span class="pc" style="background:#6E6257"></span>Calmer les pensées</td><td class="note">Ruminations, mental qui tourne</td><td><code>#6E6257</code></td></tr><tr><td><span class="pc" style="background:#5F6A52"></span>Retrouver sa concentration</td><td class="note">Travail, étude, attention dispersée</td><td><code>#5F6A52</code></td></tr><tr><td><span class="pc" style="background:#94702B"></span>Relâcher les tensions</td><td class="note">Fatigue, tensions corporelles</td><td><code>#94702B</code></td></tr><tr><td><span class="pc" style="background:#7A5560"></span>Se recentrer</td><td class="note">Revenir au présent, faire une pause</td><td><code>#7A5560</code></td></tr></tbody></table>
+      <div class="grille g3" style="gap:10px">
+        <div class="cat" style="background:#5D6A78;color:#FDF9F0"><b>Trouver le sommeil</b><code class="m" style="color:#FDF9F0;opacity:.8">#5D6A78</code></div>
+        <div class="cat" style="background:#A26248;color:#FDF9F0"><b>Calmer le stress</b><code class="m" style="color:#FDF9F0;opacity:.8">#A26248</code></div>
+        <div class="cat" style="background:#6E6257;color:#FDF9F0"><b>Calmer les pensées</b><code class="m" style="color:#FDF9F0;opacity:.8">#6E6257</code></div>
+        <div class="cat" style="background:#5F6A52;color:#FDF9F0"><b>Retrouver sa concentration</b><code class="m" style="color:#FDF9F0;opacity:.8">#5F6A52</code></div>
+        <div class="cat" style="background:#94702B;color:#FDF9F0"><b>Relâcher les tensions</b><code class="m" style="color:#FDF9F0;opacity:.8">#94702B</code></div>
+        <div class="cat" style="background:#7A5560;color:#FDF9F0"><b>Se recentrer</b><code class="m" style="color:#FDF9F0;opacity:.8">#7A5560</code></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 TYPOGRAPHIE ============ -->
+<section class="page">
+  <div class="tete"><span class="num">04</span><h2>Typographie</h2></div>
+  <div class="grille g2" style="margin-bottom:30px">
+    <div class="bloc">
+      <h3 style="font-family:var(--pop);font-weight:300;font-size:26px">Poppins</h3>
+      <p style="margin-top:8px">C'est la construction de ton wordmark : géométrique au compas, « a » à un seul étage, points ronds. Réservée au logo, aux titres d'écran et aux miniatures YouTube. Gratuite, Google Fonts, diacritiques français complets. Jamais en dessous de 19 px : en petit corps, sa géométrie fatigue.</p>
+      <p style="font-family:var(--pop);font-weight:300;font-size:28px;margin-top:16px">Éàçùêôïœ — respirer</p>
+    </div>
+    <div class="bloc">
+      <h3 style="font-size:26px;font-weight:500">Hanken Grotesk</h3>
+      <p style="margin-top:8px">Grotesque humaniste, ouverte, excellente en petit corps sur mobile. Elle porte toute l'interface, le texte courant et les libellés. Gratuite, Google Fonts, 300 à 600 plus italiques.</p>
+      <p style="font-size:28px;margin-top:16px">Éàçùêôïœ — respirer</p>
+    </div>
+  </div>
+
+  <div class="specimen"><span class="mot" style="font-size:56px">liela</span><div class="fiche"><b>Wordmark</b><br>Poppins · 400<br>tracking −0.01 em<br>bas de casse strict</div></div>
+  <div class="specimen"><div style="font-family:var(--pop);font-weight:300;font-size:40px;line-height:1.1;letter-spacing:-.01em">Comment vous sentez-vous&nbsp;?</div><div class="fiche"><b>Display</b><br>Poppins · 300<br>40 px · 1,1<br>tracking −0.01 em</div></div>
+  <div class="specimen"><div style="font-family:var(--pop);font-weight:300;font-size:30px;line-height:1.2">Reposer le mental</div><div class="fiche"><b>H1 · titre d'écran</b><br>Poppins · 300<br>30 px · 1,2<br>tracking −0.005 em</div></div>
+  <div class="specimen"><div style="font-weight:600;font-size:23px;line-height:1.25">Pour ce soir</div><div class="fiche"><b>H2 · section</b><br>Hanken Grotesk · 600<br>23 px · 1,25</div></div>
+  <div class="specimen"><div style="font-weight:600;font-size:18px;line-height:1.35">Reprises récentes</div><div class="fiche"><b>H3 · sous-section</b><br>Hanken Grotesk · 600<br>18 px · 1,35</div></div>
+  <div class="specimen"><div style="font-size:16px;line-height:1.6;max-width:56ch;color:var(--gris-2)">Une séance courte pour desserrer le mental quand les pensées tournent en boucle. Vous pouvez la faire allongé, les yeux ouverts ou fermés.</div><div class="fiche"><b>Body</b><br>Hanken Grotesk · 400<br>16 px · 1,6<br>ligne max 60 signes</div></div>
+  <div class="specimen"><div style="font-size:13px;font-weight:500;color:var(--gris-2)">12 min · sans musique</div><div class="fiche"><b>Petite information</b><br>Hanken Grotesk · 500<br>13 px · 1,45<br>tracking +0.005 em</div></div>
+  <div class="specimen"><button class="btn">Commencer la séance</button><div class="fiche"><b>Bouton</b><br>Hanken Grotesk · 600<br>16 px · 1,0<br>casse phrase</div></div>
+  <div class="specimen"><div style="font-size:12px;color:var(--gris-3)">Enregistré dans votre historique</div><div class="fiche"><b>Légende</b><br>Hanken Grotesk · 400<br>12 px · 1,4</div></div>
+  <p class="note" style="margin-top:20px;max-width:64ch">Deux règles fermes : aucune étiquette en capitales, qui durcissent le ton et abîment la lecture des accents ; et un seul niveau de titre visible par écran, pour que la hiérarchie vienne de l'espace.</p>
+</section>
+
+<!-- ============ 05 FORMES ============ -->
+<section class="page">
+  <div class="tete"><span class="num">05</span><h2>Formes et langage graphique</h2></div>
+  <p class="chapo" style="margin-bottom:30px">Le rayon croît avec la surface : plus un élément est grand et proche de l'utilisateur, plus il est doux. Un rayon unique appliqué partout aplatirait la hiérarchie.</p>
+
+  <div class="grille g4" style="margin-bottom:32px">
+    <div style="background:var(--coquille);border:1px solid var(--filet);border-radius:6px;height:92px;display:flex;align-items:flex-end;padding:12px"><code class="m">6 px — tag</code></div>
+    <div style="background:var(--coquille);border:1px solid var(--filet);border-radius:12px;height:92px;display:flex;align-items:flex-end;padding:12px"><code class="m">12 px — bouton, champ</code></div>
+    <div style="background:var(--coquille);border:1px solid var(--filet);border-radius:18px;height:92px;display:flex;align-items:flex-end;padding:12px"><code class="m">18 px — carte</code></div>
+    <div style="background:var(--coquille);border:1px solid var(--filet);border-radius:26px;height:92px;display:flex;align-items:flex-end;padding:12px"><code class="m">26 px — feuille, modal</code></div>
+  </div>
+
+  <div class="grille g3">
+    <div>
+      <h3 class="st" style="margin-top:0">Profondeur</h3>
+      <div class="grille g3" style="gap:12px">
+        <div style="background:#fff;border:1px solid var(--filet);border-radius:18px;padding:18px;min-height:104px;display:flex;flex-direction:column;justify-content:flex-end"><b style="font-weight:600;font-size:13.5px">Niveau 0</b><span class="note">Filet seul</span></div>
+        <div style="background:#fff;border-radius:18px;padding:18px;min-height:104px;box-shadow:var(--p1);display:flex;flex-direction:column;justify-content:flex-end"><b style="font-weight:600;font-size:13.5px">Niveau 1</b><span class="note">Cartes</span></div>
+        <div style="background:#fff;border-radius:18px;padding:18px;min-height:104px;box-shadow:var(--p2);display:flex;flex-direction:column;justify-content:flex-end"><b style="font-weight:600;font-size:13.5px">Niveau 2</b><span class="note">Player, modal</span></div>
+      </div>
+      <p class="note" style="margin-top:12px">Ombres teintées d'encre chaude, jamais de gris neutre : sur un fond crème, une ombre grise vire au sale. Il n'existe pas de niveau 3.</p><p class="note" style="margin-top:10px"><b style="color:var(--gris-2);font-weight:600">Mode sombre :</b> il n'y en a pas au niveau de l'application. Seul l'univers sommeil est sombre, et c'est un territoire visuel assumé, pas un thème. Aucun autre écran ne s'inverse.</p>
+    </div>
+    <div>
+      <h3 class="st" style="margin-top:0">La forme organique</h3>
+      <div style="background:var(--coquille);border-radius:18px;height:186px;display:flex;align-items:center;justify-content:center">
+        <svg width="220" height="140" viewBox="0 0 220 140"><path fill="#F5E4DA" d="M16 92C16 44 54 20 104 20c52 0 90 22 100 54 8 26-10 50-42 50-42 0-62-16-92-16-30 0-54 6-54-16z"/><path fill="none" stroke="#D09B83" stroke-width="1.6" opacity=".7" d="M16 92C16 44 54 20 104 20c52 0 90 22 100 54"/></svg>
+      </div>
+      <p class="note" style="margin-top:12px">Un galet asymétrique dont un seul bord est fortement courbé, toujours en aplat mat. Fond de section, masque d'image, zone de respiration — jamais une illustration en soi.</p>
+    </div>
+    <div>
+      <h3 class="st" style="margin-top:0">Espacement</h3>
+      <div class="bloc">
+        <p>Base 4 px. Échelle 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64 · 96. Marge d'écran mobile : 20 px. Entre deux blocs : 32 px minimum. Au-dessus d'un titre d'écran : 48 px.</p>
+        <div style="display:flex;align-items:flex-end;gap:9px;margin-top:18px">
+          <div style="width:4px;height:14px;background:#E7E9DF"></div><div style="width:8px;height:22px;background:#E7E9DF"></div><div style="width:12px;height:30px;background:#E7E9DF"></div><div style="width:16px;height:40px;background:#E7E9DF"></div><div style="width:24px;height:52px;background:#E7E9DF"></div><div style="width:32px;height:66px;background:#E7E9DF"></div><div style="width:48px;height:82px;background:#E7E9DF"></div>
+        </div>
+        <p class="note" style="margin-top:16px">Test : si un écran paraît vide, il est probablement juste. S'il paraît confortable, il est déjà trop dense.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 ICONOGRAPHIE ============ -->
+<section class="page">
+  <div class="tete"><span class="num">06</span><h2>Iconographie</h2></div>
+  <p class="chapo" style="margin-bottom:28px">Contour uniquement, jamais de plein. Grille 24, trait 1,75 px, terminaisons et jonctions rondes, rayons intérieurs de 2 px minimum. Une icône n'est jamais colorée en sauge ou en terre : elle prend la couleur du texte auquel elle appartient, ou la teinte de la situation.</p>
+
+  <div class="grille g4">
+    <div class="bloc" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:20px">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"/></svg>
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round"><path d="M3 12h3l2-5 3 10 2.5-7 1.8 4H21"/></svg>
+      </div>
+      <p style="font-size:13.5px;color:var(--gris-2)">Sommeil — croissant fermé, jamais d'étoiles. Stress — onde resserrée puis apaisée.</p>
+    </div>
+    <div class="bloc" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:20px">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v2.6M12 17.9v2.6M3.5 12h2.6M17.9 12h2.6"/></svg>
+      </div>
+      <p style="font-size:13.5px;color:var(--gris-2)">Concentration — deux cercles concentriques. Respiration — noyau et expansion.</p>
+    </div>
+    <div class="bloc" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:20px">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c4 3.4 6 6.4 6 9a6 6 0 0 1-12 0c0-2.6 2-5.6 6-9Z"/></svg>
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round"><path d="M4 16.5c3.5-1 5.5-4 6.5-8.5 2.5 3.5 5 5 9 5"/><circle cx="19.5" cy="13" r="1.6"/></svg>
+      </div>
+      <p style="font-size:13.5px;color:var(--gris-2)">Énergie — goutte montante. Émotions — courbe qui redescend puis se pose.</p>
+    </div>
+    <div class="bloc" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:20px">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg>
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/></svg>
+      </div>
+      <p style="font-size:13.5px;color:var(--gris-2)">Favoris — cœur à épaules basses, plus doux que le cœur standard. Historique — horloge simple.</p>
+    </div>
+  </div>
+
+  <div class="grille g3" style="margin-top:26px">
+    <div class="plat"><h3>Tailles</h3><p>16 px dans le texte, 20 px dans les listes, 24 px en navigation, 28 px en tête d'écran. Jamais d'échelle intermédiaire.</p></div>
+    <div class="plat"><h3>Couleur</h3><p>Encre par défaut, gris‑2 pour les états inactifs, teinte de situation quand l'icône représente une catégorie. Le sauge et la terre sont interdits sur les icônes.</p></div>
+    <div class="plat"><h3>Dessin</h3><p>Un concept par icône, deux tracés maximum. Aucune icône ne représente une personne. Aucune ne contient de texte.</p></div>
+  </div>
+</section>
+
+<!-- ============ 07 ILLUSTRATION & PHOTO ============ -->
+<section class="page">
+  <div class="tete"><span class="num">07</span><h2>Illustration et photographie</h2></div>
+
+  <div class="grille g2" style="align-items:start">
+    <div>
+      <h3 class="st" style="margin-top:0">Illustration</h3>
+      <div style="background:var(--coquille);border-radius:18px;height:250px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+        <svg width="330" height="220" viewBox="0 0 330 220">
+          <path fill="#E7E9DF" d="M30 150c0-62 46-104 112-104 60 0 100 30 112 72 8 30-14 56-52 56-46 0-70-16-108-16-34 0-64 10-64-8z"/>
+          <path fill="#F5E4DA" d="M96 168c0-42 34-70 88-70 8 30-12 74-88 70z" opacity=".95"/>
+          <path fill="none" stroke="#D09B83" stroke-width="1.6" opacity=".8" d="M104 164c26-22 52-38 78-48"/>
+          <path fill="none" stroke="#919780" stroke-width="1.6" opacity=".75" d="M40 128c34-40 82-58 142-54"/>
+        </svg>
+      </div>
+      <p class="note" style="margin-top:12px">Deux ou trois aplats mats superposés, une seule ligne fine par composition, jamais de dégradé ni de texture bruitée. Le niveau d'abstraction reste au bord du reconnaissable : on doit pouvoir y lire un paysage, une respiration ou une pente sans que ce soit dit. Aucune figure humaine, aucun objet identifiable, aucune position de méditation. Palette limitée aux voiles sauge et terre sur crème ; les teintes de situation n'entrent dans une illustration que lorsqu'elle représente cette situation. Usage : en-tête de catégorie, écran de fin de séance, onboarding, vignettes de collection — jamais derrière du texte de lecture.</p>
+    </div>
+    <div>
+      <h3 class="st" style="margin-top:0">Photographie</h3>
+      <div class="grille g2" style="gap:12px">
+        <div style="background:linear-gradient(150deg,#EFE7DA,#E2D6C4);border-radius:14px;aspect-ratio:4/5"></div>
+        <div style="background:linear-gradient(160deg,#E7E9DF,#CFD4C6);border-radius:14px;aspect-ratio:4/5"></div>
+        <div style="background:linear-gradient(200deg,#F5E4DA,#E2C8B8);border-radius:14px;aspect-ratio:4/5"></div>
+        <div style="background:linear-gradient(140deg,#EDE6DC,#D6CCBC);border-radius:14px;aspect-ratio:4/5"></div>
+      </div>
+      <p class="note" style="margin-top:12px">Sujets : des moments ordinaires, pas des moments de bien-être. Un lit défait au matin, une tasse posée, une fenêtre de bureau à 17 h, un couloir de métro vide, des mains au repos, un trajet en voiture arrêté. Lumière naturelle exclusivement, souvent latérale et basse, jamais de flash ni de studio. Cadrages serrés, mise au point courte, arrière-plans simples. Les personnes sont vues de dos, de profil, ou par fragments — jamais les yeux fermés face à un paysage. Traitement : contraste doux, hautes lumières retenues, légère dominante chaude pour raccorder au crème, saturation baissée d'environ 10 %. Aucun filtre visible. Ratios : 4/5 pour Instagram, 16/9 pour YouTube, 3/2 pour le site.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 08 MOTION ============ -->
+<section class="page">
+  <div class="tete"><span class="num">08</span><h2>Motion</h2></div>
+  <p class="chapo" style="margin-bottom:28px">Le mouvement doit ralentir sans mollir. La règle est simple : rien n'accélère brutalement, tout décélère longuement. Une seule courbe pour presque tout.</p>
+  <div class="grille g3">
+    <div class="bloc"><h3>Courbe et durées</h3><p><code class="m">cubic-bezier(.22,.61,.36,1)</code> par défaut. Micro-retour tactile 120 ms. Apparition d'élément 260 ms. Transition d'écran 380 ms. Ouverture du player 520 ms. Rien au-delà de 600 ms hors séance.</p></div>
+    <div class="bloc"><h3>Respiration</h3><p>Le guide de respiration est le seul élément à animation continue : cercle qui passe de 0,72 à 1,0 en 4 s à l'inspiration, palier de 1 s, retour en 6 s. Courbe <code class="m">ease-in-out</code> sinusoïdale, jamais linéaire. Aucun autre élément ne bouge pendant ce temps.</p></div>
+    <div class="bloc"><h3>Pendant la séance</h3><p>L'interface s'efface : les commandes disparaissent en 800 ms après 4 s d'inactivité et reviennent au toucher en 200 ms. La progression avance en continu, sans à-coup par seconde. Aucun compte à rebours qui clignote.</p></div>
+    <div class="bloc"><h3>Chargement</h3><p>Pas de spinner. Les blocs apparaissent en fondu à 200 ms dans leur ordre de lecture, avec une amorce de squelette en sable si l'attente dépasse 400 ms. Au-delà de 3 s, une phrase remplace l'animation.</p></div>
+    <div class="bloc"><h3>Retour utilisateur</h3><p>Appui : réduction à 0,97 en 120 ms. Sélection d'une durée : la pastille se remplit depuis le centre. Fin de séance : la barre se referme puis une seule marque apparaît. Aucun rebond, aucun effet élastique.</p></div>
+    <div class="bloc"><h3>Accessibilité</h3><p><code class="m">prefers-reduced-motion</code> est respecté partout : les transitions passent en fondu simple de 150 ms et l'animation de respiration devient un texte rythmé. Aucune information n'est portée uniquement par le mouvement.</p></div>
+  </div>
+</section>
+
+<!-- ============ 09 UI ============ -->
+<section class="page">
+  <div class="tete"><span class="num">09</span><h2>Design system</h2></div>
+  <div class="grille g3" style="align-items:start">
+
+    <div class="bloc">
+      <h3>Boutons</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+        <button class="btn" style="width:100%">Commencer la séance</button>
+        <button class="btn btn-2" style="width:100%">Plus tard</button>
+        <button class="btn btn-3" style="align-self:flex-start">Voir toutes les séances</button>
+      </div>
+      <p class="note" style="margin-top:14px">Hauteur 50 px, rayon 12, pleine largeur sur mobile. Un seul bouton principal par écran.</p>
+    </div>
+
+    <div class="bloc">
+      <h3>Champs</h3>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:14px">
+        <input class="champ" value="Votre prénom" readonly>
+        <input class="champ actif" value="Franck" readonly>
+        <input class="champ" style="border-color:var(--erreur);color:var(--erreur)" value="Adresse incomplète" readonly>
+      </div>
+      <p class="note" style="margin-top:14px">Repos en coquille sans bordure, actif en blanc bordé, erreur bordée et libellée sous le champ.</p>
+    </div>
+
+    <div class="bloc">
+      <h3>Tags et durées</h3>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+        <span class="tag">Trouver le sommeil</span>
+        <span class="tag" style="background:#F5E4DA;color:#A26248">Calmer le stress</span>
+        <span class="tag" style="background:#F0E5D6;color:#7A6E5E">Nouveau</span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <span class="puce on">5 min</span><span class="puce">12 min</span><span class="puce">20 min</span>
+      </div>
+      <p class="note" style="margin-top:14px">Le tag informe, la pastille se choisit. Jamais le même style pour les deux.</p><p class="note" style="margin-top:10px">Voix unique masculine au lancement : la ligne de métadonnées ne porte donc que la durée. La mention de voix n'apparaîtra qu'à l'arrivée d'une seconde voix.</p>
+    </div>
+
+    <div class="bloc">
+      <h3>Carte de méditation</h3>
+      <div class="carte" style="margin-top:14px">
+        <span class="tag" style="background:#F5E4DA;color:#6E6257">Calmer les pensées</span>
+        <h4>Reposer le mental</h4>
+        <p class="meta">12 min</p>
+        <div class="barre" style="margin-top:14px"><i style="width:38%"></i></div>
+      </div>
+    </div>
+
+    <div class="bloc">
+      <h3>Cartes de catégorie</h3>
+      <div class="grille g2" style="gap:10px;margin-top:14px">
+        <div class="cat" style="background:#5D6A78;color:#FDF9F0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FDF9F0" stroke-width="1.75" stroke-linecap="round"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"/></svg><b>Trouver le sommeil</b></div>
+        <div class="cat" style="background:#5F6A52;color:#FDF9F0"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FDF9F0" stroke-width="1.75"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/></svg><b>Retrouver sa concentration</b></div>
+      </div>
+      <p class="note" style="margin-top:14px">Aplat de teinte pleine, icône en crème, titre en Poppins 300. Aucune image.</p>
+    </div>
+
+    <div class="bloc">
+      <h3>Player</h3>
+      <div style="background:#fff;border-radius:18px;box-shadow:var(--p2);padding:18px;margin-top:14px">
+        <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--gris-3)"><span>4:32</span><span>−7:28</span></div>
+        <div class="barre" style="margin:10px 0 16px"><i style="width:38%"></i></div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:26px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A6E5E" stroke-width="1.75" stroke-linecap="round"><path d="M11 5.5 4 12l7 6.5M20 5.5 13 12l7 6.5"/></svg>
+          <span style="width:56px;height:56px;border-radius:50%;background:var(--encre);display:flex;align-items:center;justify-content:center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#FDF9F0" stroke-width="2" stroke-linecap="round"><path d="M9 5v14M15 5v14"/></svg></span>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7A6E5E" stroke-width="1.75" stroke-linecap="round"><path d="M13 5.5 20 12l-7 6.5M4 5.5 11 12l-7 6.5"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="bloc">
+      <h3>Navigation</h3>
+      <div style="display:flex;justify-content:space-around;padding:14px 0;border-top:1px solid var(--filet);margin-top:14px">
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg>
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="6.8"/><path d="m16 16 4 4"/></svg>
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/></svg>
+        <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg>
+      </div>
+      <p class="note" style="margin-top:12px">Quatre entrées maximum, sans libellé, l'actif en encre pleine. Pas de badge de notification.</p>
+    </div>
+
+    <div class="bloc">
+      <h3>Progression</h3>
+      <div style="margin-top:16px;display:flex;flex-direction:column;gap:16px">
+        <div class="barre"><i style="width:22%"></i></div>
+        <div class="barre"><i style="width:64%"></i></div>
+        <div class="barre"><i style="width:100%;background:var(--succes)"></i></div>
+      </div>
+      <p class="note" style="margin-top:14px">3 px d'épaisseur, jamais d'animation par saccade, vert de succès uniquement à 100 %.</p>
+    </div>
+
+    <div class="bloc">
+      <h3>Modal</h3>
+      <div style="background:#fff;border-radius:26px;box-shadow:var(--p2);padding:22px;margin-top:14px">
+        <div style="width:34px;height:3px;background:var(--filet);border-radius:99px;margin:0 auto 16px"></div>
+        <h4 style="font-family:var(--pop);font-weight:300;font-size:19px">Reprendre où vous en étiez&nbsp;?</h4>
+        <p style="font-size:13.5px;color:var(--gris-2);margin-top:6px">Il vous restait 7 minutes sur « Reposer le mental ».</p>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:16px">
+          <button class="btn" style="width:100%;padding:13px">Reprendre</button>
+          <button class="btn btn-2" style="width:100%;padding:13px">Recommencer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 ÉCRANS ============ -->
+<section class="page">
+  <div class="tete"><span class="num">10</span><h2>Écrans</h2></div>
+  <p class="chapo" style="margin-bottom:34px">Le parcours central tient en trois questions : comment vous vous sentez, combien de temps vous avez, et voilà votre séance.</p>
+
+  <div class="grille g4">
+
+    <!-- onboarding -->
+    <div>
+      <div class="tel" style="justify-content:center;text-align:center;align-items:center;gap:18px">
+        <svg width="56" height="56" viewBox="0 0 100 100"><path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" stroke="#FDF9F0" stroke-width="2.4" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg>
+        <h5 style="font-size:22px">La méditation qu'il vous faut, maintenant.</h5>
+        <p class="p">Dites-nous où vous en êtes. On s'occupe du reste.</p>
+        <button class="btn" style="width:100%;padding:13px;font-size:14px;margin-top:6px">Commencer</button>
+        <span style="font-size:11.5px;color:var(--gris-3)">J'ai déjà un compte</span>
+      </div>
+      <p class="telcap">1 — Onboarding</p>
+    </div>
+
+    <!-- home -->
+    <div>
+      <div class="tel">
+        <div class="haut"><span>9:41</span><span>liela</span></div>
+        <h5>Bonsoir Franck</h5>
+        <p class="p" style="margin-top:4px">Il est tard. Une séance courte&nbsp;?</p>
+        <div class="carte" style="margin-top:16px;padding:14px">
+          <span class="tag" style="font-size:10.5px;background:#E4E8EC;color:#5D6A78">Trouver le sommeil</span>
+          <h4 style="font-size:16px;margin:8px 0 2px">Descendre d'un cran</h4>
+          <p class="meta" style="font-size:11px">9 min</p>
+        </div>
+        <p style="font-size:12px;font-weight:600;margin-top:18px">Reprendre</p>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <div class="cat" style="flex:1;background:#F0E5D6;min-height:62px;padding:12px"><b style="font-size:12.5px">Reposer le mental</b></div>
+          <div class="cat" style="flex:1;background:#E7E9DF;min-height:62px;padding:12px"><b style="font-size:12.5px">Avant de dormir</b></div>
+        </div>
+        <div class="nav">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="6.8"/><path d="m16 16 4 4"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg>
+        </div>
+      </div>
+      <p class="telcap">2 — Accueil</p>
+    </div>
+
+    <!-- état -->
+    <div>
+      <div class="tel">
+        <div class="haut"><span>9:41</span><span>1 / 2</span></div>
+        <h5>Comment vous sentez-vous&nbsp;?</h5>
+        <div class="grille g2" style="gap:8px;margin-top:18px">
+          <div class="cat" style="background:#A26248;color:#FDF9F0;min-height:66px;padding:12px"><b style="font-size:13px">Calmer le stress</b></div>
+          <div class="cat" style="background:#6E6257;color:#FDF9F0;min-height:66px;padding:12px"><b style="font-size:13px">Calmer les pensées</b></div>
+          <div class="cat" style="background:#5D6A78;color:#FDF9F0;min-height:66px;padding:12px"><b style="font-size:13px">Trouver le sommeil</b></div>
+          <div class="cat" style="background:#5F6A52;color:#FDF9F0;min-height:66px;padding:12px"><b style="font-size:13px">Retrouver sa concentration</b></div>
+          <div class="cat" style="background:#94702B;color:#FDF9F0;min-height:66px;padding:12px"><b style="font-size:13px">Relâcher les tensions</b></div>
+          <div class="cat" style="background:#7A5560;color:#FDF9F0;min-height:66px;padding:12px"><b style="font-size:13px">Se recentrer</b></div>
+        </div>
+      </div>
+      <p class="telcap">3 — Choix de l'état</p>
+    </div>
+
+    <!-- durée -->
+    <div>
+      <div class="tel">
+        <div class="haut"><span>9:41</span><span>2 / 2</span></div>
+        <h5>Combien de temps avez-vous&nbsp;?</h5>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px">
+          <div style="padding:16px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--bord);font-size:14px">3 minutes</div>
+          <div style="padding:16px;border-radius:12px;background:var(--encre);color:var(--creme);font-size:14px;font-weight:600">10 minutes</div>
+          <div style="padding:16px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--bord);font-size:14px">20 minutes</div>
+          <div style="padding:16px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--bord);font-size:14px">Je ne sais pas</div>
+        </div>
+        <button class="btn" style="width:100%;padding:13px;font-size:14px;margin-top:auto">Voir ma séance</button>
+      </div>
+      <p class="telcap">4 — Choix de durée</p>
+    </div>
+
+    <!-- reco -->
+    <div>
+      <div class="tel">
+        <div class="haut"><span>9:41</span><span></span></div>
+        <div style="background:#6E6257;border-radius:18px;height:132px;display:flex;align-items:flex-end;padding:14px;margin-bottom:16px">
+          <span style="font-family:var(--pop);font-weight:300;font-size:19px;color:#FDF9F0;line-height:1.15">Sortir de la boucle</span>
+        </div>
+        <p class="p">Pour quand les mêmes pensées reviennent sans arrêt. Vous pouvez la faire assis ou allongé.</p>
+        <div style="display:flex;gap:8px;margin-top:14px"><span class="tag" style="font-size:10.5px">10 min</span><span class="tag" style="font-size:10.5px;background:#F0E5D6;color:#7A6E5E">Voix masculine</span></div>
+        <button class="btn" style="width:100%;padding:13px;font-size:14px;margin-top:auto">Commencer</button>
+        <span style="font-size:11.5px;color:var(--gris-3);text-align:center;margin-top:10px">Proposer autre chose</span>
+      </div>
+      <p class="telcap">5 — Recommandation</p>
+    </div>
+
+    <!-- player -->
+    <div>
+      <div class="tel" style="background:#6E6257;justify-content:center;align-items:center;gap:24px">
+        <div class="haut" style="position:absolute;top:20px;left:18px;right:18px;color:#EFE7DE"><span>9:41</span><span>Sortir de la boucle</span></div>
+        <div style="width:118px;height:118px;border-radius:50%;border:1px solid rgba(253,249,240,.35);display:flex;align-items:center;justify-content:center">
+          <div style="width:78px;height:78px;border-radius:50%;background:rgba(253,249,240,.16)"></div>
+        </div>
+        <span style="font-size:12.5px;color:#EFE7DE">Inspire…</span>
+        <div style="width:100%;margin-top:6px">
+          <div style="height:2px;background:rgba(253,249,240,.28);border-radius:99px"><div style="width:42%;height:100%;background:#FDF9F0;border-radius:99px"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#EFE7DE;margin-top:8px"><span>4:12</span><span>−5:48</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:24px;margin-top:6px">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#EFE7DE" stroke-width="1.75" stroke-linecap="round"><path d="M11 5.5 4 12l7 6.5"/></svg>
+          <span style="width:50px;height:50px;border-radius:50%;background:#FDF9F0;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E6257" stroke-width="2" stroke-linecap="round"><path d="M9 5v14M15 5v14"/></svg></span>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#EFE7DE" stroke-width="1.75" stroke-linecap="round"><path d="M13 5.5 20 12l-7 6.5"/></svg>
+        </div>
+      </div>
+      <p class="telcap">6 — Lecteur</p>
+    </div>
+
+    <!-- sommeil -->
+    <div>
+      <div class="tel" style="background:#3E4753">
+        <div class="haut" style="color:#D6DBE2"><span>9:41</span><span>Sommeil</span></div>
+        <h5 style="color:#FDF9F0">Bonne nuit</h5>
+        <p class="p" style="color:#C7CDD6;margin-top:4px">L'écran s'éteindra tout seul.</p>
+        <div style="display:flex;flex-direction:column;gap:9px;margin-top:18px">
+          <div style="background:rgba(253,249,240,.09);border-radius:14px;padding:13px"><b style="font-family:var(--pop);font-weight:300;font-size:14.5px;color:#FDF9F0">S'endormir vite</b><div style="font-size:11px;color:#B9C1CB;margin-top:2px">12 min</div></div>
+          <div style="background:rgba(253,249,240,.09);border-radius:14px;padding:13px"><b style="font-family:var(--pop);font-weight:300;font-size:14.5px;color:#FDF9F0">Réveil nocturne</b><div style="font-size:11px;color:#B9C1CB;margin-top:2px">8 min</div></div>
+          <div style="background:rgba(253,249,240,.09);border-radius:14px;padding:13px"><b style="font-family:var(--pop);font-weight:300;font-size:14.5px;color:#FDF9F0">Histoire calme</b><div style="font-size:11px;color:#B9C1CB;margin-top:2px">25 min</div></div>
+        </div>
+        <div style="margin-top:auto;display:flex;justify-content:space-between;align-items:center;font-size:11.5px;color:#C7CDD6"><span>Minuteur</span><span>30 min</span></div>
+      </div>
+      <p class="telcap">7 — Sommeil</p>
+    </div>
+
+    <!-- profil -->
+    <div>
+      <div class="tel">
+        <div class="haut"><span>9:41</span><span></span></div>
+        <h5>Franck</h5>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <div style="flex:1;background:var(--coquille);border-radius:14px;padding:13px"><div style="font-family:var(--pop);font-weight:300;font-size:24px">14</div><div style="font-size:11px;color:var(--gris-2)">séances</div></div>
+          <div style="flex:1;background:var(--coquille);border-radius:14px;padding:13px"><div style="font-family:var(--pop);font-weight:300;font-size:24px">2 h 40</div><div style="font-size:11px;color:var(--gris-2)">au total</div></div>
+        </div>
+        <p style="font-size:12px;font-weight:600;margin-top:20px">Historique</p>
+        <div style="display:flex;flex-direction:column;gap:0;margin-top:6px">
+          <div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--filet);font-size:12.5px"><span>Sortir de la boucle</span><span style="color:var(--gris-3)">hier</span></div>
+          <div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--filet);font-size:12.5px"><span>Descendre d'un cran</span><span style="color:var(--gris-3)">dim.</span></div>
+          <div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--filet);font-size:12.5px"><span>Avant une réunion</span><span style="color:var(--gris-3)">ven.</span></div>
+        </div>
+        <div class="nav">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="6.8"/><path d="m16 16 4 4"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 1.8"/></svg>
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg>
+        </div>
+      </div>
+      <p class="telcap">8 — Profil et historique</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 11 YOUTUBE ============ -->
+<section class="page">
+  <div class="tete"><span class="num">11</span><h2>YouTube</h2></div>
+  <p class="chapo" style="margin-bottom:28px">Une miniature Liela se reconnaît à trois choses : un aplat de teinte de situation, un titre en Poppins 300 aligné en bas à gauche, et la durée. Aucune photo, aucun visage, aucune flèche, aucun texte surligné.</p>
+
+  <div class="grille g2" style="margin-bottom:30px;align-items:start">
+    <div>
+      <div class="baniere">
+        <div class="marque"><svg width="34" height="34" viewBox="0 0 100 100"><path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" stroke="#F8EFE4" stroke-width="2.4" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg><span class="mot" style="font-size:34px">liela</span></div>
+        <span style="font-size:13px;color:var(--gris-2)">La méditation qu'il vous faut, maintenant.</span>
+      </div>
+      <p class="note" style="margin-top:10px">Bannière — fond coquille, logo centré, promesse en Hanken 400. Zone sûre 1546 × 423 px, aucun élément hors de cette zone.</p>
+    </div>
+    <div style="display:flex;gap:16px;align-items:center">
+      <span class="appicon" style="width:96px;height:96px;border-radius:50%"><svg width="62" height="62" viewBox="0 0 100 100"><path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" stroke="#F8EFE4" stroke-width="2.4" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg></span>
+      <div>
+        <h3 style="font-family:var(--pop);font-weight:300;font-size:22px">Liela Méditation</h3>
+        <p class="note" style="margin-top:6px;max-width:34ch">Avatar : symbole seul sur fond coquille, jamais le wordmark — illisible à 48 px. Le cercle YouTube rogne le squircle sans toucher au symbole.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="st">Miniatures</h3>
+  <div class="grille g4">
+    <div>
+      <div class="vignette" style="background:#5D6A78">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 100 100"><path fill="#FDF9F0" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#FDF9F0" opacity=".62" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg><span class="d">12 min</span></div>
+        <span class="t">Dormir rapidement</span>
+      </div>
+      <p class="lg">Trouver le sommeil — ardoise</p>
+    </div>
+    <div>
+      <div class="vignette" style="background:#6E6257">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 100 100"><path fill="#FDF9F0" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#FDF9F0" opacity=".62" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg><span class="d">15 min</span></div>
+        <span class="t">Arrêter de ruminer</span>
+      </div>
+      <p class="lg">Calmer les pensées — brun gris</p>
+    </div>
+    <div>
+      <div class="vignette" style="background:#A26248">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 100 100"><path fill="#FDF9F0" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#FDF9F0" opacity=".62" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg><span class="d">10 min</span></div>
+        <span class="t">10 min contre le stress</span>
+      </div>
+      <p class="lg">Calmer le stress — terre profonde</p>
+    </div>
+    <div>
+      <div class="vignette" style="background:#5F6A52">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start"><svg width="20" height="20" viewBox="0 0 100 100"><path fill="#FDF9F0" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#FDF9F0" opacity=".62" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg><span class="d">8 min</span></div>
+        <span class="t">Se concentrer avant de travailler</span>
+      </div>
+      <p class="lg">Retrouver sa concentration — sauge profonde</p>
+    </div>
+  </div>
+
+  <div class="grille g3" style="margin-top:26px">
+    <div class="plat"><h3>Composition</h3><p>Symbole seul en haut à gauche à 6 % de la largeur, durée en haut à droite, titre en bas à gauche sur trois lignes maximum. Marge intérieure de 6 % partout.</p></div>
+    <div class="plat"><h3>Typographie</h3><p>Poppins 300, corps unique de 96 px sur une image 1280 × 720, interligne 1,15. Le corps ne change jamais : c'est la longueur du titre qui s'adapte, pas l'inverse.</p></div>
+    <div class="plat"><h3>Repérage</h3><p>La teinte suffit à identifier la catégorie dans la grille d'une chaîne. Une nouvelle catégorie prend une nouvelle teinte de la même bande, jamais un dégradé ni un motif.</p></div>
+  </div>
+</section>
+
+<!-- ============ 12 RÉSEAUX ============ -->
+<section class="page">
+  <div class="tete"><span class="num">12</span><h2>Réseaux sociaux</h2></div>
+  <p class="chapo" style="margin-bottom:28px">Trois formats seulement, pour que la production reste tenable : le conseil, le lancement, et la citation. Tous sont composés dans la même grille que les miniatures.</p>
+  <div class="grille g4">
+    <div>
+      <div class="post" style="background:var(--coquille)">
+        <svg width="24" height="24" viewBox="0 0 100 100"><path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" stroke="#F8EFE4" stroke-width="2.4" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg>
+        <span style="font-family:var(--pop);font-weight:300;font-size:20px;line-height:1.25">Trois respirations avant d'ouvrir la porte suffisent souvent.</span>
+      </div>
+      <p class="lg">Conseil — fond coquille, texte en encre. Le plus fréquent.</p>
+    </div>
+    <div>
+      <div class="post" style="background:#5D6A78;color:#FDF9F0">
+        <span style="font-size:12px;opacity:.85">Nouvelle méditation</span>
+        <div>
+          <span style="font-family:var(--pop);font-weight:300;font-size:22px;line-height:1.2;display:block">Dormir rapidement</span>
+          <span style="font-size:12px;opacity:.85">12 min · sur YouTube</span>
+        </div>
+      </div>
+      <p class="lg">Lancement — aplat de la teinte de situation.</p>
+    </div>
+    <div>
+      <div class="post" style="background:var(--creme);border:1px solid var(--filet);align-items:center;justify-content:center;text-align:center">
+        <svg width="90" height="60" viewBox="0 0 220 140"><path fill="#F5E4DA" d="M16 92C16 44 54 20 104 20c52 0 90 22 100 54 8 26-10 50-42 50-42 0-62-16-92-16-30 0-54 6-54-16z"/></svg>
+        <span style="font-family:var(--pop);font-weight:300;font-size:17px;line-height:1.3">Vous n'avez pas besoin d'y croire pour que ça marche.</span>
+        <span style="font-size:11px;color:var(--gris-3)">liela</span>
+      </div>
+      <p class="lg">Citation — forme organique et texte centré.</p>
+    </div>
+    <div>
+      <div class="story" style="background:#6E6257;color:#FDF9F0">
+        <svg width="22" height="22" viewBox="0 0 100 100" style="margin-bottom:auto"><path fill="#FDF9F0" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#FDF9F0" opacity=".62" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg>
+        <span style="font-family:var(--pop);font-weight:300;font-size:20px;line-height:1.2">Arrêter de ruminer</span>
+        <span style="font-size:11.5px;opacity:.85">Nouvelle séance · 15 min</span>
+      </div>
+      <p class="lg">Story et Shorts — 9/16, texte dans le tiers bas.</p>
+    </div>
+  </div>
+  <div class="grille g3" style="margin-top:26px">
+    <div class="plat"><h3>Règles fixes</h3><p>Un seul message par visuel. Jamais de texte sur photo. Jamais d'émoji dans le visuel. Le symbole apparaît une fois et une seule.</p></div>
+    <div class="plat"><h3>Rythme</h3><p>La teinte tourne avec la situation traitée, pas avec l'humeur du jour. Sur une grille Instagram, cela produit naturellement un damier lisible.</p></div>
+    <div class="plat"><h3>TikTok et Shorts</h3><p>Première seconde : fond de teinte pleine et titre seul. Le logo n'apparaît qu'à la fin, deux secondes, en bas au centre.</p></div>
+  </div>
+</section>
+
+<!-- ============ 13 STORES ============ -->
+<section class="page">
+  <div class="tete"><span class="num">13</span><h2>App Store et Google Play</h2></div>
+  <div class="grille g4" style="align-items:start">
+    <div>
+      <span class="appicon" style="width:100%;aspect-ratio:1;border-radius:24%"><svg width="60%" height="60%" viewBox="0 0 100 100"><path fill="#919780" d="M30 32 V64 C30 76 40 84 54 84 C63 84 71 82 77 78 C71 79.5 64 80 56 80 C45 80 40 74 40 63 V32 A5 5 0 0 0 30 32 Z"/><path fill="#D09B83" stroke="#F8EFE4" stroke-width="2.4" d="M45 74 C45 57 58 45 76 43 C79 61 67 76 51 77 C47 77.4 45 76.4 45 74 Z"/></svg></span>
+      <p class="lg">Icône — symbole seul sur coquille. Pas de wordmark, pas de dégradé, pas d'ombre interne.</p>
+      <div class="plat" style="margin-top:16px">
+        <h3>Titre et sous-titre</h3>
+        <p><b style="font-weight:600;color:var(--encre)">Liela — Méditation</b><br>La méditation qu'il vous faut, maintenant.</p>
+      </div>
+    </div>
+    <div>
+      <div style="background:var(--coquille);border-radius:18px;padding:18px 14px">
+        <p style="font-family:var(--pop);font-weight:300;font-size:17px;line-height:1.25;margin-bottom:14px">Dites comment vous vous sentez</p>
+        <div class="tel" style="max-width:100%;aspect-ratio:210/400;padding:18px 12px 12px;border-radius:22px">
+          <h5 style="font-size:15px">Comment vous sentez-vous&nbsp;?</h5>
+          <div class="grille g2" style="gap:6px;margin-top:12px">
+            <div class="cat" style="background:#A26248;min-height:42px;padding:9px"><b style="font-size:10px;color:#FDF9F0">Stress</b></div>
+            <div class="cat" style="background:#6E6257;min-height:42px;padding:9px"><b style="font-size:10px;color:#FDF9F0">Pensées</b></div>
+            <div class="cat" style="background:#5D6A78;min-height:42px;padding:9px"><b style="font-size:10px;color:#FDF9F0">Sommeil</b></div>
+            <div class="cat" style="background:#5F6A52;min-height:42px;padding:9px"><b style="font-size:10px;color:#FDF9F0">Concentration</b></div>
+          </div>
+        </div>
+      </div>
+      <p class="lg">Capture 1 — le bénéfice, puis l'écran.</p>
+    </div>
+    <div>
+      <div style="background:#F5E4DA;border-radius:18px;padding:18px 14px">
+        <p style="font-family:var(--pop);font-weight:300;font-size:17px;line-height:1.25;margin-bottom:14px">Une séance en dix secondes</p>
+        <div class="tel" style="max-width:100%;aspect-ratio:210/400;padding:18px 12px 12px;border-radius:22px">
+          <h5 style="font-size:15px">Combien de temps avez-vous&nbsp;?</h5>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:14px">
+            <div style="padding:11px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--bord);font-size:11px">3 minutes</div>
+            <div style="padding:11px;border-radius:10px;background:var(--encre);color:var(--creme);font-size:11px;font-weight:600">10 minutes</div>
+            <div style="padding:11px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--bord);font-size:11px">20 minutes</div>
+          </div>
+        </div>
+      </div>
+      <p class="lg">Capture 2 — fond en voile terre pour rythmer la série.</p>
+    </div>
+    <div>
+      <div style="background:#5D6A78;border-radius:18px;padding:18px 14px">
+        <p style="font-family:var(--pop);font-weight:300;font-size:17px;line-height:1.25;margin-bottom:14px;color:#FDF9F0">Et une vraie nuit</p>
+        <div class="tel" style="max-width:100%;aspect-ratio:210/400;padding:18px 12px 12px;border-radius:22px;background:#3E4753">
+          <h5 style="font-size:15px;color:#FDF9F0">Bonne nuit</h5>
+          <div style="display:flex;flex-direction:column;gap:7px;margin-top:14px">
+            <div style="background:rgba(253,249,240,.1);border-radius:10px;padding:10px;font-size:11px;color:#FDF9F0">S'endormir vite</div>
+            <div style="background:rgba(253,249,240,.1);border-radius:10px;padding:10px;font-size:11px;color:#FDF9F0">Réveil nocturne</div>
+            <div style="background:rgba(253,249,240,.1);border-radius:10px;padding:10px;font-size:11px;color:#FDF9F0">Histoire calme</div>
+          </div>
+        </div>
+      </div>
+      <p class="lg">Capture 3 — la seule sombre de la série, pour le sommeil.</p>
+    </div>
+  </div>
+  <div class="plat" style="margin-top:24px">
+    <h3>Règle de série</h3>
+    <p style="max-width:74ch">Cinq captures maximum, chacune avec un seul bénéfice écrit en Poppins 300 au-dessus de l'écran. Le fond de chaque capture alterne dans l'ordre crème, voile terre, teinte pleine, voile sauge, crème. Aucune capture ne montre plus d'un écran, aucune n'ajoute de main, de cadre de téléphone en perspective ni de reflet.</p>
+  </div>
+</section>
+
+<!-- ============ 14 FICHIERS ============ -->
+<section class="page">
+  <div class="tete"><span class="num">14</span><h2>Fichiers livrés</h2></div>
+  <p class="chapo" style="margin-bottom:28px">Le symbole a été vectorisé à partir du fichier original par tracé de contour, puis normalisé dans une boîte de 100 × 100. Le wordmark est composé en Poppins Regular avec une approche de −0,01 em, puis converti en contours : aucun fichier ne dépend d'une police installée.</p>
+  <div class="grille g3">
+    <div class="bloc"><h3>Vectoriel</h3><p><code class="m">liela-logo-horizontal.svg</code><br><code class="m">liela-logo-horizontal-encre.svg</code><br><code class="m">liela-logo-horizontal-creme.svg</code><br><code class="m">liela-symbole-couleur.svg</code><br><code class="m">liela-symbole-encre.svg</code><br><code class="m">liela-symbole-creme.svg</code><br><code class="m">liela-symbole-petitestailles.svg</code></p></div>
+    <div class="bloc"><h3>Applications</h3><p><code class="m">liela-icone-app.svg</code> — squircle coquille, symbole à 58 %<br><code class="m">liela-icone-app-sombre.svg</code> — vert éclairci<br><code class="m">liela-avatar-youtube.svg</code> — symbole à 52 % dans le cercle<br>PNG : 1024, 180, 60, 32, 16 px</p></div>
+    <div class="bloc"><h3>Impression</h3><p><code class="m">liela-logo-horizontal.pdf</code><br><code class="m">liela-logo-horizontal-encre.pdf</code><br>Contours vectoriels, sans police liée, prêts pour un imprimeur.</p></div>
+  </div>
+  <div class="plat" style="margin-top:24px">
+    <h3>Géométrie du verrouillage</h3>
+    <p style="max-width:74ch">Hauteur du symbole = 1,8 × la hauteur d'x du wordmark. Écart entre les deux = 14 unités pour un wordmark de 100 unités de corps. Alignement du bas du symbole sur la ligne de base. La version petites tailles double l'épaisseur de la réserve crème entre la feuille et le trait vert, ce qui la rend lisible jusqu'à 16 px.</p>
+  </div>
+</section>
+
+<div class="page pied">
+  <p style="max-width:62ch">Le symbole reproduit dans ce document est un redessin vectoriel du fichier fourni,
+  destiné à la mise en page. Avant production, le tracé définitif doit être vectorisé proprement à partir de
+  l'original et décliné en SVG, PNG et PDF dans les versions listées en section 02.</p>
+</div>
+
+</body>
+</html>

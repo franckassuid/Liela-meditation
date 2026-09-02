@@ -1,0 +1,208 @@
+{
+  "id": "detendre-le-corps-progressivement-20min",
+  "metadata": {
+    "title": "Détendre le corps progressivement",
+    "category": "relaxation",
+    "durationTargetSeconds": 1200,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "inner-space",
+    "volumeDb": -37,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "stream-gentle",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous de façon à pouvoir rester tranquille un moment. Assis ou allongé, choisissez ce qui demande le moins d'effort. Ajustez votre position avant de commencer.",
+      "silenceAfter": {
+        "durationSeconds": 10,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "arrival-1",
+      "type": "voice",
+      "text": "Prenez conscience de l'ensemble du corps, puis laissez l'attention se préciser peu à peu. Rien n'a besoin de changer pour que la pratique commence.",
+      "silenceAfter": {
+        "durationSeconds": 20,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Commencez par le sommet de la tête, le front, les yeux, les joues et la mâchoire. Remarquez les sensations disponibles. Puis laissez cette zone derrière vous.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-2",
+      "type": "voice",
+      "text": "Descendez vers le cou et les épaules, puis le long des bras jusqu'aux mains. Remarquez poids, température, contacts, ou simplement l'absence de sensation claire.",
+      "silenceAfter": {
+        "durationSeconds": 40,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-1",
+      "type": "silence",
+      "durationSeconds": 50,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "body-3",
+      "type": "voice",
+      "text": "Portez l'attention vers la poitrine et le ventre. Sentez les mouvements naturels de la respiration sans les diriger. Puis incluez le dos, depuis le haut jusqu'au bassin.",
+      "silenceAfter": {
+        "durationSeconds": 45,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-2",
+      "type": "silence",
+      "durationSeconds": 60,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "body-4",
+      "type": "voice",
+      "text": "Continuez vers le bassin, les hanches et les cuisses. Laissez l'attention descendre lentement vers les genoux, les mollets, les chevilles et les pieds.",
+      "silenceAfter": {
+        "durationSeconds": 50,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-3",
+      "type": "silence",
+      "durationSeconds": 65,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "whole-body-1",
+      "type": "voice",
+      "text": "Laissez maintenant toutes ces zones faire partie d'un seul champ de sensations. Le corps entier, soutenu, respirant, changeant légèrement d'instant en instant.",
+      "silenceAfter": {
+        "durationSeconds": 50,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "whole-body-silence-1",
+      "type": "silence",
+      "durationSeconds": 90,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "whole-body-2",
+      "type": "voice",
+      "text": "Si une zone attire fortement votre attention, vous pouvez la remarquer quelques instants sans rester volontairement sur une douleur vive. Revenez ensuite à une sensation plus neutre ou au contact du support.",
+      "silenceAfter": {
+        "durationSeconds": 55,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "whole-body-silence-2",
+      "type": "silence",
+      "durationSeconds": 90,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "rest-1",
+      "type": "voice",
+      "text": "Pendant encore un moment, laissez le corps être tel qu'il est. Vous n'avez plus besoin de parcourir les zones une par une. Restez simplement avec l'ensemble.",
+      "silenceAfter": {
+        "durationSeconds": 60,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "rest-silence-1",
+      "type": "silence",
+      "durationSeconds": 120,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "rest-silence-2",
+      "type": "silence",
+      "durationSeconds": 75,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "rest-silence-3",
+      "type": "silence",
+      "durationSeconds": 80,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Commencez à élargir l'attention vers la pièce. Remarquez les sons, la température, le contact avec le support. Laissez les mouvements revenir lentement.",
+      "silenceAfter": {
+        "durationSeconds": 20,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Bougez les doigts, les pieds, les épaules si cela vous convient. Prenez votre temps avant de vous relever ou de reprendre votre activité.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -21,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "deep-gong",
+      "trigger": "session_end",
+      "volumeDb": -20
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

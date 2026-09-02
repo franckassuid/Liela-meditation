@@ -1,0 +1,118 @@
+{
+  "id": "pause-detente-5min",
+  "metadata": {
+    "title": "Pause détente",
+    "category": "relaxation",
+    "durationTargetSeconds": 300,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "deep-relax",
+    "volumeDb": -36,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "stream-gentle",
+    "volumeDb": -33,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous confortablement, assis ou allongé. Laissez le support sous vous porter le poids du corps. Rien à obtenir, simplement quelques minutes pour ralentir.",
+      "silenceAfter": {
+        "durationSeconds": 7,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Portez votre attention vers le visage et la mâchoire. Remarquez les sensations présentes, sans chercher à les corriger. Puis descendez vers les épaules.",
+      "silenceAfter": {
+        "durationSeconds": 15,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-2",
+      "type": "voice",
+      "text": "Sentez les bras, les mains, la poitrine et le ventre. Là encore, il n'est pas nécessaire de fabriquer de la détente. Laissez seulement l'attention passer.",
+      "silenceAfter": {
+        "durationSeconds": 20,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-1",
+      "type": "silence",
+      "durationSeconds": 25,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "body-3",
+      "type": "voice",
+      "text": "Continuez vers le bassin, les jambes et les pieds. Remarquez le poids, la température, les contacts. Laissez le corps entier être présent en même temps.",
+      "silenceAfter": {
+        "durationSeconds": 25,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-2",
+      "type": "silence",
+      "durationSeconds": 30,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "rest-silence",
+      "type": "silence",
+      "durationSeconds": 90,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Prenez conscience du corps dans son ensemble. Puis ramenez progressivement les sons de la pièce au premier plan. Bougez doucement, et revenez à votre rythme.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}
