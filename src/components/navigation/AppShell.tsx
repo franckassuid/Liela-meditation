@@ -9,7 +9,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isPlayer = pathname?.startsWith("/player");
 
   return (
-    <div className="mx-auto max-w-md min-h-screen relative shadow-p1 bg-creme flex flex-col">
+    <div className="mx-auto max-w-md min-h-screen min-h-[100dvh] relative shadow-p1 bg-creme flex flex-col">
       <div className="flex-1 flex flex-col">{children}</div>
       {!isPlayer && <BottomNavigation />}
     </div>

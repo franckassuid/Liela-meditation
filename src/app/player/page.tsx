@@ -299,13 +299,13 @@ function PlayerContent() {
 
   return (
     <div 
-      className="h-screen max-h-screen flex flex-col justify-between relative overflow-hidden select-none transition-colors duration-500"
+      className="h-[100dvh] max-h-[100dvh] flex flex-col justify-between relative overflow-hidden select-none transition-colors duration-500"
       style={{ backgroundColor: bgColor, color: textColor }}
       onClick={resetControlsTimeout}
     >
       {/* Top bar */}
       <div 
-        className={`h-16 px-5 flex justify-between items-center z-10 w-full shrink-0 transition-opacity duration-700 ${
+        className={`h-14 px-5 flex justify-between items-center z-10 w-full shrink-0 transition-opacity duration-700 ${
           showControls || showSettings || state !== "playing" ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
@@ -334,20 +334,20 @@ function PlayerContent() {
       {/* Central visualizer and title: Perfectly centered */}
       <div className="flex-1 flex flex-col items-center justify-center text-center px-6 my-auto">
         <div 
-          className="w-[180px] h-[180px] sm:w-[210px] sm:h-[210px] rounded-full border border-[rgba(253,249,240,0.32)] flex items-center justify-center transition-transform duration-[3500ms] ease-in-out"
+          className="w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] rounded-full border border-[rgba(253,249,240,0.32)] flex items-center justify-center transition-transform duration-[3500ms] ease-in-out"
           style={{ transform: state === "playing" ? "scale(1.06)" : "scale(1)" }}
         >
-          <div className="w-[125px] h-[125px] sm:w-[145px] sm:h-[145px] rounded-full bg-[rgba(253,249,240,0.18)]" />
+          <div className="w-[110px] h-[110px] sm:w-[140px] sm:h-[140px] rounded-full bg-[rgba(253,249,240,0.18)]" />
         </div>
 
-        <h2 className="font-poppins font-light text-[22px] sm:text-[24px] leading-[1.25] mt-7 text-center max-w-[280px] sm:max-w-[340px]">
+        <h2 className="font-poppins font-light text-[20px] sm:text-[24px] leading-[1.25] mt-5 text-center max-w-[280px] sm:max-w-[340px]">
           {session.metadata.title}
         </h2>
       </div>
 
       {/* Bottom controls */}
       <div 
-        className={`w-full px-6 pb-10 shrink-0 transition-opacity duration-700 ${
+        className={`w-full px-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] shrink-0 transition-opacity duration-700 ${
           showControls || showSettings || state !== "playing" ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >

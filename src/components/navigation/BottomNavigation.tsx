@@ -20,7 +20,7 @@ export function BottomNavigation() {
   ];
 
   return (
-    <nav className="sticky bottom-0 w-full flex justify-around pt-3 border-t border-filet pb-8 bg-creme z-20 mt-auto">
+    <nav className="sticky bottom-0 w-full flex justify-around pt-2 border-t border-filet pb-[max(1rem,env(safe-area-inset-bottom))] bg-creme z-20 mt-auto">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive =

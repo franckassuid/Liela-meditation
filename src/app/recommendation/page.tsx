@@ -37,8 +37,8 @@ function RecommendationContent() {
   const durationMins = Math.round(session.metadata.durationSeconds / 60);
 
   return (
-    <div className="p-marge pb-8 flex flex-col flex-1">
-      <div className="flex justify-between items-center mb-6 text-gris-3 text-[11px] pt-2">
+    <div className="p-marge pb-4 flex flex-col flex-1">
+      <div className="flex justify-between items-center mb-3 text-gris-3 text-[11px] pt-2">
         <button 
           onClick={() => router.back()} 
           className="text-gris-2 hover:text-encre transition-colors text-[13px] flex items-center gap-1"
@@ -49,31 +49,31 @@ function RecommendationContent() {
       </div>
 
       <div 
-        className="rounded-md h-[140px] flex items-end p-5 mb-4 shadow-p1"
+        className="rounded-md h-[120px] flex items-end p-4 mb-3 shadow-p1"
         style={{ backgroundColor: situation.color }}
       >
-        <span className="font-poppins font-light text-[22px] leading-[1.15] text-[#FDF9F0]">
+        <span className="font-poppins font-light text-[20px] leading-[1.15] text-[#FDF9F0]">
           {session.metadata.title}
         </span>
       </div>
 
-      <p className="text-encre text-[15px] leading-[1.6] mb-4 max-w-[60ch]">
+      <p className="text-encre text-[14px] leading-[1.5] mb-3 max-w-[60ch]">
         {session.metadata.shortDescription || "Prenez un moment pour vous, guidé par la voix et les ambiances sonores."}
       </p>
 
-      <div className="flex gap-2 mb-8">
+      <div className="flex gap-2 mb-4">
         <Tag>{durationMins} min</Tag>
         {session.audio.voice && (
           <Tag variant="default">Guidée</Tag>
         )}
       </div>
 
-      <div className="mt-auto flex flex-col gap-2.5 mb-2">
+      <div className="mt-auto flex flex-col gap-2 mb-1">
         <Button fullWidth onClick={() => router.push(`/player?id=${session.id}`)}>
           Commencer la séance
         </Button>
         <button 
-          className="text-[12px] text-gris-2 hover:text-encre text-center mt-1 p-2 active:scale-[0.97] transition-transform"
+          className="text-[12px] text-gris-2 hover:text-encre text-center py-1.5 active:scale-[0.97] transition-transform"
           onClick={() => router.push("/explore")}
         >
           Proposer autre chose

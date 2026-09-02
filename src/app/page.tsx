@@ -24,15 +24,17 @@ export default function HomePage() {
 
   if (!isOnboarded) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-creme p-marge text-center">
-        <BrandLogo variant="icon" className="w-[86px] h-[86px] mb-8" />
-        <h1 className="font-poppins font-light text-[26px] leading-[1.2] mb-4">
-          La méditation qu&apos;il vous faut, maintenant.
-        </h1>
-        <p className="text-gris-2 text-[15px] mb-8 max-w-[280px]">
-          Choisissez ce dont vous avez besoin, indiquez le temps disponible. Liela propose une séance.
-        </p>
-        <Button className="w-full mt-auto mb-4" onClick={handleCompleteOnboarding}>
+      <div className="fixed inset-0 z-50 bg-creme flex flex-col justify-between max-w-md mx-auto p-6 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] h-[100dvh] overflow-hidden">
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
+          <BrandLogo variant="icon" className="w-[84px] h-[84px] mb-6" />
+          <h1 className="font-poppins font-light text-[24px] sm:text-[26px] leading-[1.25] mb-3">
+            La méditation qu&apos;il vous faut, maintenant.
+          </h1>
+          <p className="text-gris-2 text-[14px] sm:text-[15px] leading-relaxed max-w-[290px]">
+            Choisissez ce dont vous avez besoin, indiquez le temps disponible. Liela propose une séance.
+          </p>
+        </div>
+        <Button className="w-full shrink-0" onClick={handleCompleteOnboarding}>
           Commencer
         </Button>
       </div>
@@ -46,19 +48,19 @@ export default function HomePage() {
   };
 
   return (
-    <div className="p-marge pb-8 flex flex-col flex-1">
+    <div className="p-marge pb-4 flex flex-col flex-1">
       {/* Header with prominent Logo */}
-      <div className="flex justify-between items-center pt-2 mb-6">
+      <div className="flex justify-between items-center pt-2 mb-4">
         <BrandLogo variant="horizontal" width={110} className="h-8 w-auto" />
       </div>
       
-      <h1 className="font-poppins font-light text-[24px] leading-[1.2] mb-1">
+      <h1 className="font-poppins font-light text-[22px] leading-[1.2] mb-1">
         {getGreeting()}
       </h1>
-      <p className="text-[13px] text-gris-2 mb-5">De quoi avez-vous besoin maintenant ?</p>
+      <p className="text-[13px] text-gris-2 mb-4">De quoi avez-vous besoin maintenant ?</p>
 
       {/* Situations Grid directly on Home (only situations with existing sessions) */}
-      <div className="grid grid-cols-2 gap-2.5 mb-6">
+      <div className="grid grid-cols-2 gap-2.5 mb-4">
         {getAvailableSituations().map((situation) => (
           <SituationCard
             key={situation.id}

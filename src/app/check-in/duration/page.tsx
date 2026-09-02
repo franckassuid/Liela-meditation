@@ -24,8 +24,8 @@ function DurationContent() {
   };
 
   return (
-    <div className="p-marge pb-8 flex flex-col flex-1">
-      <div className="flex justify-between items-center mb-6 text-gris-3 text-[11px] pt-2">
+    <div className="p-marge pb-4 flex flex-col flex-1">
+      <div className="flex justify-between items-center mb-4 text-gris-3 text-[11px] pt-2">
         <button 
           onClick={() => router.back()} 
           className="text-gris-2 hover:text-encre transition-colors text-[13px] flex items-center gap-1"
@@ -35,11 +35,11 @@ function DurationContent() {
         <span>2 / 2</span>
       </div>
       
-      <h1 className="font-poppins font-light text-[24px] leading-[1.2] mb-6">
+      <h1 className="font-poppins font-light text-[22px] leading-[1.2] mb-4">
         Combien de temps avez-vous ?
       </h1>
       
-      <div className="flex flex-col gap-2.5 mb-8">
+      <div className="flex flex-col gap-2.5 mb-5">
         {durations.map((d) => (
           <DurationSelector
             key={d.value}
@@ -51,7 +51,7 @@ function DurationContent() {
       </div>
 
       <Button
-        className="mt-auto mb-2"
+        className="mt-auto mb-1"
         fullWidth
         disabled={selectedDuration === null}
         onClick={handleNext}

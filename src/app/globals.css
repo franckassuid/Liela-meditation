@@ -60,4 +60,5 @@
 body {
   background-color: var(--creme);
   color: var(--encre);
+  overscroll-behavior-y: none;
 }
