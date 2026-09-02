@@ -4,36 +4,8 @@
   "cleanUrls": true,
   "rewrites": [
     {
-      "source": "/",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/explore",
-      "destination": "/explore/index.html"
-    },
-    {
-      "source": "/player",
-      "destination": "/player/index.html"
-    },
-    {
-      "source": "/check-in",
-      "destination": "/check-in/index.html"
-    },
-    {
-      "source": "/check-in/duration",
-      "destination": "/check-in/duration/index.html"
-    },
-    {
-      "source": "/history",
-      "destination": "/history/index.html"
-    },
-    {
-      "source": "/profile",
-      "destination": "/profile/index.html"
-    },
-    {
-      "source": "/recommendation",
-      "destination": "/recommendation/index.html"
+      "source": "/(.*)",
+      "destination": "/index"
     }
   ]
 }
