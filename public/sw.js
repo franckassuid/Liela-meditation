@@ -1,13 +1,7 @@
-const CACHE_NAME = "liela-v3";
+const CACHE_NAME = "liela-v4";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      // Precache only app shell assets
-      return cache.addAll(["/"]);
-    })
-  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -41,22 +35,20 @@ self.addEventListener("fetch", (event) => {
     return; // Pass through directly to native browser network
   }
 
-  // Stale-while-revalidate for UI assets
+  // Network-first strategy for UI assets to ensure updates are visible immediately
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200 && event.request.method === "GET") {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => cachedResponse);
-
-      return cachedResponse || fetchPromise;
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && event.request.method === "GET") {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });
