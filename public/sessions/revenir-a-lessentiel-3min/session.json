@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "id": "revenir-a-lessentiel-3min",
+  "metadata": {
+    "title": "Revenir à l’essentiel",
+    "category": "focus",
+    "language": "fr-FR",
+    "durationSeconds": 184.7,
+    "level": null,
+    "shortDescription": null,
+    "technique": null
+  },
+  "audio": {
+    "voice": "audio/voice.m4a",
+    "music": {
+      "id": "focus",
+      "file": "audio/music.m4a",
+      "defaultVolume": 0.02
+    },
+    "ambience": {
+      "id": "soft-air",
+      "file": "audio/ambience.m4a",
+      "defaultVolume": 0.02
+    },
+    "cues": {
+      "file": "audio/cues.m4a",
+      "defaultVolume": 1
+    },
+    "final": "audio/final.m4a"
+  },
+  "mix": {
+    "voiceDefaultVolume": 1,
+    "musicDefaultVolume": 0.02,
+    "ambienceDefaultVolume": 0.02,
+    "cuesDefaultVolume": 1
+  },
+  "audioFormat": {
+    "codec": "aac",
+    "container": "m4a",
+    "sampleRate": 48000,
+    "bitrates": {
+      "voice": 64000,
+      "music": 96000,
+      "ambience": 96000,
+      "cues": 64000,
+      "final": 128000
+    }
+  },
+  "cues": [
+    {
+      "asset": "soft-chime",
+      "timeSeconds": 0
+    },
+    {
+      "asset": "soft-bell",
+      "timeSeconds": 184.69
+    }
+  ],
+  "generation": {
+    "ttsProvider": "google-gemini",
+    "ttsModel": "gemini-3.1-flash-tts-preview",
+    "voiceId": "Algenib"
+  }
+}

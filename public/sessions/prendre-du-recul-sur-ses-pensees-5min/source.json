@@ -1,0 +1,127 @@
+{
+  "id": "prendre-du-recul-sur-ses-pensees-5min",
+  "metadata": {
+    "title": "Prendre du recul sur ses pensées",
+    "category": "thoughts",
+    "durationTargetSeconds": 300,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Charon",
+    "model": "gemini-2.5-flash-preview-tts",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "inner-space",
+    "volumeDb": -37,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "forest-calm",
+    "volumeDb": -35,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous dans une position stable. Prenez quelques instants pour sentir les points de contact du corps et remarquer les sons présents autour de vous.",
+      "silenceAfter": {
+        "durationSeconds": 10,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "anchor-1",
+      "type": "voice",
+      "text": "Choisissez une ancre simple : les mains, les pieds ou un son régulier. Restez avec elle sans chercher à concentrer toute votre énergie dessus.",
+      "silenceAfter": {
+        "durationSeconds": 24,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "thought-label-1",
+      "type": "voice",
+      "text": "Quand une pensée apparaît, vous pouvez la reconnaître brièvement en vous disant simplement : pensée. Puis revenez à l'ancre. Le contenu peut rester en arrière-plan.",
+      "silenceAfter": {
+        "durationSeconds": 28,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 32,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "thought-label-2",
+      "type": "voice",
+      "text": "Si une autre pensée arrive, procédez de la même manière. Remarquez qu'elle est là, puis revenez à une sensation concrète. Il n'est pas nécessaire de savoir si la pensée est importante ou non.",
+      "silenceAfter": {
+        "durationSeconds": 32,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "wide-1",
+      "type": "voice",
+      "text": "Laissez ensuite l'attention devenir un peu plus large. Les pensées peuvent apparaître en même temps que les sons et les sensations du corps. Vous n'avez pas à choisir ce qui doit disparaître.",
+      "silenceAfter": {
+        "durationSeconds": 28,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 30,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Pour terminer, sentez à nouveau le corps entier et regardez doucement autour de vous si vos yeux étaient fermés. Revenez à votre environnement à votre rythme.",
+      "silenceAfter": {
+        "durationSeconds": 11,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

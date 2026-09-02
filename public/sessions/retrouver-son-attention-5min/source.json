@@ -1,0 +1,127 @@
+{
+  "id": "retrouver-son-attention-5min",
+  "metadata": {
+    "title": "Retrouver son attention",
+    "category": "focus",
+    "durationTargetSeconds": 300,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "focus",
+    "volumeDb": -35,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "forest-calm",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Prenez une posture confortable et stable, adaptée à quelques minutes d'attention. Gardez une position qui vous permet de rester à la fois détendu et disponible.",
+      "silenceAfter": {
+        "durationSeconds": 6,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "anchor-1",
+      "type": "voice",
+      "text": "Pour cette pratique, choisissez un seul point d'attention : la respiration naturelle, le contact des mains, ou un point fixe devant vous. Gardez cette ancre simple.",
+      "silenceAfter": {
+        "durationSeconds": 15,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "focus-1",
+      "type": "voice",
+      "text": "Observez cette ancre pendant quelques instants. Lorsque vous remarquez que votre attention s'est déplacée vers autre chose, reconnaissez simplement ce changement puis revenez à l'ancre.",
+      "silenceAfter": {
+        "durationSeconds": 25,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "focus-silence-1",
+      "type": "silence",
+      "durationSeconds": 35,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "focus-2",
+      "type": "voice",
+      "text": "Les pensées et les sons peuvent rester présents en arrière-plan. L'exercice consiste simplement à remarquer les moments de distraction puis à retrouver le point d'attention choisi.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "focus-silence-2",
+      "type": "silence",
+      "durationSeconds": 40,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "focus-3",
+      "type": "voice",
+      "text": "Certaines distractions peuvent revenir plusieurs fois. Chaque fois que vous le remarquez, revenez tranquillement à l'ancre, sans ajouter de commentaire.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "focus-silence-3",
+      "type": "silence",
+      "durationSeconds": 35,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Pour terminer, élargissez doucement votre attention. Gardez cette sensation de présence et choisissez une tâche précise à laquelle vous souhaitez consacrer les prochaines minutes.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "soft-chime",
+      "trigger": "session_start",
+      "volumeDb": -17
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "id": "couper-la-montee-du-stress-5min",
+  "metadata": {
+    "title": "Couper la montée du stress",
+    "category": "stress",
+    "language": "fr-FR",
+    "durationSeconds": 283.58,
+    "level": null,
+    "shortDescription": null,
+    "technique": null
+  },
+  "audio": {
+    "voice": "audio/voice.m4a",
+    "music": {
+      "id": "deep-relax",
+      "file": "audio/music.m4a",
+      "defaultVolume": 0.02
+    },
+    "ambience": {
+      "id": "soft-air",
+      "file": "audio/ambience.m4a",
+      "defaultVolume": 0.02
+    },
+    "cues": {
+      "file": "audio/cues.m4a",
+      "defaultVolume": 1
+    },
+    "final": "audio/final.m4a"
+  },
+  "mix": {
+    "voiceDefaultVolume": 1,
+    "musicDefaultVolume": 0.02,
+    "ambienceDefaultVolume": 0.02,
+    "cuesDefaultVolume": 1
+  },
+  "audioFormat": {
+    "codec": "aac",
+    "container": "m4a",
+    "sampleRate": 48000,
+    "bitrates": {
+      "voice": 64000,
+      "music": 96000,
+      "ambience": 96000,
+      "cues": 64000,
+      "final": 128000
+    }
+  },
+  "cues": [
+    {
+      "asset": "soft-chime",
+      "timeSeconds": 268.74
+    },
+    {
+      "asset": "singing-bowl",
+      "timeSeconds": 0
+    },
+    {
+      "asset": "soft-bell",
+      "timeSeconds": 283.58
+    }
+  ],
+  "generation": {
+    "ttsProvider": "google-gemini",
+    "ttsModel": "gemini-2.5-flash-preview-tts",
+    "voiceId": "Charon"
+  }
+}

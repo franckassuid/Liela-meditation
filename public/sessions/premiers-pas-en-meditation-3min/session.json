@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "id": "premiers-pas-en-meditation-3min",
+  "metadata": {
+    "title": "Premiers pas en méditation",
+    "category": "learn",
+    "language": "fr-FR",
+    "durationSeconds": 187.46,
+    "level": null,
+    "shortDescription": null,
+    "technique": null
+  },
+  "audio": {
+    "voice": "audio/voice.m4a",
+    "music": {
+      "id": "neutral",
+      "file": "audio/music.m4a",
+      "defaultVolume": 0.02
+    },
+    "ambience": {
+      "id": "soft-air",
+      "file": "audio/ambience.m4a",
+      "defaultVolume": 0.02
+    },
+    "cues": {
+      "file": "audio/cues.m4a",
+      "defaultVolume": 1
+    },
+    "final": "audio/final.m4a"
+  },
+  "mix": {
+    "voiceDefaultVolume": 1,
+    "musicDefaultVolume": 0.02,
+    "ambienceDefaultVolume": 0.02,
+    "cuesDefaultVolume": 1
+  },
+  "audioFormat": {
+    "codec": "aac",
+    "container": "m4a",
+    "sampleRate": 48000,
+    "bitrates": {
+      "voice": 64000,
+      "music": 96000,
+      "ambience": 96000,
+      "cues": 64000,
+      "final": 128000
+    }
+  },
+  "cues": [
+    {
+      "asset": "soft-bell",
+      "timeSeconds": 0
+    },
+    {
+      "asset": "soft-bell",
+      "timeSeconds": 187.45
+    }
+  ],
+  "generation": {
+    "ttsProvider": "google-gemini",
+    "ttsModel": "gemini-2.5-flash-preview-tts",
+    "voiceId": "Algenib"
+  }
+}

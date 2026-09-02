@@ -1,0 +1,163 @@
+{
+  "id": "relacher-les-tensions-10min",
+  "metadata": {
+    "title": "Relâcher les tensions",
+    "category": "relaxation",
+    "durationTargetSeconds": 600,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "deep-relax",
+    "volumeDb": -36,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "ocean-gentle",
+    "volumeDb": -33,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Choisissez une position confortable, assise ou allongée. Ajustez ce qui vous aide à être bien installé, puis remarquez simplement le soutien du siège, du sol ou du lit.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Commencez par le visage. Remarquez le front, les yeux, les joues et la mâchoire. Observez simplement les sensations présentes, qu'elles soient nettes ou discrètes.",
+      "silenceAfter": {
+        "durationSeconds": 20,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-2",
+      "type": "voice",
+      "text": "Descendez vers le cou, les épaules, les bras et les mains. Remarquez le poids, la chaleur, les picotements ou les zones plus neutres.",
+      "silenceAfter": {
+        "durationSeconds": 25,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-1",
+      "type": "silence",
+      "durationSeconds": 35,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "body-3",
+      "type": "voice",
+      "text": "Portez maintenant l'attention vers la poitrine, le ventre et le dos. Laissez la respiration suivre son rythme naturel pendant que vous observez les mouvements du corps.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-4",
+      "type": "voice",
+      "text": "Continuez vers le bassin, les cuisses, les genoux, les mollets et les pieds. Prenez votre temps et remarquez simplement ce qui est perceptible dans chaque zone.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-2",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "whole-body",
+      "type": "voice",
+      "text": "Élargissez maintenant l'attention à l'ensemble du corps. Certaines zones peuvent sembler plus lourdes, plus légères, plus calmes ou simplement neutres. Observez l'ensemble sans chercher à obtenir une sensation particulière.",
+      "silenceAfter": {
+        "durationSeconds": 40,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "body-silence-3",
+      "type": "silence",
+      "durationSeconds": 55,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "body-silence-4",
+      "type": "silence",
+      "durationSeconds": 80,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "body-silence-5",
+      "type": "silence",
+      "durationSeconds": 85,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Pour terminer, remarquez progressivement les sons autour de vous et le contact du corps avec son support. Laissez les petits mouvements revenir naturellement.",
+      "silenceAfter": {
+        "durationSeconds": 15,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Quand cela vous convient, bougez légèrement les mains ou les pieds, puis prenez quelques instants avant de reprendre votre journée.",
+      "silenceAfter": {
+        "durationSeconds": 6,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

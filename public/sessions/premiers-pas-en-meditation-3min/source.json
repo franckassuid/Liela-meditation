@@ -1,0 +1,118 @@
+{
+  "id": "premiers-pas-en-meditation-3min",
+  "metadata": {
+    "title": "Premiers pas en méditation",
+    "category": "learn",
+    "durationTargetSeconds": 180,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-2.5-flash-preview-tts",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "neutral",
+    "volumeDb": -35,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "soft-air",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Pour cette première pratique, installez-vous simplement de façon confortable. Vous pouvez garder les yeux ouverts ou les fermer si cela vous convient.",
+      "silenceAfter": {
+        "durationSeconds": 5,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "lesson-1",
+      "type": "voice",
+      "text": "Méditer ne consiste pas à empêcher les pensées. Nous allons simplement choisir un point d'attention, remarquer quand l'esprit s'éloigne, puis revenir.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "breath-1",
+      "type": "voice",
+      "text": "Choisissez maintenant la respiration naturelle comme ancre. Suivez une inspiration, puis une expiration, sans chercher à les modifier.",
+      "silenceAfter": {
+        "durationSeconds": 15,
+        "purpose": "breathing"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 20,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "distraction-1",
+      "type": "voice",
+      "text": "Si vous réalisez que vous pensiez à autre chose, c'est exactement le moment utile. Remarquez, relâchez, puis revenez au souffle.",
+      "silenceAfter": {
+        "durationSeconds": 20,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 22,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "practice-silence-3",
+      "type": "silence",
+      "durationSeconds": 18,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Élargissez l'attention vers le corps et la pièce. Vous venez simplement de pratiquer le geste de revenir. C'est suffisant pour aujourd'hui.",
+      "silenceAfter": {
+        "durationSeconds": 5,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "soft-bell",
+      "trigger": "session_start",
+      "volumeDb": -17
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

@@ -4,14 +4,19 @@ import path from "path";
 const PUBLIC_SESSIONS_DIR = path.join(process.cwd(), "public", "sessions");
 const GENERATED_FILE = path.join(process.cwd(), "src", "generated", "sessions.json");
 
-function mapCategoryToSituation(category?: string): string {
+function mapCategoryToSituation(category?: string, id?: string): string {
+  if (id === "faire-de-la-place-dans-son-esprit-10min") return "thoughts";
   if (!category) return "";
   const map: Record<string, string> = {
     stress: "stress",
     sleep: "sleep",
+    thoughts: "thoughts",
     focus: "focus",
     relaxation: "tensions",
     tensions: "tensions",
+    recenter: "recenter",
+    learn: "discovery",
+    discovery: "discovery",
   };
   return map[category] || "";
 }
@@ -98,10 +103,8 @@ function run() {
         }
       }
 
-      // Compute standard situation field if missing
-      if (!session.metadata.situation) {
-        session.metadata.situation = mapCategoryToSituation(session.metadata.category);
-      }
+      // Compute standard situation field
+      session.metadata.situation = mapCategoryToSituation(session.metadata.category, session.id);
 
       sessions.push(session);
     } catch (e) {

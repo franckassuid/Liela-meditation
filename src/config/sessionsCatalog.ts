@@ -1,4 +1,5 @@
 import { SituationId, situations } from "./situations";
+import sessionsData from "@/generated/sessions.json";
 
 export interface CatalogSession {
   id: string;
@@ -6,8 +7,8 @@ export interface CatalogSession {
   durationMinutes: number;
   durationSeconds: number;
   situationId: SituationId | "discovery";
-  isAvailable: boolean; // true if audio files are present on disk
-  realSessionId?: string; // id in generated/sessions.json if available
+  isAvailable: boolean; // dynamically computed based on real audio on disk
+  realSessionId?: string; // id in generated/sessions.json
   description?: string;
 }
 
@@ -29,16 +30,24 @@ export const DISCOVERY_COLLECTION: Collection = {
   voile: "#E4ECEF",
 };
 
-export const SESSIONS_CATALOG: CatalogSession[] = [
+interface RawCatalogItem {
+  id: string;
+  title: string;
+  durationMinutes: number;
+  durationSeconds: number;
+  situationId: SituationId | "discovery";
+  realSessionId?: string;
+  description?: string;
+}
+
+const RAW_CATALOG: RawCatalogItem[] = [
   // 1. Calmer le stress — 6 séances
   {
     id: "une-pause-pour-souffler-3min",
     title: "Une pause pour souffler",
     durationMinutes: 3,
-    durationSeconds: 175,
+    durationSeconds: 180,
     situationId: "stress",
-    isAvailable: true,
-    realSessionId: "une-pause-pour-souffler-3min",
     description: "Une courte pause respiratoire pour relâcher la pression immédiatement.",
   },
   {
@@ -47,7 +56,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "stress",
-    isAvailable: false,
     description: "Ralentir le souffle et retrouver un état de tranquillité intérieure.",
   },
   {
@@ -56,17 +64,14 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "stress",
-    isAvailable: false,
     description: "Désamorcer les signaux d'alerte corporels quand la tension monte.",
   },
   {
     id: "faire-redescendre-la-pression-10min",
     title: "Faire redescendre la pression",
     durationMinutes: 10,
-    durationSeconds: 601,
+    durationSeconds: 600,
     situationId: "stress",
-    isAvailable: true,
-    realSessionId: "faire-redescendre-la-pression-10min",
     description: "Un temps prolongé pour calmer le système nerveux et déposer les tensions.",
   },
   {
@@ -75,7 +80,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "stress",
-    isAvailable: false,
     description: "S'ancrer dans ses appuis et retrouver un socle solide en soi.",
   },
   {
@@ -84,7 +88,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 20,
     durationSeconds: 1200,
     situationId: "stress",
-    isAvailable: false,
     description: "Une immersion complète pour évacuer la surcharge émotionnelle et physique.",
   },
 
@@ -95,17 +98,14 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 3,
     durationSeconds: 180,
     situationId: "sleep",
-    isAvailable: false,
     description: "Une transition douce pour inviter le corps à ralentir avant d'éteindre la lumière.",
   },
   {
     id: "se-poser-avant-de-dormir-5min",
     title: "Se poser avant de dormir",
     durationMinutes: 5,
-    durationSeconds: 293,
+    durationSeconds: 300,
     situationId: "sleep",
-    isAvailable: true,
-    realSessionId: "se-poser-avant-de-dormir-5min",
     description: "Déposer les pensées de la journée et s'installer dans un état propice au repos.",
   },
   {
@@ -114,7 +114,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "sleep",
-    isAvailable: false,
     description: "Dédramatiser l'insomnie et apaiser l'impatience dans le lit.",
   },
   {
@@ -123,7 +122,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "sleep",
-    isAvailable: false,
     description: "Fermer symboliquement les portes de la journée écoulée pour libérer la nuit.",
   },
   {
@@ -132,7 +130,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "sleep",
-    isAvailable: false,
     description: "Désamorcer le flux des pensées et plonger dans une douce pénombre intérieure.",
   },
   {
@@ -141,7 +138,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 20,
     durationSeconds: 1200,
     situationId: "sleep",
-    isAvailable: false,
     description: "Une guidance progressive qui s'efface peu à peu pour laisser place au sommeil.",
   },
 
@@ -152,7 +148,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 3,
     durationSeconds: 180,
     situationId: "thoughts",
-    isAvailable: false,
     description: "Interrompre net une spirale de ruminations et revenir au concret.",
   },
   {
@@ -161,7 +156,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "thoughts",
-    isAvailable: false,
     description: "Créer une première distance entre vous et le bavardage incessant de l'esprit.",
   },
   {
@@ -170,17 +164,14 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "thoughts",
-    isAvailable: false,
     description: "Observer ses pensées comme des nuages qui passent sans s'y accrocher.",
   },
   {
     id: "faire-de-la-place-dans-son-esprit-10min",
     title: "Faire de la place dans son esprit",
     durationMinutes: 10,
-    durationSeconds: 596,
+    durationSeconds: 600,
     situationId: "thoughts",
-    isAvailable: true,
-    realSessionId: "faire-de-la-place-dans-son-esprit-10min",
     description: "Clarifier le paysage intérieur et aérer l'espace mental encombré.",
   },
   {
@@ -189,7 +180,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "thoughts",
-    isAvailable: false,
     description: "Apaiser la turbulence mentale en canalisant doucement l'attention.",
   },
   {
@@ -198,18 +188,17 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 20,
     durationSeconds: 1200,
     situationId: "thoughts",
-    isAvailable: false,
     description: "Un entraînement approfondi au détachement et à la paix de l'esprit.",
   },
 
   // 4. Retrouver sa concentration — 6 séances
   {
-    id: "revenir-a-l-essentiel-3min",
+    id: "revenir-a-lessentiel-3min",
     title: "Revenir à l'essentiel",
     durationMinutes: 3,
     durationSeconds: 180,
     situationId: "focus",
-    isAvailable: false,
+    realSessionId: "revenir-a-lessentiel-3min",
     description: "Recentrer instantanément son regard sur la priorité du moment.",
   },
   {
@@ -218,7 +207,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "focus",
-    isAvailable: false,
     description: "Resserrer le faisceau de l'attention quand l'esprit commence à papillonner.",
   },
   {
@@ -227,7 +215,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "focus",
-    isAvailable: false,
     description: "Poser une intention claire et entrer dans un état de concentration fluide.",
   },
   {
@@ -236,7 +223,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "focus",
-    isAvailable: false,
     description: "Apprendre à maintenir une présence soutenue sur un seul objet d'attention.",
   },
   {
@@ -245,7 +231,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "focus",
-    isAvailable: false,
     description: "Se remettre au travail sans culpabilité après une interruption.",
   },
   {
@@ -254,7 +239,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 20,
     durationSeconds: 1200,
     situationId: "focus",
-    isAvailable: false,
     description: "Développer une clarté et une endurance cognitive durables.",
   },
 
@@ -265,17 +249,14 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 3,
     durationSeconds: 180,
     situationId: "tensions",
-    isAvailable: false,
     description: "Libérer les raideurs accumulées dans la nuque et les épaules.",
   },
   {
     id: "pause-detente-5min",
     title: "Pause détente",
     durationMinutes: 5,
-    durationSeconds: 313,
+    durationSeconds: 300,
     situationId: "tensions",
-    isAvailable: true,
-    realSessionId: "pause-detente-5min",
     description: "Prendre un instant pour dénouer le corps et relâcher la pression physique.",
   },
   {
@@ -284,7 +265,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "tensions",
-    isAvailable: false,
     description: "Marquer une coupure nette entre le rythme de la journée et le repos.",
   },
   {
@@ -293,7 +273,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "tensions",
-    isAvailable: false,
     description: "Parcourir les zones de résistance et leur offrir de la douceur.",
   },
   {
@@ -302,17 +281,14 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "tensions",
-    isAvailable: false,
     description: "Dénouer le dos, les trapèzes et la mâchoire pour retrouver de l'aisance.",
   },
   {
     id: "detendre-le-corps-progressivement-20min",
     title: "Détendre le corps progressivement",
     durationMinutes: 20,
-    durationSeconds: 1207,
+    durationSeconds: 1200,
     situationId: "tensions",
-    isAvailable: true,
-    realSessionId: "detendre-le-corps-progressivement-20min",
     description: "Un scan corporel méthodique et profond des pieds jusqu'au sommet du crâne.",
   },
 
@@ -323,7 +299,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 3,
     durationSeconds: 180,
     situationId: "recenter",
-    isAvailable: false,
     description: "Quitter le mode pilote automatique pour habiter pleinement l'instant.",
   },
   {
@@ -332,7 +307,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "recenter",
-    isAvailable: false,
     description: "Rassembler son énergie dispersée et retrouver son équilibre intérieur.",
   },
   {
@@ -341,7 +315,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "recenter",
-    isAvailable: false,
     description: "S'accorder un sas de calme au milieu du tourbillon quotidien.",
   },
   {
@@ -350,7 +323,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "recenter",
-    isAvailable: false,
     description: "Prendre de la hauteur et renouer avec ce qui compte vraiment.",
   },
   {
@@ -359,7 +331,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "recenter",
-    isAvailable: false,
     description: "Ouvrir une respiration ample et dégager de l'espace en soi.",
   },
   {
@@ -368,7 +339,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 20,
     durationSeconds: 1200,
     situationId: "recenter",
-    isAvailable: false,
     description: "Ralentir durablement la cadence et goûter à une paix profonde.",
   },
 
@@ -379,7 +349,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 3,
     durationSeconds: 180,
     situationId: "discovery",
-    isAvailable: false,
     description: "Une initiation très simple sans jargon ni contrainte de posture.",
   },
   {
@@ -388,7 +357,6 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 5,
     durationSeconds: 300,
     situationId: "discovery",
-    isAvailable: false,
     description: "Explorer le souffle comme le point d'ancrage le plus naturel et accessible.",
   },
   {
@@ -397,13 +365,27 @@ export const SESSIONS_CATALOG: CatalogSession[] = [
     durationMinutes: 10,
     durationSeconds: 600,
     situationId: "discovery",
-    isAvailable: false,
     description: "Comprendre que se déconcentrer est normal, et s'entraîner à revenir avec douceur.",
   },
 ];
 
+/**
+ * Dynamically resolves availability against verified audio sessions in sessions.json
+ */
+export const SESSIONS_CATALOG: CatalogSession[] = RAW_CATALOG.map((item) => {
+  const real = (sessionsData as Array<{ id: string; metadata?: { durationSeconds?: number } }>).find(
+    (s) => s.id === item.id || (item.realSessionId && s.id === item.realSessionId)
+  );
+  return {
+    ...item,
+    isAvailable: Boolean(real),
+    realSessionId: real ? real.id : undefined,
+    durationSeconds: real?.metadata?.durationSeconds || item.durationSeconds,
+  };
+});
+
 export function getCatalogSessionById(id: string): CatalogSession | undefined {
-  return SESSIONS_CATALOG.find((s) => s.id === id);
+  return SESSIONS_CATALOG.find((s) => s.id === id || s.realSessionId === id);
 }
 
 export function getCategoryInfo(categoryId: string): { label: string; color: string; voile: string } {

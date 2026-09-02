@@ -1,0 +1,113 @@
+{
+  "id": "quand-le-sommeil-ne-vient-pas-5min",
+  "metadata": {
+    "title": "Quand le sommeil ne vient pas",
+    "category": "sleep",
+    "durationTargetSeconds": 300,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Charon",
+    "model": "gemini-2.5-flash-preview-tts",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "sleep",
+    "volumeDb": -39,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "rain-window",
+    "volumeDb": -31,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 4,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Trouvez une position confortable et sentez le corps soutenu par le lit. Il n'est pas nécessaire de chercher une sensation particulière. Prenez simplement quelques instants pour vous installer.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Portez l'attention vers les zones en contact avec le matelas. La tête, les épaules, le dos, le bassin, les jambes. Remarquez le poids du corps dans ces différents points d'appui.",
+      "silenceAfter": {
+        "durationSeconds": 18,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "breath-1",
+      "type": "voice",
+      "text": "Remarquez ensuite la respiration naturelle pendant quelques instants. Si elle attire trop votre attention, choisissez plutôt le contact du drap, le poids des jambes ou le son régulier de la pluie.",
+      "silenceAfter": {
+        "durationSeconds": 21,
+        "purpose": "breathing"
+      }
+    },
+    {
+      "id": "sleep-silence-1",
+      "type": "silence",
+      "durationSeconds": 32,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "thoughts-1",
+      "type": "voice",
+      "text": "Si une pensée apparaît, remarquez simplement que l'attention s'est déplacée. Puis revenez à une sensation très simple : un point de contact, un son stable ou le mouvement naturel du corps.",
+      "silenceAfter": {
+        "durationSeconds": 27,
+        "purpose": "sleep_descent"
+      }
+    },
+    {
+      "id": "sleep-silence-2",
+      "type": "silence",
+      "durationSeconds": 36,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "descent-1",
+      "type": "voice",
+      "text": "Laissez maintenant les mots devenir moins importants. La voix peut rester en arrière-plan avec les sons de la pièce et les sensations du lit.",
+      "silenceAfter": {
+        "durationSeconds": 29,
+        "purpose": "sleep_descent"
+      }
+    },
+    {
+      "id": "sleep-silence-3",
+      "type": "silence",
+      "durationSeconds": 35,
+      "purpose": "sleep_descent"
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -20
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

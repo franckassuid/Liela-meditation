@@ -1,0 +1,112 @@
+{
+  "id": "sortir-de-la-boucle-3min",
+  "metadata": {
+    "title": "Sortir de la boucle",
+    "category": "thoughts",
+    "durationTargetSeconds": 180,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Charon",
+    "model": "gemini-2.5-flash-preview-tts",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "inner-space",
+    "volumeDb": -37,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "soft-air",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous simplement comme vous êtes. Sentez les pieds, les mains ou le poids du corps sur le siège. Choisissez un point de contact facile à remarquer.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "notice-1",
+      "type": "voice",
+      "text": "Si une pensée revient plusieurs fois, vous n'avez pas besoin d'entrer dans son contenu. Remarquez seulement qu'une pensée est présente, puis revenez à votre point de contact.",
+      "silenceAfter": {
+        "durationSeconds": 18,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "anchor-1",
+      "type": "voice",
+      "text": "Restez maintenant avec une sensation concrète. La pression des pieds, la température des mains, ou un son autour de vous. Laissez cette sensation prendre davantage de place dans votre attention.",
+      "silenceAfter": {
+        "durationSeconds": 20,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 22,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "return-1",
+      "type": "voice",
+      "text": "Chaque fois que vous remarquez que l'attention repart dans la même direction, revenez simplement à l'ancre choisie. Un retour suffit. Puis recommencez si nécessaire.",
+      "silenceAfter": {
+        "durationSeconds": 20,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Pour terminer, élargissez l'attention au corps entier et à la pièce. Remarquez ce qui est devant vous maintenant, puis reprenez tranquillement votre journée.",
+      "silenceAfter": {
+        "durationSeconds": 7,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

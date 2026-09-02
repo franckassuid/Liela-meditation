@@ -1,0 +1,127 @@
+{
+  "id": "quand-tout-tourne-dans-la-tete-5min",
+  "metadata": {
+    "title": "Quand tout tourne dans la tête",
+    "category": "thoughts",
+    "durationTargetSeconds": 300,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Charon",
+    "model": "gemini-2.5-flash-preview-tts",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "inner-space",
+    "volumeDb": -37,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "soft-air",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Prenez quelques secondes pour vous installer. Gardez les yeux ouverts ou fermés selon ce qui vous convient, puis remarquez le support sous votre corps.",
+      "silenceAfter": {
+        "durationSeconds": 10,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "orientation-1",
+      "type": "voice",
+      "text": "Portez d'abord l'attention vers quelque chose de simple autour de vous. Un son, une forme, une zone de lumière. Restez avec cet élément quelques instants.",
+      "silenceAfter": {
+        "durationSeconds": 21,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "thoughts-1",
+      "type": "voice",
+      "text": "Si plusieurs pensées se présentent rapidement, vous pouvez simplement les reconnaître comme des pensées. Il n'est pas nécessaire de les classer ni de les résoudre pendant cette pratique.",
+      "silenceAfter": {
+        "durationSeconds": 26,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "anchor-1",
+      "type": "voice",
+      "text": "Choisissez maintenant une ancre corporelle claire. Les pieds au sol, les mains posées, ou le contact du siège. Laissez votre attention revenir vers cette sensation.",
+      "silenceAfter": {
+        "durationSeconds": 28,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 35,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "return-1",
+      "type": "voice",
+      "text": "Lorsque vous remarquez que l'esprit s'est à nouveau rempli, revenez au même point d'ancrage. Remarquez, puis revenez. Sans essayer de garder l'esprit parfaitement calme.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 35,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Commencez à élargir l'attention. Remarquez les sons, le corps et l'espace autour de vous. Prenez encore quelques secondes avant de reprendre ce que vous faisiez.",
+      "silenceAfter": {
+        "durationSeconds": 12,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

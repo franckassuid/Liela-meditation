@@ -1,0 +1,60 @@
+{
+  "version": 1,
+  "id": "calmer-le-mental-pour-la-nuit-10min",
+  "metadata": {
+    "title": "Calmer le mental pour la nuit",
+    "category": "sleep",
+    "language": "fr-FR",
+    "durationSeconds": 586.67,
+    "level": null,
+    "shortDescription": null,
+    "technique": null
+  },
+  "audio": {
+    "voice": "audio/voice.m4a",
+    "music": {
+      "id": "sleep",
+      "file": "audio/music.m4a",
+      "defaultVolume": 0.01
+    },
+    "ambience": {
+      "id": "rain-window",
+      "file": "audio/ambience.m4a",
+      "defaultVolume": 0.03
+    },
+    "cues": {
+      "file": "audio/cues.m4a",
+      "defaultVolume": 1
+    },
+    "final": "audio/final.m4a"
+  },
+  "mix": {
+    "voiceDefaultVolume": 1,
+    "musicDefaultVolume": 0.01,
+    "ambienceDefaultVolume": 0.03,
+    "cuesDefaultVolume": 1
+  },
+  "audioFormat": {
+    "codec": "aac",
+    "container": "m4a",
+    "sampleRate": 48000,
+    "bitrates": {
+      "voice": 64000,
+      "music": 96000,
+      "ambience": 96000,
+      "cues": 64000,
+      "final": 128000
+    }
+  },
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "timeSeconds": 0
+    }
+  ],
+  "generation": {
+    "ttsProvider": "google-gemini",
+    "ttsModel": "gemini-2.5-flash-preview-tts",
+    "voiceId": "Charon"
+  }
+}

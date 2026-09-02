@@ -1,0 +1,175 @@
+{
+  "id": "apprendre-a-revenir-a-son-attention-10min",
+  "metadata": {
+    "title": "Apprendre à revenir à son attention",
+    "category": "learn",
+    "durationTargetSeconds": 600,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "neutral",
+    "volumeDb": -35,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "soft-air",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Prenez une position confortable et stable. Vous pouvez pratiquer assis sur une chaise, sur un coussin, ou allongé si cette position vous convient. L'essentiel est de trouver une posture simple.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "lesson-1",
+      "type": "voice",
+      "text": "Cette séance propose un exercice d'attention très simple : choisir une ancre, rester avec elle quelques instants, remarquer une distraction, puis revenir.",
+      "silenceAfter": {
+        "durationSeconds": 18,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "anchor-1",
+      "type": "voice",
+      "text": "Choisissez une ancre facile à percevoir. Cela peut être la respiration naturelle, le contact des mains ou des pieds, ou encore un son régulier autour de vous.",
+      "silenceAfter": {
+        "durationSeconds": 25,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-1",
+      "type": "voice",
+      "text": "Restez quelques instants avec cette ancre. Il n'est pas nécessaire de maintenir une concentration intense. Laissez simplement l'attention se poser aussi naturellement que possible.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 40,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "distraction-1",
+      "type": "voice",
+      "text": "À certains moments, l'attention se déplacera naturellement vers une pensée, un son ou une sensation. Lorsque vous le remarquez, observez simplement ce changement.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "return-1",
+      "type": "voice",
+      "text": "Vous pouvez alors identifier brièvement ce qui a attiré votre attention : une pensée, un son ou une sensation. Puis revenez tranquillement à l'ancre choisie.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 50,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "effort-1",
+      "type": "voice",
+      "text": "Si l'attention devient trop tendue, laissez l'effort diminuer légèrement. L'exercice consiste surtout à retrouver l'ancre chaque fois que vous remarquez une distraction.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-3",
+      "type": "silence",
+      "durationSeconds": 55,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "alternative-anchor",
+      "type": "voice",
+      "text": "Si la respiration n'est pas confortable à observer, choisissez simplement une autre ancre : les pieds, les mains, le contact du siège ou les sons autour de vous.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-4",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Pour terminer, élargissez l'attention vers l'ensemble du corps et la pièce. Remarquez simplement le mouvement que vous venez de pratiquer : reconnaître une distraction puis retrouver votre ancre.",
+      "silenceAfter": {
+        "durationSeconds": 15,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Cette capacité se développe progressivement avec la répétition. Prenez quelques instants pour retrouver votre environnement avant de reprendre votre journée.",
+      "silenceAfter": {
+        "durationSeconds": 6,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "soft-bell",
+      "trigger": "session_start",
+      "volumeDb": -17
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

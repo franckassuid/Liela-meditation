@@ -1,0 +1,137 @@
+{
+  "id": "laisser-la-journee-derriere-soi-10min",
+  "metadata": {
+    "title": "Laisser la journée derrière soi",
+    "category": "sleep",
+    "durationTargetSeconds": 600,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-2.5-flash-preview-tts",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "sleep",
+    "volumeDb": -38,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "rain-window",
+    "volumeDb": -31,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 4,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Prenez le temps de trouver une position confortable. Sentez le contact du corps avec le matelas et profitez simplement de ce moment calme entre la journée et la nuit.",
+      "silenceAfter": {
+        "durationSeconds": 10,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "day-1",
+      "type": "voice",
+      "text": "La journée peut maintenant rester en arrière-plan. Pour quelques instants, votre attention peut simplement se poser ici, dans cette pièce, sur les sensations présentes et les sons qui vous entourent.",
+      "silenceAfter": {
+        "durationSeconds": 22,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Portez doucement votre attention vers le corps. Remarquez le contact de la tête avec l'oreiller, puis les épaules, le dos, le bassin et les jambes. Observez simplement les sensations présentes dans chaque zone.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-1",
+      "type": "silence",
+      "durationSeconds": 35,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "breath-1",
+      "type": "voice",
+      "text": "Remarquez maintenant votre respiration pendant quelques instants. Laissez-la suivre son rythme naturel, sans chercher à la modifier. Si vous préférez, gardez votre attention sur le contact du corps avec le matelas ou sur le son régulier de la pluie.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "breathing"
+      }
+    },
+    {
+      "id": "thoughts-1",
+      "type": "voice",
+      "text": "Il est possible que votre attention se tourne vers une pensée ou un souvenir. Lorsque vous le remarquez, revenez simplement aux sensations du corps, à la respiration naturelle, ou au son doux de la pluie.",
+      "silenceAfter": {
+        "durationSeconds": 40,
+        "purpose": "sleep_descent"
+      }
+    },
+    {
+      "id": "sleep-silence-1",
+      "type": "silence",
+      "durationSeconds": 55,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "descent-1",
+      "type": "voice",
+      "text": "Laissez progressivement votre attention devenir plus large et plus légère. La voix peut rester en arrière-plan, avec la pluie, la respiration et les sensations du corps.",
+      "silenceAfter": {
+        "durationSeconds": 50,
+        "purpose": "sleep_descent"
+      }
+    },
+    {
+      "id": "sleep-silence-2",
+      "type": "silence",
+      "durationSeconds": 70,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "descent-2",
+      "type": "voice",
+      "text": "Continuez simplement à rester confortablement installé. Laissez les sons et les sensations se présenter à leur rythme, sans avoir besoin de porter votre attention sur quelque chose en particulier.",
+      "silenceAfter": {
+        "durationSeconds": 45,
+        "purpose": "sleep_descent"
+      }
+    },
+    {
+      "id": "sleep-silence-3",
+      "type": "silence",
+      "durationSeconds": 60,
+      "purpose": "sleep_descent"
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -19
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

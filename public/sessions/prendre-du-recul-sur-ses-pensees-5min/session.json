@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "id": "prendre-du-recul-sur-ses-pensees-5min",
+  "metadata": {
+    "title": "Prendre du recul sur ses pensées",
+    "category": "thoughts",
+    "language": "fr-FR",
+    "durationSeconds": 285.4,
+    "level": null,
+    "shortDescription": null,
+    "technique": null
+  },
+  "audio": {
+    "voice": "audio/voice.m4a",
+    "music": {
+      "id": "inner-space",
+      "file": "audio/music.m4a",
+      "defaultVolume": 0.01
+    },
+    "ambience": {
+      "id": "forest-calm",
+      "file": "audio/ambience.m4a",
+      "defaultVolume": 0.02
+    },
+    "cues": {
+      "file": "audio/cues.m4a",
+      "defaultVolume": 1
+    },
+    "final": "audio/final.m4a"
+  },
+  "mix": {
+    "voiceDefaultVolume": 1,
+    "musicDefaultVolume": 0.01,
+    "ambienceDefaultVolume": 0.02,
+    "cuesDefaultVolume": 1
+  },
+  "audioFormat": {
+    "codec": "aac",
+    "container": "m4a",
+    "sampleRate": 48000,
+    "bitrates": {
+      "voice": 64000,
+      "music": 96000,
+      "ambience": 96000,
+      "cues": 64000,
+      "final": 128000
+    }
+  },
+  "cues": [
+    {
+      "asset": "soft-chime",
+      "timeSeconds": 260.13
+    },
+    {
+      "asset": "singing-bowl",
+      "timeSeconds": 0
+    },
+    {
+      "asset": "soft-bell",
+      "timeSeconds": 285.38
+    }
+  ],
+  "generation": {
+    "ttsProvider": "google-gemini",
+    "ttsModel": "gemini-2.5-flash-preview-tts",
+    "voiceId": "Charon"
+  }
+}

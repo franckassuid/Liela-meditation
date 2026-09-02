@@ -1,0 +1,98 @@
+{
+  "id": "preparer-le-sommeil-3min",
+  "metadata": {
+    "title": "Préparer le sommeil",
+    "category": "sleep",
+    "durationTargetSeconds": 180,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Charon",
+    "model": "gemini-2.5-flash-preview-tts",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "sleep",
+    "volumeDb": -39,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "rain-window",
+    "volumeDb": -31,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 4,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous confortablement dans le lit. Ajustez l'oreiller ou la couverture si nécessaire, puis sentez simplement le poids du corps soutenu par le matelas.",
+      "silenceAfter": {
+        "durationSeconds": 7,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Remarquez le contact de la tête avec l'oreiller, puis celui des épaules, du dos, du bassin et des jambes. Laissez l'attention parcourir ces zones tranquillement.",
+      "silenceAfter": {
+        "durationSeconds": 14,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "breath-1",
+      "type": "voice",
+      "text": "Si cela vous convient, remarquez quelques respirations naturelles. Aucun rythme à suivre. Vous pouvez aussi rester avec le contact du corps ou avec le son régulier de la pluie.",
+      "silenceAfter": {
+        "durationSeconds": 17,
+        "purpose": "breathing"
+      }
+    },
+    {
+      "id": "sleep-silence-1",
+      "type": "silence",
+      "durationSeconds": 28,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "descent-1",
+      "type": "voice",
+      "text": "Laissez maintenant votre attention devenir plus large. Les sensations, la respiration et les sons peuvent simplement rester présents en arrière-plan.",
+      "silenceAfter": {
+        "durationSeconds": 22,
+        "purpose": "sleep_descent"
+      }
+    },
+    {
+      "id": "sleep-silence-2",
+      "type": "silence",
+      "durationSeconds": 27,
+      "purpose": "sleep_descent"
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -20
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}
