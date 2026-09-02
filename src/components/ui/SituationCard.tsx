@@ -24,15 +24,15 @@ export function SituationCard({ situation, onClick, className = "", selected = f
   return (
     <button
       onClick={onClick}
-      className={`w-full rounded-md min-h-[104px] p-[18px] flex flex-col justify-between items-start text-left transition-transform duration-120 active:scale-[0.97] ${className}`}
+      className={`w-full rounded-md min-h-[90px] sm:min-h-[100px] p-3.5 sm:p-[18px] flex flex-col justify-between items-start text-left transition-transform duration-120 active:scale-[0.97] ${className}`}
       style={{
         backgroundColor: situation.color,
         color: situation.textColor,
         boxShadow: selected ? "var(--p2)" : "none",
       }}
     >
-      {Icon && <Icon size={22} className="opacity-90 mb-3" />}
-      <b className="font-poppins font-normal text-[16px] leading-[1.1]">{situation.shortLabel}</b>
+      {Icon && <Icon size={20} className="opacity-90 mb-2" />}
+      <b className="font-poppins font-normal text-[15px] sm:text-[16px] leading-[1.15]">{situation.shortLabel}</b>
     </button>
   );
 }

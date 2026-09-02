@@ -1,28 +1,66 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { SessionCard } from "@/components/ui/SessionCard";
-import sessionsData from "@/generated/sessions.json";
-import { getSituation, getAvailableSituations } from "@/lib/sessions";
+import { ProModal } from "@/components/ui/ProModal";
+import { SESSIONS_CATALOG, getCategoryInfo, DISCOVERY_COLLECTION, CatalogSession } from "@/config/sessionsCatalog";
+import { getAvailableSituations } from "@/lib/sessions";
 
 export default function ExplorePage() {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [proModalSession, setProModalSession] = useState<CatalogSession | null>(null);
 
-  const filtered = sessionsData.filter((session) => {
-    const matchesCategory =
-      selectedCategory === "all" || session.metadata.situation === selectedCategory;
-    const searchLower = searchQuery.toLowerCase();
-    const title = session.metadata.title || "";
-    const desc = session.metadata.shortDescription || "";
-    const matchesSearch =
-      searchQuery.trim() === "" ||
-      title.toLowerCase().includes(searchLower) ||
-      desc.toLowerCase().includes(searchLower);
-    return matchesCategory && matchesSearch;
-  });
+  const availableSituations = getAvailableSituations();
+
+  const allCategories = useMemo(() => {
+    return [
+      ...availableSituations.map((sit) => ({
+        id: sit.id,
+        label: sit.shortLabel,
+        color: sit.color,
+        voile: sit.voile,
+        textColor: sit.textColor,
+      })),
+      {
+        id: DISCOVERY_COLLECTION.id,
+        label: DISCOVERY_COLLECTION.shortLabel,
+        color: DISCOVERY_COLLECTION.color,
+        voile: DISCOVERY_COLLECTION.voile,
+        textColor: DISCOVERY_COLLECTION.textColor,
+      },
+    ];
+  }, [availableSituations]);
+
+  const filtered = useMemo(() => {
+    return SESSIONS_CATALOG.filter((session) => {
+      const matchesCategory =
+        selectedCategory === "all" || session.situationId === selectedCategory;
+      const searchLower = searchQuery.toLowerCase().trim();
+      const title = session.title.toLowerCase();
+      const desc = (session.description || "").toLowerCase();
+      const catInfo = getCategoryInfo(session.situationId);
+      const catLabel = catInfo.label.toLowerCase();
+
+      const matchesSearch =
+        searchLower === "" ||
+        title.includes(searchLower) ||
+        desc.includes(searchLower) ||
+        catLabel.includes(searchLower);
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [selectedCategory, searchQuery]);
+
+  const handleSessionClick = (session: CatalogSession) => {
+    if (session.isAvailable) {
+      router.push(`/player?id=${session.realSessionId || session.id}`);
+    } else {
+      setProModalSession(session);
+    }
+  };
 
   return (
     <div className="p-marge pb-8 flex flex-col flex-1">
@@ -59,26 +97,27 @@ export default function ExplorePage() {
               : "bg-surface text-gris-2 shadow-[inset_0_0_0_1px_var(--bord)]"
           }`}
         >
-          Toutes
+          Toutes ({SESSIONS_CATALOG.length})
         </button>
-        {getAvailableSituations().map((sit) => {
-          const isSelected = selectedCategory === sit.id;
+
+        {allCategories.map((cat) => {
+          const isSelected = selectedCategory === cat.id;
           return (
             <button
-              key={sit.id}
-              onClick={() => setSelectedCategory(sit.id)}
+              key={cat.id}
+              onClick={() => setSelectedCategory(cat.id)}
               className="px-3.5 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-120 flex items-center gap-1.5"
               style={{
-                backgroundColor: isSelected ? sit.color : sit.voile,
-                color: isSelected ? sit.textColor : sit.color,
+                backgroundColor: isSelected ? cat.color : cat.voile,
+                color: isSelected ? cat.textColor : cat.color,
                 boxShadow: isSelected ? "var(--p1)" : "none",
               }}
             >
               <span 
                 className="w-2 h-2 rounded-full inline-block"
-                style={{ backgroundColor: isSelected ? sit.textColor : sit.color }}
+                style={{ backgroundColor: isSelected ? cat.textColor : cat.color }}
               />
-              {sit.shortLabel}
+              {cat.label}
             </button>
           );
         })}
@@ -101,21 +140,29 @@ export default function ExplorePage() {
       ) : (
         <div className="flex flex-col gap-3">
           {filtered.map((session) => {
-            const situation = getSituation(session.metadata.situation);
+            const catInfo = getCategoryInfo(session.situationId);
             return (
               <SessionCard
                 key={session.id}
-                title={session.metadata.title}
-                duration={session.metadata.durationSeconds}
-                situationName={situation?.shortLabel}
-                situationColor={situation?.color}
-                situationVoile={situation?.voile}
-                onClick={() => router.push(`/player?id=${session.id}`)}
+                title={session.title}
+                duration={session.durationSeconds}
+                situationName={catInfo.label}
+                situationColor={catInfo.color}
+                situationVoile={catInfo.voile}
+                isLocked={!session.isAvailable}
+                onClick={() => handleSessionClick(session)}
               />
             );
           })}
         </div>
       )}
+
+      {/* Pro Modal */}
+      <ProModal
+        isOpen={proModalSession !== null}
+        onClose={() => setProModalSession(null)}
+        sessionTitle={proModalSession?.title}
+      />
     </div>
   );
 }
