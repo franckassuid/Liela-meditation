@@ -131,6 +131,75 @@
   },
   {
     "version": 1,
+    "id": "calmer-un-mental-agite-10min",
+    "metadata": {
+      "title": "Calmer un mental agité",
+      "category": "thoughts",
+      "language": "fr-FR",
+      "durationSeconds": 589.7,
+      "level": null,
+      "shortDescription": null,
+      "technique": null,
+      "situation": "thoughts"
+    },
+    "audio": {
+      "voice": "audio/voice.m4a",
+      "music": {
+        "id": "inner-space",
+        "file": "audio/music.m4a",
+        "defaultVolume": 0.01
+      },
+      "ambience": {
+        "id": "soft-air",
+        "file": "audio/ambience.m4a",
+        "defaultVolume": 0.02
+      },
+      "cues": {
+        "file": "audio/cues.m4a",
+        "defaultVolume": 1
+      },
+      "final": "audio/final.m4a"
+    },
+    "mix": {
+      "voiceDefaultVolume": 1,
+      "musicDefaultVolume": 0.01,
+      "ambienceDefaultVolume": 0.02,
+      "cuesDefaultVolume": 1
+    },
+    "audioFormat": {
+      "codec": "aac",
+      "container": "m4a",
+      "sampleRate": 48000,
+      "bitrates": {
+        "voice": 64000,
+        "music": 96000,
+        "ambience": 96000,
+        "cues": 64000,
+        "final": 128000
+      }
+    },
+    "cues": [
+      {
+        "asset": "soft-chime",
+        "timeSeconds": 554.44
+      },
+      {
+        "asset": "singing-bowl",
+        "timeSeconds": 0
+      },
+      {
+        "asset": "soft-bell",
+        "timeSeconds": 589.68
+      }
+    ],
+    "generation": {
+      "ttsProvider": "google-gemini",
+      "ttsModel": "gemini-3.1-flash-tts-preview",
+      "voiceId": "Algenib"
+    }
+  },
+  {
+    "version": 1,
     "id": "couper-la-montee-du-stress-5min",
     "metadata": {
       "title": "Couper la montée du stress",
@@ -462,6 +531,75 @@
       {
         "asset": "soft-bell",
         "timeSeconds": 601.32
+      }
+    ],
+    "generation": {
+      "ttsProvider": "google-gemini",
+      "ttsModel": "gemini-3.1-flash-tts-preview",
+      "voiceId": "Algenib"
+    }
+  },
+  {
+    "version": 1,
+    "id": "faire-une-pause-mentale-5min",
+    "metadata": {
+      "title": "Faire une pause mentale",
+      "category": "recenter",
+      "language": "fr-FR",
+      "durationSeconds": 296.02,
+      "level": null,
+      "shortDescription": null,
+      "technique": null,
+      "situation": "recenter"
+    },
+    "audio": {
+      "voice": "audio/voice.m4a",
+      "music": {
+        "id": "neutral",
+        "file": "audio/music.m4a",
+        "defaultVolume": 0.01
+      },
+      "ambience": {
+        "id": "soft-air",
+        "file": "audio/ambience.m4a",
+        "defaultVolume": 0.02
+      },
+      "cues": {
+        "file": "audio/cues.m4a",
+        "defaultVolume": 1
+      },
+      "final": "audio/final.m4a"
+    },
+    "mix": {
+      "voiceDefaultVolume": 1,
+      "musicDefaultVolume": 0.01,
+      "ambienceDefaultVolume": 0.02,
+      "cuesDefaultVolume": 1
+    },
+    "audioFormat": {
+      "codec": "aac",
+      "container": "m4a",
+      "sampleRate": 48000,
+      "bitrates": {
+        "voice": 64000,
+        "music": 96000,
+        "ambience": 96000,
+        "cues": 64000,
+        "final": 128000
+      }
+    },
+    "cues": [
+      {
+        "asset": "soft-chime",
+        "timeSeconds": 282.36
+      },
+      {
+        "asset": "singing-bowl",
+        "timeSeconds": 0
+      },
+      {
+        "asset": "soft-bell",
+        "timeSeconds": 296.02
       }
     ],
     "generation": {
@@ -923,6 +1061,75 @@
   },
   {
     "version": 1,
+    "id": "relacher-les-epaules-3min",
+    "metadata": {
+      "title": "Relâcher les épaules",
+      "category": "tensions",
+      "language": "fr-FR",
+      "durationSeconds": 180.37,
+      "level": null,
+      "shortDescription": null,
+      "technique": null,
+      "situation": "tensions"
+    },
+    "audio": {
+      "voice": "audio/voice.m4a",
+      "music": {
+        "id": "deep-relax",
+        "file": "audio/music.m4a",
+        "defaultVolume": 0.01
+      },
+      "ambience": {
+        "id": "stream-gentle",
+        "file": "audio/ambience.m4a",
+        "defaultVolume": 0.02
+      },
+      "cues": {
+        "file": "audio/cues.m4a",
+        "defaultVolume": 1
+      },
+      "final": "audio/final.m4a"
+    },
+    "mix": {
+      "voiceDefaultVolume": 1,
+      "musicDefaultVolume": 0.01,
+      "ambienceDefaultVolume": 0.02,
+      "cuesDefaultVolume": 1
+    },
+    "audioFormat": {
+      "codec": "aac",
+      "container": "m4a",
+      "sampleRate": 48000,
+      "bitrates": {
+        "voice": 64000,
+        "music": 96000,
+        "ambience": 96000,
+        "cues": 64000,
+        "final": 128000
+      }
+    },
+    "cues": [
+      {
+        "asset": "soft-chime",
+        "timeSeconds": 163
+      },
+      {
+        "asset": "singing-bowl",
+        "timeSeconds": 0
+      },
+      {
+        "asset": "soft-bell",
+        "timeSeconds": 180.37
+      }
+    ],
+    "generation": {
+      "ttsProvider": "google-gemini",
+      "ttsModel": "gemini-3.1-flash-tts-preview",
+      "voiceId": "Algenib"
+    }
+  },
+  {
+    "version": 1,
     "id": "relacher-les-tensions-10min",
     "metadata": {
       "title": "Relâcher les tensions",
@@ -1122,6 +1329,213 @@
   },
   {
     "version": 1,
+    "id": "revenir-apres-une-distraction-10min",
+    "metadata": {
+      "title": "Revenir après une distraction",
+      "category": "focus",
+      "language": "fr-FR",
+      "durationSeconds": 592.3,
+      "level": null,
+      "shortDescription": null,
+      "technique": null,
+      "situation": "focus"
+    },
+    "audio": {
+      "voice": "audio/voice.m4a",
+      "music": {
+        "id": "focus",
+        "file": "audio/music.m4a",
+        "defaultVolume": 0.02
+      },
+      "ambience": {
+        "id": "forest-calm",
+        "file": "audio/ambience.m4a",
+        "defaultVolume": 0.02
+      },
+      "cues": {
+        "file": "audio/cues.m4a",
+        "defaultVolume": 1
+      },
+      "final": "audio/final.m4a"
+    },
+    "mix": {
+      "voiceDefaultVolume": 1,
+      "musicDefaultVolume": 0.02,
+      "ambienceDefaultVolume": 0.02,
+      "cuesDefaultVolume": 1
+    },
+    "audioFormat": {
+      "codec": "aac",
+      "container": "m4a",
+      "sampleRate": 48000,
+      "bitrates": {
+        "voice": 64000,
+        "music": 96000,
+        "ambience": 96000,
+        "cues": 64000,
+        "final": 128000
+      }
+    },
+    "cues": [
+      {
+        "asset": "soft-chime",
+        "timeSeconds": 557.6
+      },
+      {
+        "asset": "singing-bowl",
+        "timeSeconds": 0
+      },
+      {
+        "asset": "soft-bell",
+        "timeSeconds": 592.28
+      }
+    ],
+    "generation": {
+      "ttsProvider": "google-gemini",
+      "ttsModel": "gemini-3.1-flash-tts-preview",
+      "voiceId": "Algenib"
+    }
+  },
+  {
+    "version": 1,
+    "id": "revenir-au-present-3min",
+    "metadata": {
+      "title": "Revenir au présent",
+      "category": "recenter",
+      "language": "fr-FR",
+      "durationSeconds": 174.23,
+      "level": null,
+      "shortDescription": null,
+      "technique": null,
+      "situation": "recenter"
+    },
+    "audio": {
+      "voice": "audio/voice.m4a",
+      "music": {
+        "id": "neutral",
+        "file": "audio/music.m4a",
+        "defaultVolume": 0.02
+      },
+      "ambience": {
+        "id": "soft-air",
+        "file": "audio/ambience.m4a",
+        "defaultVolume": 0.02
+      },
+      "cues": {
+        "file": "audio/cues.m4a",
+        "defaultVolume": 1
+      },
+      "final": "audio/final.m4a"
+    },
+    "mix": {
+      "voiceDefaultVolume": 1,
+      "musicDefaultVolume": 0.02,
+      "ambienceDefaultVolume": 0.02,
+      "cuesDefaultVolume": 1
+    },
+    "audioFormat": {
+      "codec": "aac",
+      "container": "m4a",
+      "sampleRate": 48000,
+      "bitrates": {
+        "voice": 64000,
+        "music": 96000,
+        "ambience": 96000,
+        "cues": 64000,
+        "final": 128000
+      }
+    },
+    "cues": [
+      {
+        "asset": "soft-chime",
+        "timeSeconds": 163.04
+      },
+      {
+        "asset": "singing-bowl",
+        "timeSeconds": 0
+      },
+      {
+        "asset": "soft-bell",
+        "timeSeconds": 174.23
+      }
+    ],
+    "generation": {
+      "ttsProvider": "google-gemini",
+      "ttsModel": "gemini-3.1-flash-tts-preview",
+      "voiceId": "Algenib"
+    }
+  },
+  {
+    "version": 1,
+    "id": "se-concentrer-sur-une-seule-chose-10min",
+    "metadata": {
+      "title": "Se concentrer sur une seule chose",
+      "category": "focus",
+      "language": "fr-FR",
+      "durationSeconds": 595.41,
+      "level": null,
+      "shortDescription": null,
+      "technique": null,
+      "situation": "focus"
+    },
+    "audio": {
+      "voice": "audio/voice.m4a",
+      "music": {
+        "id": "focus",
+        "file": "audio/music.m4a",
+        "defaultVolume": 0.02
+      },
+      "ambience": {
+        "id": "soft-air",
+        "file": "audio/ambience.m4a",
+        "defaultVolume": 0.02
+      },
+      "cues": {
+        "file": "audio/cues.m4a",
+        "defaultVolume": 1
+      },
+      "final": "audio/final.m4a"
+    },
+    "mix": {
+      "voiceDefaultVolume": 1,
+      "musicDefaultVolume": 0.02,
+      "ambienceDefaultVolume": 0.02,
+      "cuesDefaultVolume": 1
+    },
+    "audioFormat": {
+      "codec": "aac",
+      "container": "m4a",
+      "sampleRate": 48000,
+      "bitrates": {
+        "voice": 64000,
+        "music": 96000,
+        "ambience": 96000,
+        "cues": 64000,
+        "final": 128000
+      }
+    },
+    "cues": [
+      {
+        "asset": "soft-chime",
+        "timeSeconds": 556.84
+      },
+      {
+        "asset": "singing-bowl",
+        "timeSeconds": 0
+      },
+      {
+        "asset": "soft-bell",
+        "timeSeconds": 595.4
+      }
+    ],
+    "generation": {
+      "ttsProvider": "google-gemini",
+      "ttsModel": "gemini-3.1-flash-tts-preview",
+      "voiceId": "Algenib"
+    }
+  },
+  {
+    "version": 1,
     "id": "se-poser-avant-de-dormir-5min",
     "metadata": {
       "title": "Se poser avant de dormir",
@@ -1173,6 +1587,144 @@
       {
         "asset": "singing-bowl",
         "timeSeconds": 0
+      }
+    ],
+    "generation": {
+      "ttsProvider": "google-gemini",
+      "ttsModel": "gemini-3.1-flash-tts-preview",
+      "voiceId": "Algenib"
+    }
+  },
+  {
+    "version": 1,
+    "id": "se-preparer-a-travailler-5min",
+    "metadata": {
+      "title": "Se préparer à travailler",
+      "category": "focus",
+      "language": "fr-FR",
+      "durationSeconds": 289.69,
+      "level": null,
+      "shortDescription": null,
+      "technique": null,
+      "situation": "focus"
+    },
+    "audio": {
+      "voice": "audio/voice.m4a",
+      "music": {
+        "id": "focus",
+        "file": "audio/music.m4a",
+        "defaultVolume": 0.02
+      },
+      "ambience": {
+        "id": "soft-air",
+        "file": "audio/ambience.m4a",
+        "defaultVolume": 0.02
+      },
+      "cues": {
+        "file": "audio/cues.m4a",
+        "defaultVolume": 1
+      },
+      "final": "audio/final.m4a"
+    },
+    "mix": {
+      "voiceDefaultVolume": 1,
+      "musicDefaultVolume": 0.02,
+      "ambienceDefaultVolume": 0.02,
+      "cuesDefaultVolume": 1
+    },
+    "audioFormat": {
+      "codec": "aac",
+      "container": "m4a",
+      "sampleRate": 48000,
+      "bitrates": {
+        "voice": 64000,
+        "music": 96000,
+        "ambience": 96000,
+        "cues": 64000,
+        "final": 128000
+      }
+    },
+    "cues": [
+      {
+        "asset": "soft-chime",
+        "timeSeconds": 271.88
+      },
+      {
+        "asset": "singing-bowl",
+        "timeSeconds": 0
+      },
+      {
+        "asset": "soft-bell",
+        "timeSeconds": 289.67
+      }
+    ],
+    "generation": {
+      "ttsProvider": "google-gemini",
+      "ttsModel": "gemini-3.1-flash-tts-preview",
+      "voiceId": "Algenib"
+    }
+  },
+  {
+    "version": 1,
+    "id": "se-recentrer-5min",
+    "metadata": {
+      "title": "Se recentrer",
+      "category": "recenter",
+      "language": "fr-FR",
+      "durationSeconds": 299.31,
+      "level": null,
+      "shortDescription": null,
+      "technique": null,
+      "situation": "recenter"
+    },
+    "audio": {
+      "voice": "audio/voice.m4a",
+      "music": {
+        "id": "neutral",
+        "file": "audio/music.m4a",
+        "defaultVolume": 0.02
+      },
+      "ambience": {
+        "id": "forest-calm",
+        "file": "audio/ambience.m4a",
+        "defaultVolume": 0.02
+      },
+      "cues": {
+        "file": "audio/cues.m4a",
+        "defaultVolume": 1
+      },
+      "final": "audio/final.m4a"
+    },
+    "mix": {
+      "voiceDefaultVolume": 1,
+      "musicDefaultVolume": 0.02,
+      "ambienceDefaultVolume": 0.02,
+      "cuesDefaultVolume": 1
+    },
+    "audioFormat": {
+      "codec": "aac",
+      "container": "m4a",
+      "sampleRate": 48000,
+      "bitrates": {
+        "voice": 64000,
+        "music": 96000,
+        "ambience": 96000,
+        "cues": 64000,
+        "final": 128000
+      }
+    },
+    "cues": [
+      {
+        "asset": "soft-chime",
+        "timeSeconds": 281.08
+      },
+      {
+        "asset": "singing-bowl",
+        "timeSeconds": 0
+      },
+      {
+        "asset": "soft-bell",
+        "timeSeconds": 299.29
       }
     ],
     "generation": {
@@ -1248,6 +1800,75 @@
       "ttsProvider": "google-gemini",
       "ttsModel": "gemini-2.5-flash-preview-tts",
       "voiceId": "Charon"
+    }
+  },
+  {
+    "version": 1,
+    "id": "souffler-apres-une-journee-chargee-5min",
+    "metadata": {
+      "title": "Souffler après une journée chargée",
+      "category": "tensions",
+      "language": "fr-FR",
+      "durationSeconds": 293.06,
+      "level": null,
+      "shortDescription": null,
+      "technique": null,
+      "situation": "tensions"
+    },
+    "audio": {
+      "voice": "audio/voice.m4a",
+      "music": {
+        "id": "deep-relax",
+        "file": "audio/music.m4a",
+        "defaultVolume": 0.01
+      },
+      "ambience": {
+        "id": "stream-gentle",
+        "file": "audio/ambience.m4a",
+        "defaultVolume": 0.02
+      },
+      "cues": {
+        "file": "audio/cues.m4a",
+        "defaultVolume": 1
+      },
+      "final": "audio/final.m4a"
+    },
+    "mix": {
+      "voiceDefaultVolume": 1,
+      "musicDefaultVolume": 0.01,
+      "ambienceDefaultVolume": 0.02,
+      "cuesDefaultVolume": 1
+    },
+    "audioFormat": {
+      "codec": "aac",
+      "container": "m4a",
+      "sampleRate": 48000,
+      "bitrates": {
+        "voice": 64000,
+        "music": 96000,
+        "ambience": 96000,
+        "cues": 64000,
+        "final": 128000
+      }
+    },
+    "cues": [
+      {
+        "asset": "soft-chime",
+        "timeSeconds": 278.96
+      },
+      {
+        "asset": "singing-bowl",
+        "timeSeconds": 0
+      },
+      {
+        "asset": "soft-bell",
+        "timeSeconds": 293.05
+      }
+    ],
+    "generation": {
+      "ttsProvider": "google-gemini",
+      "ttsModel": "gemini-3.1-flash-tts-preview",
+      "voiceId": "Algenib"
     }
   },
   {

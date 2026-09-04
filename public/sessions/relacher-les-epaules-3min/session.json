@@ -1,43 +1,55 @@
 {
   "version": 1,
-  "id": "revenir-au-calme-5min",
+  "id": "relacher-les-epaules-3min",
   "metadata": {
-    "title": "Revenir au calme",
-    "category": "stress",
+    "title": "Relâcher les épaules",
+    "category": "tensions",
     "language": "fr-FR",
-    "durationSeconds": 285.28,
+    "durationSeconds": 180.37,
     "level": null,
     "shortDescription": null,
     "technique": null
   },
   "audio": {
-    "voice": "audio/voice.wav",
+    "voice": "audio/voice.m4a",
     "music": {
       "id": "deep-relax",
-      "file": "audio/music.wav",
-      "defaultVolume": 0.02
+      "file": "audio/music.m4a",
+      "defaultVolume": 0.01
     },
     "ambience": {
-      "id": "rain-gentle",
-      "file": "audio/ambience.wav",
+      "id": "stream-gentle",
+      "file": "audio/ambience.m4a",
       "defaultVolume": 0.02
     },
     "cues": {
-      "file": "audio/cues.wav",
+      "file": "audio/cues.m4a",
       "defaultVolume": 1
     },
-    "final": "audio/final.mp3"
+    "final": "audio/final.m4a"
   },
   "mix": {
     "voiceDefaultVolume": 1,
-    "musicDefaultVolume": 0.02,
+    "musicDefaultVolume": 0.01,
     "ambienceDefaultVolume": 0.02,
     "cuesDefaultVolume": 1
+  },
+  "audioFormat": {
+    "codec": "aac",
+    "container": "m4a",
+    "sampleRate": 48000,
+    "bitrates": {
+      "voice": 64000,
+      "music": 96000,
+      "ambience": 96000,
+      "cues": 64000,
+      "final": 128000
+    }
   },
   "cues": [
     {
       "asset": "soft-chime",
-      "timeSeconds": 255.16
+      "timeSeconds": 163
     },
     {
       "asset": "singing-bowl",
@@ -45,7 +57,7 @@
     },
     {
       "asset": "soft-bell",
-      "timeSeconds": 285.28
+      "timeSeconds": 180.37
     }
   ],
   "generation": {

@@ -51,6 +51,10 @@ function run() {
         continue;
       }
 
+      if (session.metadata.title.length > 36) {
+        throw new Error(`Validation Error: Session title in ${dir} exceeds 36 characters (${session.metadata.title.length}): "${session.metadata.title}"`);
+      }
+
       if (!session.audio || typeof session.audio !== "object") {
         console.warn(`Skipping invalid session in ${dir}: missing audio configuration object`);
         continue;

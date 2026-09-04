@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "id": "souffler-apres-une-journee-chargee-5min",
+  "metadata": {
+    "title": "Souffler après une journée chargée",
+    "category": "tensions",
+    "language": "fr-FR",
+    "durationSeconds": 293.06,
+    "level": null,
+    "shortDescription": null,
+    "technique": null
+  },
+  "audio": {
+    "voice": "audio/voice.m4a",
+    "music": {
+      "id": "deep-relax",
+      "file": "audio/music.m4a",
+      "defaultVolume": 0.01
+    },
+    "ambience": {
+      "id": "stream-gentle",
+      "file": "audio/ambience.m4a",
+      "defaultVolume": 0.02
+    },
+    "cues": {
+      "file": "audio/cues.m4a",
+      "defaultVolume": 1
+    },
+    "final": "audio/final.m4a"
+  },
+  "mix": {
+    "voiceDefaultVolume": 1,
+    "musicDefaultVolume": 0.01,
+    "ambienceDefaultVolume": 0.02,
+    "cuesDefaultVolume": 1
+  },
+  "audioFormat": {
+    "codec": "aac",
+    "container": "m4a",
+    "sampleRate": 48000,
+    "bitrates": {
+      "voice": 64000,
+      "music": 96000,
+      "ambience": 96000,
+      "cues": 64000,
+      "final": 128000
+    }
+  },
+  "cues": [
+    {
+      "asset": "soft-chime",
+      "timeSeconds": 278.96
+    },
+    {
+      "asset": "singing-bowl",
+      "timeSeconds": 0
+    },
+    {
+      "asset": "soft-bell",
+      "timeSeconds": 293.05
+    }
+  ],
+  "generation": {
+    "ttsProvider": "google-gemini",
+    "ttsModel": "gemini-3.1-flash-tts-preview",
+    "voiceId": "Algenib"
+  }
+}

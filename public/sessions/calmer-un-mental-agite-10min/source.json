@@ -1,0 +1,175 @@
+{
+  "id": "calmer-un-mental-agite-10min",
+  "metadata": {
+    "title": "Calmer un mental agité",
+    "category": "thoughts",
+    "durationTargetSeconds": 600,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "inner-space",
+    "volumeDb": -37,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "soft-air",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Prenez le temps de vous installer dans une position stable et confortable. Remarquez le support sous votre corps et laissez l'attention se rapprocher progressivement de sensations simples.",
+      "silenceAfter": {
+        "durationSeconds": 11,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "orientation-1",
+      "type": "voice",
+      "text": "Commencez par les sons autour de vous. Un son proche, puis un autre plus lointain. Laissez-les apparaître et changer sans chercher à suivre leur origine.",
+      "silenceAfter": {
+        "durationSeconds": 28,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "anchor-1",
+      "type": "voice",
+      "text": "Choisissez ensuite un point d'ancrage corporel. Les pieds, les mains, ou le contact du corps avec le siège. Restez avec cette sensation quelques instants.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 40,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "thoughts-1",
+      "type": "voice",
+      "text": "Lorsque l'attention se déplace vers une pensée, reconnaissez simplement ce mouvement. Vous pouvez la nommer brièvement comme pensée, puis revenir à l'ancre choisie.",
+      "silenceAfter": {
+        "durationSeconds": 34,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "thoughts-2",
+      "type": "voice",
+      "text": "Certaines pensées peuvent revenir plusieurs fois. Cela ne change pas l'exercice. Chaque fois que vous le remarquez, revenez au même point concret, sans ajouter d'analyse.",
+      "silenceAfter": {
+        "durationSeconds": 36,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 48,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "breath-1",
+      "type": "voice",
+      "text": "Si la respiration est confortable à observer, laissez-la devenir une seconde ancre pendant quelques instants. Sinon, gardez simplement le contact des mains ou des pieds.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "breathing"
+      }
+    },
+    {
+      "id": "practice-silence-3",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "wide-1",
+      "type": "voice",
+      "text": "Élargissez maintenant l'attention pour inclure à la fois le corps, les sons et les pensées qui passent. Rien n'a besoin d'être exclu. Remarquez seulement ce qui attire le plus votre attention.",
+      "silenceAfter": {
+        "durationSeconds": 36,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "return-1",
+      "type": "voice",
+      "text": "Puis revenez volontairement à un seul point d'ancrage. Ce mouvement entre ouverture et retour permet de retrouver une direction simple, même lorsque l'esprit reste actif.",
+      "silenceAfter": {
+        "durationSeconds": 38,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-4",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Commencez à retrouver l'ensemble de la pièce. Remarquez votre posture, les sons et la lumière. Laissez les petits mouvements revenir progressivement.",
+      "silenceAfter": {
+        "durationSeconds": 12,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Avant de reprendre, choisissez simplement la prochaine action concrète que vous souhaitez faire. Prenez encore quelques secondes pour vous y préparer.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

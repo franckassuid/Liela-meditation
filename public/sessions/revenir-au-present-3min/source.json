@@ -1,0 +1,112 @@
+{
+  "id": "revenir-au-present-3min",
+  "metadata": {
+    "title": "Revenir au présent",
+    "category": "recenter",
+    "durationTargetSeconds": 180,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "neutral",
+    "volumeDb": -36,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "soft-air",
+    "volumeDb": -35,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Prenez une position confortable et sentez simplement le support sous votre corps. Gardez les yeux ouverts ou fermés selon ce qui vous convient.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "senses-1",
+      "type": "voice",
+      "text": "Remarquez trois choses présentes maintenant : un son, une sensation corporelle et un élément visuel si vos yeux sont ouverts. Prenez quelques secondes pour chacune.",
+      "silenceAfter": {
+        "durationSeconds": 22,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "anchor-1",
+      "type": "voice",
+      "text": "Choisissez ensuite la sensation la plus simple à retrouver. Les pieds, les mains, le siège ou la respiration naturelle. Restez avec elle quelques instants.",
+      "silenceAfter": {
+        "durationSeconds": 24,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 28,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "wide-1",
+      "type": "voice",
+      "text": "Élargissez doucement l'attention au corps entier et à l'espace autour de vous. Remarquez simplement que vous êtes ici, dans cet environnement précis.",
+      "silenceAfter": {
+        "durationSeconds": 19,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Pour terminer, regardez autour de vous et reprenez votre activité à votre rythme.",
+      "silenceAfter": {
+        "durationSeconds": 9,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "id": "revenir-apres-une-distraction-10min",
+  "metadata": {
+    "title": "Revenir après une distraction",
+    "category": "focus",
+    "durationTargetSeconds": 600,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "focus",
+    "volumeDb": -36,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "forest-calm",
+    "volumeDb": -36,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous dans une posture qui vous permet de rester attentif sans rigidité. Prenez quelques secondes pour sentir les pieds, les mains et le poids du corps.",
+      "silenceAfter": {
+        "durationSeconds": 9,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "orientation-1",
+      "type": "voice",
+      "text": "Remarquez les sons présents autour de vous. Certains peuvent être agréables, d'autres simplement là. Pendant cette séance, ils peuvent devenir des occasions de remarquer où se trouve votre attention.",
+      "silenceAfter": {
+        "durationSeconds": 29,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "anchor-1",
+      "type": "voice",
+      "text": "Choisissez une ancre principale : les mains, les pieds, la respiration naturelle ou un point visuel stable. Restez avec elle quelques instants.",
+      "silenceAfter": {
+        "durationSeconds": 31,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 41,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "distraction-1",
+      "type": "voice",
+      "text": "À chaque fois qu'une distraction apparaît, remarquez d'abord qu'elle a capté votre attention. Ne cherchez pas à la repousser. Puis revenez simplement à votre ancre.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "distraction-2",
+      "type": "voice",
+      "text": "Il peut s'agir d'une pensée, d'un bruit, d'une sensation ou de l'envie de faire autre chose. Le type de distraction importe peu. Le mouvement de retour reste le même.",
+      "silenceAfter": {
+        "durationSeconds": 37,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 47,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "return-1",
+      "type": "voice",
+      "text": "Essayez maintenant de remarquer le moment exact où vous vous rendez compte que votre attention s'est éloignée. Cet instant de prise de conscience est déjà le début du retour.",
+      "silenceAfter": {
+        "durationSeconds": 39,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-3",
+      "type": "silence",
+      "durationSeconds": 46,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "return-2",
+      "type": "voice",
+      "text": "Revenez alors à l'ancre sans accélérer. Une sensation simple suffit. Vous n'avez pas besoin de récupérer le temps perdu ni de compenser la distraction.",
+      "silenceAfter": {
+        "durationSeconds": 39,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "task-1",
+      "type": "voice",
+      "text": "Pensez à une activité qui vous demande de l'attention aujourd'hui. Imaginez simplement utiliser le même geste : remarquer la distraction, puis revenir à la prochaine action concrète.",
+      "silenceAfter": {
+        "durationSeconds": 33,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-4",
+      "type": "silence",
+      "durationSeconds": 39,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Élargissez maintenant votre attention. Remarquez le corps entier et la pièce autour de vous. Laissez quelques mouvements revenir.",
+      "silenceAfter": {
+        "durationSeconds": 12,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Quand vous reprendrez votre activité, gardez seulement cette consigne simple : remarquer, puis revenir.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

@@ -103,12 +103,24 @@ function PlayerContent() {
   useEffect(() => {
     if (!session || !("mediaSession" in navigator)) return;
 
+    const situation = getSituation(session.metadata.situation);
+    const situationSlugMap: Record<string, string> = {
+      stress: "calmer-le-stress",
+      sleep: "trouver-le-sommeil",
+      thoughts: "calmer-les-pensees",
+      focus: "retrouver-sa-concentration",
+      tensions: "relacher-les-tensions",
+      recenter: "se-recentrer",
+    };
+    const slug = situation?.id ? situationSlugMap[situation.id] : "calmer-le-stress";
+    const artistName = situation ? `Liela · ${situation.shortLabel}` : "Liela";
+
     navigator.mediaSession.metadata = new MediaMetadata({
       title: session.metadata.title,
-      artist: "Liela",
-      album: "Méditation",
+      artist: artistName,
+      album: "Liela",
       artwork: [
-        { src: "/icon.svg", sizes: "512x512", type: "image/svg+xml" },
+        { src: `/artwork-${slug}.png`, sizes: "1024x1024", type: "image/png" },
       ],
     });
 
@@ -119,16 +131,20 @@ function PlayerContent() {
       managerRef.current?.pause();
     });
     navigator.mediaSession.setActionHandler("seekbackward", (details) => {
-      const offset = details.seekOffset || 15;
-      const target = Math.max(0, currentTime - offset);
-      setCurrentTime(target);
-      managerRef.current?.seek(target);
+      setCurrentTime((prev) => {
+        const offset = details.seekOffset || 15;
+        const target = Math.max(0, prev - offset);
+        managerRef.current?.seek(target);
+        return target;
+      });
     });
     navigator.mediaSession.setActionHandler("seekforward", (details) => {
-      const offset = details.seekOffset || 15;
-      const target = Math.min(session.metadata.durationSeconds - 1, currentTime + offset);
-      setCurrentTime(target);
-      managerRef.current?.seek(target);
+      setCurrentTime((prev) => {
+        const offset = details.seekOffset || 15;
+        const target = Math.min(session.metadata.durationSeconds - 1, prev + offset);
+        managerRef.current?.seek(target);
+        return target;
+      });
     });
     navigator.mediaSession.setActionHandler("seekto", (details) => {
       if (details.seekTime !== undefined) {
@@ -138,6 +154,14 @@ function PlayerContent() {
       }
     });
 
+    // Explicitly disable previous and next track since it's a meditation app
+    try {
+      navigator.mediaSession.setActionHandler("previoustrack", null);
+      navigator.mediaSession.setActionHandler("nexttrack", null);
+    } catch (e) {
+      // Ignored if browser doesn't support setting to null
+    }
+
     return () => {
       if ("mediaSession" in navigator) {
         navigator.mediaSession.setActionHandler("play", null);
@@ -145,14 +169,31 @@ function PlayerContent() {
         navigator.mediaSession.setActionHandler("seekbackward", null);
         navigator.mediaSession.setActionHandler("seekforward", null);
         navigator.mediaSession.setActionHandler("seekto", null);
+        try {
+          navigator.mediaSession.setActionHandler("previoustrack", null);
+          navigator.mediaSession.setActionHandler("nexttrack", null);
+        } catch (e) {}
       }
     };
-  }, [session, currentTime]);
+  }, [session]);
 
   useEffect(() => {
-    if (!("mediaSession" in navigator)) return;
+    if (!("mediaSession" in navigator) || !session) return;
     navigator.mediaSession.playbackState = state === "playing" ? "playing" : "paused";
-  }, [state]);
+    
+    // Update position state for progress bar / scrubber
+    if ("setPositionState" in navigator.mediaSession && !isNaN(currentTime)) {
+      try {
+        navigator.mediaSession.setPositionState({
+          duration: session.metadata.durationSeconds,
+          playbackRate: 1.0,
+          position: currentTime
+        });
+      } catch (e) {
+        console.warn("Failed to set position state", e);
+      }
+    }
+  }, [state, currentTime, session]);
 
   // Handle saving progress periodically
   useEffect(() => {

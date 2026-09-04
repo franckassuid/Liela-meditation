@@ -1,0 +1,112 @@
+{
+  "id": "relacher-les-epaules-3min",
+  "metadata": {
+    "title": "Relâcher les épaules",
+    "category": "tensions",
+    "durationTargetSeconds": 180,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "deep-relax",
+    "volumeDb": -37,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "stream-gentle",
+    "volumeDb": -35,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous confortablement. Sentez les pieds ou le contact du corps avec le siège, puis laissez les bras reposer quelques instants.",
+      "silenceAfter": {
+        "durationSeconds": 9,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "shoulders-1",
+      "type": "voice",
+      "text": "Portez l'attention vers les épaules. Remarquez leur position sans chercher à la corriger. Observez simplement les sensations présentes à droite, puis à gauche.",
+      "silenceAfter": {
+        "durationSeconds": 20,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "movement-1",
+      "type": "voice",
+      "text": "Si cela vous convient, faites un très petit mouvement des épaules vers l'arrière, puis laissez-les revenir naturellement. Gardez le geste lent et confortable.",
+      "silenceAfter": {
+        "durationSeconds": 18,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "neck-1",
+      "type": "voice",
+      "text": "Remarquez maintenant le cou, la mâchoire et le haut du dos. Laissez la respiration rester naturelle pendant que vous observez ces zones.",
+      "silenceAfter": {
+        "durationSeconds": 24,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 26,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Pour terminer, sentez les bras et les mains, puis retrouvez l'ensemble du corps. Bougez doucement si vous en avez envie et reprenez à votre rythme.",
+      "silenceAfter": {
+        "durationSeconds": 9,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}
