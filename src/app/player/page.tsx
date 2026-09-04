@@ -8,6 +8,7 @@ import { AudioState, AudioTrackManager } from "@/lib/audio/AudioTrackManager";
 import { storage, SessionHistoryItem, AudioPreferences } from "@/lib/storage";
 import { PlayIcon, PauseIcon, RewindIcon, ForwardIcon, SoundMixerIcon } from "@/components/ui/Icons";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { BreathingVisualizer } from "@/components/ui/BreathingVisualizer";
 
 function PlayerContent() {
   const router = useRouter();
@@ -374,11 +375,8 @@ function PlayerContent() {
 
       {/* Central visualizer and title: Perfectly centered */}
       <div className="flex-1 flex flex-col items-center justify-center text-center px-6 my-auto">
-        <div 
-          className="w-[160px] h-[160px] sm:w-[200px] sm:h-[200px] rounded-full border border-[rgba(253,249,240,0.32)] flex items-center justify-center transition-transform duration-[3500ms] ease-in-out"
-          style={{ transform: state === "playing" ? "scale(1.06)" : "scale(1)" }}
-        >
-          <div className="w-[110px] h-[110px] sm:w-[140px] sm:h-[140px] rounded-full bg-[rgba(253,249,240,0.18)]" />
+        <div className="w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] relative flex items-center justify-center">
+          <BreathingVisualizer />
         </div>
 
         <h2 className="font-poppins font-light text-[20px] sm:text-[24px] leading-[1.25] mt-5 text-center max-w-[280px] sm:max-w-[340px]">
