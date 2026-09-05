@@ -4,13 +4,24 @@ import React, { useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { Button } from "@/components/ui/Button";
-import { storage, SessionHistoryItem, requestPersistence } from "@/lib/storage";
-import { SessionCard } from "@/components/ui/SessionCard";
-import { SituationCard } from "@/components/ui/SituationCard";
+import { storage, SessionHistoryItem, Favori, requestPersistence } from "@/lib/storage";
 import sessionsData from "@/generated/sessions.json";
 import { getSituation, getAvailableSituations, getCategoryInfo } from "@/lib/sessions";
 import { ENABLE_RECOMMENDATION } from "@/config/recommendation";
 import { getRecommendedSession, getRepriseSession, RecommendationResult } from "@/lib/recommendation";
+
+const SITUATION_ICONS: Record<string, string> = {
+  "calmer-le-stress":           '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-5 3 10 2.5-7 1.8 4H21"/></svg>',
+  "trouver-le-sommeil":         '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"/></svg>',
+  "calmer-les-pensees":         '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5c3.5-1 5.5-4 6.5-8.5 2.5 3.5 5 5 9 5"/><circle cx="19.5" cy="13" r="1.6"/></svg>',
+  "retrouver-sa-concentration": '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/></svg>',
+  "relacher-les-tensions":      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c4 3.4 6 6 6 8.8a6 6 0 0 1-12 0c0-2.8 2-5.4 6-8.8Z"/></svg>',
+  "se-recentrer":               '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v2.6M12 17.9v2.6M3.5 12h2.6M17.9 12h2.6"/></svg>',
+};
+
+function getSituationIcon(situationId: string): string {
+  return SITUATION_ICONS[situationId] || '';
+}
 
 export default function HomePage() {
   const router = useRouter();
@@ -180,16 +191,22 @@ export default function HomePage() {
         </div>
       ) : (
         <>
-          <p className="text-[13px] text-gris-2 mb-4">De quoi avez-vous besoin maintenant ?</p>
-          {/* Situations in full width bands */}
-          <div className="flex flex-col gap-3 mb-6">
+          <h3 className="font-poppins font-light text-[24px] leading-[1.2] mt-[6px] mb-[14px]">
+            De quoi<br />avez-vous besoin<br />maintenant&nbsp;?
+          </h3>
+          {/* Full-width color bands per maquette */}
+          <div className="flex flex-col gap-[6px]">
             {getAvailableSituations().map((situation) => (
-              <SituationCard
+              <button
                 key={situation.id}
-                situation={situation}
                 onClick={() => router.push(`/situation/${situation.id}`)}
-                className="w-full flex-row items-center gap-4 py-4 px-5 min-h-[72px]"
-              />
+                className="w-full flex items-center gap-3 rounded-[14px] px-[16px] py-[15px] text-creme text-left active:scale-[0.98] transition-transform"
+                style={{ background: situation.color }}
+              >
+                <span className="shrink-0" dangerouslySetInnerHTML={{ __html: getSituationIcon(situation.id) }} />
+                <b className="flex-1 text-[15px] font-semibold">{situation.shortLabel}</b>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.55)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m9 5 7 7-7 7"/></svg>
+              </button>
             ))}
           </div>
         </>

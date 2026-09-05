@@ -35,38 +35,6 @@ export default function ProfilePage() {
   const totalHours = Math.floor(totalSeconds / 3600);
   const totalMinutes = Math.floor((totalSeconds % 3600) / 60);
 
-  // Streak calculation (simplified)
-  let streak = 0;
-  if (history.length > 0) {
-    let currentDay = new Date();
-    currentDay.setHours(0, 0, 0, 0);
-    
-    // Create an array of unique days played
-    const daysPlayed = Array.from(new Set(
-      history.map(h => {
-        const d = new Date(h.startedAt);
-        d.setHours(0, 0, 0, 0);
-        return d.getTime();
-      })
-    )).sort((a, b) => b - a);
-
-    // If they played today or yesterday, start counting
-    const yesterday = new Date(currentDay);
-    yesterday.setDate(yesterday.getDate() - 1);
-    
-    if (daysPlayed[0] === currentDay.getTime() || daysPlayed[0] === yesterday.getTime()) {
-      streak = 1;
-      let checkDate = new Date(daysPlayed[0]);
-      for (let i = 1; i < daysPlayed.length; i++) {
-        checkDate.setDate(checkDate.getDate() - 1);
-        if (daysPlayed[i] === checkDate.getTime()) {
-          streak++;
-        } else {
-          break;
-        }
-      }
-    }
-  }
 
   const formatRelativeDate = (isoString: string) => {
     const d = new Date(isoString);
@@ -100,7 +68,7 @@ export default function ProfilePage() {
         {firstName}
       </h1>
 
-      {/* Stats */}
+      {/* Stats — spec §6: pas de streak/jours consécutifs */}
       <div className="flex gap-[7px] mt-[10px]">
         <div className="flex-1 bg-coquille rounded-[13px] p-[11px] min-h-[96px] flex flex-col justify-center">
           <b className="block font-poppins font-light text-[22px] sm:text-[24px]">{totalSessions}</b>
@@ -108,13 +76,9 @@ export default function ProfilePage() {
         </div>
         <div className="flex-1 bg-coquille rounded-[13px] p-[11px] min-h-[96px] flex flex-col justify-center">
           <b className="block font-poppins font-light text-[22px] sm:text-[24px]">
-            {totalHours > 0 ? `${totalHours} h ${totalMinutes}` : `${totalMinutes} min`}
+            {totalHours > 0 ? `${totalHours} h ${totalMinutes < 10 ? '0' : ''}${totalMinutes}` : `${totalMinutes} min`}
           </b>
           <i className="not-italic text-[10px] text-gris-2 mt-1">au total</i>
-        </div>
-        <div className="flex-1 bg-coquille rounded-[13px] p-[11px] min-h-[96px] flex flex-col justify-center">
-          <b className="block font-poppins font-light text-[22px] sm:text-[24px]">{streak}</b>
-          <i className="not-italic text-[10px] text-gris-2 mt-1">jours d'affilée</i>
         </div>
       </div>
 
@@ -146,7 +110,7 @@ export default function ProfilePage() {
                     {session.metadata.title}
                   </b>
                   <i className="block not-italic text-[10.5px] text-gris-2">
-                    {formatRelativeDate(item.startedAt)} · {mins} min
+                    {formatRelativeDate(item.startedAt)} · {Math.max(1, Math.round((item.duration || session.metadata.durationSeconds) / 60))} min
                   </i>
                 </div>
                 <div 
@@ -177,6 +141,10 @@ export default function ProfilePage() {
         </div>
         <div className="flex justify-between items-center py-[12px] border-b border-filet text-[12.5px] cursor-pointer active:bg-coquille/50 transition-colors">
           <span>Téléchargements</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gris2)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m9 5 7 7-7 7"/></svg>
+        </div>
+        <div className="flex justify-between items-center py-[12px] border-b border-filet text-[12.5px] cursor-pointer active:bg-coquille/50 transition-colors">
+          <span>Compte</span>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gris2)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m9 5 7 7-7 7"/></svg>
         </div>
       </div>

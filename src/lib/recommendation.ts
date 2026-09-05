@@ -218,15 +218,16 @@ export async function getRecommendedSession(currentDate: Date = new Date(), forc
     if (bestCandidate.ruleName === "favori") {
       reason = "Parce que vous avez aimé « " + bestCandidate.session.title + " ».";
     } else if (bestCandidate.ruleName === "situation") {
-      // Find the label for the situation
-      let sitLabel = bestCandidate.session.situationId;
-      if (sitLabel === "calmer-le-stress") sitLabel = "le thème du stress";
-      else if (sitLabel === "calmer-les-pensees") sitLabel = "calmer vos pensées";
-      else if (sitLabel === "retrouver-sa-concentration") sitLabel = "la concentration";
-      else if (sitLabel === "relacher-les-tensions") sitLabel = "relâcher les tensions";
-      else if (sitLabel === "trouver-le-sommeil") sitLabel = "préparer le sommeil";
-      else if (sitLabel === "se-recentrer") sitLabel = "vous recentrer";
-      
+      // Find the label for the situation using a plain string mapping
+      const SIT_LABELS: Record<string, string> = {
+        "calmer-le-stress": "le calme des pensées",
+        "calmer-les-pensees": "calmer les pensées",
+        "retrouver-sa-concentration": "la concentration",
+        "relacher-les-tensions": "relâcher les tensions",
+        "trouver-le-sommeil": "préparer le sommeil",
+        "se-recentrer": "vous recentrer",
+      };
+      const sitLabel: string = SIT_LABELS[bestCandidate.session.situationId] || bestCandidate.session.situationId;
       reason = "Vous revenez souvent à " + sitLabel + ".";
     }
 

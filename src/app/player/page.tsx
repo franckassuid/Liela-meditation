@@ -23,6 +23,10 @@ function PlayerContent() {
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showCompletion, setShowCompletion] = useState(false);
+  const [showFavPrompt, setShowFavPrompt] = useState(false);
+  const [nextSession, setNextSession] = useState<{ id: string; title: string; duration: number; situationColor: string } | null>(null);
+  const sessionStartedAt = useRef<string>(new Date().toISOString());
   const [rmsData, setRmsData] = useState<number[] | null>(null);
   
   const [prefs, setPrefs] = useState<AudioPreferences>({
@@ -268,19 +272,37 @@ function PlayerContent() {
     if (state === "ended" && session) {
       const item: SessionHistoryItem = {
         sessionId: session.id,
-        startedAt: new Date().toISOString(),
+        startedAt: sessionStartedAt.current,
         completedAt: new Date().toISOString(),
         lastPosition: session.metadata.durationSeconds,
         duration: session.metadata.durationSeconds,
         completed: true,
         abandoned: false,
       };
-      storage.addHistoryItem(item);
-      storage.setInProgressSession(null);
-      // Wait a moment then redirect to check-in or history
-      setTimeout(() => router.push("/profile"), 1000);
+      storage.addHistoryItem(item).then(async () => {
+        await storage.setInProgressSession(null);
+        // Check conditions for showing the fav prompt (spec 3.1)
+        const alreadyFav = await storage.hasFavorite(session.id);
+        const alreadyRefused = await storage.hasRefusedFavorite(session.id);
+        const dailyPrompts = await storage.getDailyFavoritePrompts();
+        const shouldPrompt = !alreadyFav && !alreadyRefused && dailyPrompts < 2;
+        if (shouldPrompt) {
+          await storage.incrementDailyFavoritePrompts();
+        }
+        setShowFavPrompt(shouldPrompt);
+        setIsFavorite(alreadyFav);
+        // Find a next session suggestion (same situation, different session)
+        const SESSIONS_CATALOG = (await import("@/config/sessionsCatalog")).SESSIONS_CATALOG;
+        const others = SESSIONS_CATALOG.filter(s => s.situationId === session.metadata.situation && s.id !== session.id && s.isAvailable);
+        if (others.length > 0) {
+          const pick = others[Math.floor(Math.random() * others.length)];
+          const sit = getSituation(pick.situationId);
+          setNextSession({ id: pick.realSessionId || pick.id, title: pick.title, duration: pick.durationSeconds, situationColor: sit?.color || "var(--encre)" });
+        }
+        setShowCompletion(true);
+      });
     }
-  }, [state, session, router]);
+  }, [state, session]);
 
   // Handle interaction timeout
   const resetControlsTimeout = useCallback(() => {
@@ -497,6 +519,93 @@ function PlayerContent() {
           <div className="w-[50px] shrink-0" /> {/* Spacer to balance the heart button */}
         </div>
       </div>
+
+      {/* === COMPLETION SCREEN === */}
+      {showCompletion && (
+        <div className="absolute inset-0 z-50 bg-creme text-encre flex flex-col overflow-y-auto">
+          {/* Header area */}
+          <div className="flex flex-col items-center pt-[max(3rem,env(safe-area-inset-top))] pb-6 px-6">
+            <span className="w-14 h-14 rounded-full bg-[#E8F2EC] flex items-center justify-center mb-4">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4E7259" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6.5 9.5 17 4 11.5"/>
+              </svg>
+            </span>
+            <p className="font-poppins font-light text-[24px] leading-[1.1]">C'est fini.</p>
+            <p className="text-[12px] text-gris-2 mt-1">
+              {Math.round(session.metadata.durationSeconds / 60)} min · {situation?.shortLabel}
+            </p>
+          </div>
+
+          <div className="px-6 pb-[max(2rem,env(safe-area-inset-bottom))] flex flex-col gap-4">
+            {/* Fav prompt card — condition: not already fav, not refused, <2 today */}
+            {showFavPrompt && (
+              <div className="bg-white rounded-[18px] p-5 shadow-n1">
+                <p className="font-poppins font-light text-[17px] leading-[1.3] mb-4">
+                  Vous voulez la retrouver&nbsp;?
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    className="flex-1 flex items-center justify-center gap-2 bg-encre text-creme rounded-[12px] py-3 text-[14px] font-semibold active:scale-[0.97] transition-transform"
+                    onClick={async () => {
+                      await storage.addFavorite(session.id, "fin_de_seance");
+                      setIsFavorite(true);
+                      setShowFavPrompt(false);
+                    }}
+                  >
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FDF9F0" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/>
+                    </svg>
+                    Ajouter aux favoris
+                  </button>
+                </div>
+                <button
+                  className="block w-full text-center text-[11.5px] text-gris-2 mt-3 active:opacity-60"
+                  onClick={async () => {
+                    await storage.addFavoriteRefusal(session.id);
+                    setShowFavPrompt(false);
+                  }}
+                >
+                  Non merci
+                </button>
+              </div>
+            )}
+
+            {/* Next session suggestion */}
+            {nextSession && (
+              <div>
+                <p className="text-[11.5px] font-semibold mb-2">Ensuite</p>
+                <div
+                  className="flex items-center gap-3 cursor-pointer active:scale-[0.98] transition-transform"
+                  onClick={() => router.push(`/player?id=${nextSession.id}`)}
+                >
+                  <span
+                    className="w-9 h-9 rounded-[10px] shrink-0"
+                    style={{ background: nextSession.situationColor }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <b className="block text-[13px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
+                      {nextSession.title}
+                    </b>
+                    <i className="block not-italic text-[11px] text-gris-2">
+                      {Math.round(nextSession.duration / 60)} min
+                    </i>
+                  </div>
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="#433528" stroke="#433528" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M8 5.5v13l11-6.5Z"/>
+                  </svg>
+                </div>
+              </div>
+            )}
+
+            <button
+              className="mt-2 text-[13px] font-medium text-gris-2 active:opacity-60 transition-opacity"
+              onClick={() => router.push("/")}
+            >
+              Retour à l'accueil
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Settings Modal Drawer */}
       {showSettings && (

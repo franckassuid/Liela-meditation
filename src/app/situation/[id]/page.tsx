@@ -101,7 +101,7 @@ export default function SituationPage(props: { params: Promise<{ id: string }> }
           <div className="rounded-[15px] p-[14px] text-[#FDF9F0] flex flex-col gap-[8px]" style={{ background: situation.color }}>
             <Icon size={22} color="rgba(253,249,240,.9)" />
             <p className="text-[11.5px] leading-[1.45] opacity-88">
-              {situation.description || situation.shortDescription}
+              {situation.shortDescription}
             </p>
           </div>
         ) : (
