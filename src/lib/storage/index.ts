@@ -1,3 +1,5 @@
+import { get, set, del, keys } from 'idb-keyval';
+
 export interface AudioPreferences {
   voiceVolume: number;
   musicVolume: number;
@@ -12,7 +14,14 @@ export interface SessionHistoryItem {
   completedAt?: string;
   lastPosition: number;
   duration: number;
-  completed: boolean;
+  completed: boolean; // >= 80%
+  abandoned?: boolean; // < 90s
+}
+
+export interface Favori {
+  sessionId: string;
+  addedAt: string;
+  source?: string;
 }
 
 const STORAGE_KEYS = {
@@ -21,29 +30,49 @@ const STORAGE_KEYS = {
   AUDIO_PREFERENCES: "liela_audio_prefs",
   HISTORY: "liela_history",
   IN_PROGRESS: "liela_in_progress",
+  FAVORITES: "liela_favorites",
+  FAVORITES_REFUSALS: "liela_favorites_refusals",
+  RECOMMENDATION_HISTORY: "liela_recommendation_history",
 };
 
+// Demande la persistance permanente du stockage (évite la purge Safari des 7 jours)
+export async function requestPersistence(): Promise<boolean> {
+  if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
+    try {
+      const isPersisted = await navigator.storage.persisted();
+      if (isPersisted) return true;
+      const granted = await navigator.storage.persist();
+      return granted;
+    } catch (e) {
+      console.error("Erreur lors de la demande de persistance", e);
+      return false;
+    }
+  }
+  return false;
+}
+
 export const storage = {
-  getOnboardingCompleted: (): boolean => {
+  getOnboardingCompleted: async (): Promise<boolean> => {
     if (typeof window === "undefined") return false;
-    return localStorage.getItem(STORAGE_KEYS.ONBOARDING_COMPLETED) === "true";
+    const val = await get(STORAGE_KEYS.ONBOARDING_COMPLETED);
+    return val === true;
   },
-  setOnboardingCompleted: (completed: boolean) => {
+  setOnboardingCompleted: async (completed: boolean): Promise<void> => {
     if (typeof window === "undefined") return;
-    localStorage.setItem(STORAGE_KEYS.ONBOARDING_COMPLETED, completed ? "true" : "false");
+    await set(STORAGE_KEYS.ONBOARDING_COMPLETED, completed);
   },
 
-  getProfile: (): { firstName: string } => {
+  getProfile: async (): Promise<{ firstName: string }> => {
     if (typeof window === "undefined") return { firstName: "" };
-    const data = localStorage.getItem(STORAGE_KEYS.USER_PROFILE);
-    return data ? JSON.parse(data) : { firstName: "" };
+    const data = await get(STORAGE_KEYS.USER_PROFILE);
+    return data ? (data as { firstName: string }) : { firstName: "" };
   },
-  setProfile: (profile: { firstName: string }) => {
+  setProfile: async (profile: { firstName: string }): Promise<void> => {
     if (typeof window === "undefined") return;
-    localStorage.setItem(STORAGE_KEYS.USER_PROFILE, JSON.stringify(profile));
+    await set(STORAGE_KEYS.USER_PROFILE, profile);
   },
 
-  getAudioPreferences: (): AudioPreferences => {
+  getAudioPreferences: async (): Promise<AudioPreferences> => {
     const defaults: AudioPreferences = {
       voiceVolume: 1,
       musicVolume: 0.75,
@@ -53,56 +82,122 @@ export const storage = {
     };
     if (typeof window === "undefined") return defaults;
     
-    const data = localStorage.getItem(STORAGE_KEYS.AUDIO_PREFERENCES);
-    if (!data) return defaults;
+    const parsed = await get<AudioPreferences>(STORAGE_KEYS.AUDIO_PREFERENCES);
+    if (!parsed) return defaults;
     
-    try {
-      const parsed = JSON.parse(data);
-      return {
-        ...defaults,
-        ...parsed,
-        musicVolume: typeof parsed.musicVolume === "number" ? parsed.musicVolume : 0.75,
-        ambienceVolume: typeof parsed.ambienceVolume === "number" ? parsed.ambienceVolume : 0.50,
-      };
-    } catch {
-      return defaults;
-    }
+    return {
+      ...defaults,
+      ...parsed,
+      musicVolume: typeof parsed.musicVolume === "number" ? parsed.musicVolume : 0.75,
+      ambienceVolume: typeof parsed.ambienceVolume === "number" ? parsed.ambienceVolume : 0.50,
+    };
   },
-  setAudioPreferences: (prefs: Partial<AudioPreferences>) => {
+  setAudioPreferences: async (prefs: Partial<AudioPreferences>): Promise<void> => {
     if (typeof window === "undefined") return;
-    const current = storage.getAudioPreferences();
-    localStorage.setItem(STORAGE_KEYS.AUDIO_PREFERENCES, JSON.stringify({ ...current, ...prefs }));
+    const current = await storage.getAudioPreferences();
+    await set(STORAGE_KEYS.AUDIO_PREFERENCES, { ...current, ...prefs });
   },
 
-  getHistory: (): SessionHistoryItem[] => {
+  getHistory: async (): Promise<SessionHistoryItem[]> => {
     if (typeof window === "undefined") return [];
-    const data = localStorage.getItem(STORAGE_KEYS.HISTORY);
-    return data ? JSON.parse(data) : [];
+    const data = await get<SessionHistoryItem[]>(STORAGE_KEYS.HISTORY);
+    return data || [];
   },
-  addHistoryItem: (item: SessionHistoryItem) => {
+  addHistoryItem: async (item: SessionHistoryItem): Promise<void> => {
     if (typeof window === "undefined") return;
-    const history = storage.getHistory();
-    // Update if exists, otherwise unshift
+    const history = await storage.getHistory();
     const index = history.findIndex(i => i.sessionId === item.sessionId && i.startedAt === item.startedAt);
     if (index >= 0) {
       history[index] = item;
     } else {
       history.unshift(item);
     }
-    localStorage.setItem(STORAGE_KEYS.HISTORY, JSON.stringify(history.slice(0, 50))); // Keep last 50
+    await set(STORAGE_KEYS.HISTORY, history.slice(0, 50));
   },
 
-  getInProgressSession: (): SessionHistoryItem | null => {
+  getInProgressSession: async (): Promise<SessionHistoryItem | null> => {
     if (typeof window === "undefined") return null;
-    const data = localStorage.getItem(STORAGE_KEYS.IN_PROGRESS);
-    return data ? JSON.parse(data) : null;
+    const data = await get<SessionHistoryItem>(STORAGE_KEYS.IN_PROGRESS);
+    return data || null;
   },
-  setInProgressSession: (item: SessionHistoryItem | null) => {
+  setInProgressSession: async (item: SessionHistoryItem | null): Promise<void> => {
     if (typeof window === "undefined") return;
     if (item) {
-      localStorage.setItem(STORAGE_KEYS.IN_PROGRESS, JSON.stringify(item));
+      await set(STORAGE_KEYS.IN_PROGRESS, item);
     } else {
-      localStorage.removeItem(STORAGE_KEYS.IN_PROGRESS);
+      await del(STORAGE_KEYS.IN_PROGRESS);
     }
   },
+
+  getFavorites: async (): Promise<Favori[]> => {
+    if (typeof window === "undefined") return [];
+    const data = await get<Favori[]>(STORAGE_KEYS.FAVORITES);
+    return data || [];
+  },
+  hasFavorite: async (sessionId: string): Promise<boolean> => {
+    const favs = await storage.getFavorites();
+    return favs.some(f => f.sessionId === sessionId);
+  },
+  addFavorite: async (sessionId: string, source?: string): Promise<void> => {
+    if (typeof window === "undefined") return;
+    const favs = await storage.getFavorites();
+    if (!favs.some(f => f.sessionId === sessionId)) {
+      favs.unshift({ sessionId, addedAt: new Date().toISOString(), source });
+      await set(STORAGE_KEYS.FAVORITES, favs);
+    }
+  },
+  removeFavorite: async (sessionId: string): Promise<void> => {
+    if (typeof window === "undefined") return;
+    const favs = await storage.getFavorites();
+    const newFavs = favs.filter(f => f.sessionId !== sessionId);
+    await set(STORAGE_KEYS.FAVORITES, newFavs);
+  },
+
+  getFavoritesRefusals: async (): Promise<string[]> => {
+    if (typeof window === "undefined") return [];
+    const data = await get<string[]>(STORAGE_KEYS.FAVORITES_REFUSALS);
+    return data || [];
+  },
+  hasRefusedFavorite: async (sessionId: string): Promise<boolean> => {
+    const refusals = await storage.getFavoritesRefusals();
+    return refusals.includes(sessionId);
+  },
+  addFavoriteRefusal: async (sessionId: string): Promise<void> => {
+    if (typeof window === "undefined") return;
+    const refusals = await storage.getFavoritesRefusals();
+    if (!refusals.includes(sessionId)) {
+      refusals.push(sessionId);
+      await set(STORAGE_KEYS.FAVORITES_REFUSALS, refusals);
+    }
+  },
+
+  getDailyFavoritePrompts: async (): Promise<number> => {
+    if (typeof window === "undefined") return 0;
+    const data = await get<{ date: string; count: number }>("liela_daily_fav_prompts");
+    if (!data) return 0;
+    const today = new Date().toISOString().split("T")[0];
+    if (data.date === today) {
+      return data.count;
+    }
+    return 0;
+  },
+  incrementDailyFavoritePrompts: async (): Promise<void> => {
+    if (typeof window === "undefined") return;
+    const count = await storage.getDailyFavoritePrompts();
+    const today = new Date().toISOString().split("T")[0];
+    await set("liela_daily_fav_prompts", { date: today, count: count + 1 });
+  },
+
+  getRecommendationHistory: async (): Promise<{ sessionId: string; recommendedAt: string }[]> => {
+    if (typeof window === "undefined") return [];
+    const data = await get<{ sessionId: string; recommendedAt: string }[]>(STORAGE_KEYS.RECOMMENDATION_HISTORY);
+    return data || [];
+  },
+  addRecommendationHistory: async (sessionId: string): Promise<void> => {
+    if (typeof window === "undefined") return;
+    const history = await storage.getRecommendationHistory();
+    history.unshift({ sessionId, recommendedAt: new Date().toISOString() });
+    await set(STORAGE_KEYS.RECOMMENDATION_HISTORY, history.slice(0, 50)); // Keep last 50 recs
+  },
 };
+

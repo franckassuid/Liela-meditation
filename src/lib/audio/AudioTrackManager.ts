@@ -283,6 +283,11 @@ export class AudioTrackManager {
     }
   }
 
+  public getCurrentTime(): number {
+    const master = this.masterTrack;
+    return master ? master.currentTime : 0;
+  }
+
   public cleanup() {
     this.pause();
     this.tracks.forEach(t => {

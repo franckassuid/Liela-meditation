@@ -14,6 +14,8 @@ export interface SessionMetadata {
   shortDescription?: string | null;
   technique?: string | null;
   situation?: SituationId;
+  estPorteEntree?: boolean;
+  ordre?: number;
 }
 
 export interface SessionAudioTrack {

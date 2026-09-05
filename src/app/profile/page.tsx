@@ -1,84 +1,183 @@
 "use client";
 
-import React, { useState } from "react";
-import { storage } from "@/lib/storage";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { storage, SessionHistoryItem, Favori } from "@/lib/storage";
+import { getSituation } from "@/lib/sessions";
+import sessionsData from "@/generated/sessions.json";
+import { HeartIcon } from "@/components/ui/Icons";
 
 export default function ProfilePage() {
-  const [firstName, setFirstName] = useState(() => storage.getProfile().firstName);
-  const [savedSuccess, setSavedSuccess] = useState(false);
-  const [musicEnabled, setMusicEnabled] = useState(() => storage.getAudioPreferences().musicEnabled);
-  const [ambienceEnabled, setAmbienceEnabled] = useState(() => storage.getAudioPreferences().ambienceEnabled);
+  const router = useRouter();
+  const [firstName, setFirstName] = useState("");
+  const [history, setHistory] = useState<SessionHistoryItem[]>([]);
+  const [favorites, setFavorites] = useState<Favori[]>([]);
 
-  const handleSaveName = () => {
-    storage.setProfile({ firstName });
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2000);
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      const profile = await storage.getProfile();
+      const hist = await storage.getHistory();
+      const favs = await storage.getFavorites();
+      if (active) {
+        setFirstName(profile.firstName || "Profil");
+        setHistory(hist.filter(h => h.completed || h.duration > 0)); // Filter out unstarted/invalid
+        setFavorites(favs);
+      }
+    };
+    load();
+    return () => { active = false; };
+  }, []);
+
+  // Stats calculation
+  const totalSessions = history.length;
+  const totalSeconds = history.reduce((acc, h) => acc + h.lastPosition, 0);
+  const totalHours = Math.floor(totalSeconds / 3600);
+  const totalMinutes = Math.floor((totalSeconds % 3600) / 60);
+
+  // Streak calculation (simplified)
+  let streak = 0;
+  if (history.length > 0) {
+    let currentDay = new Date();
+    currentDay.setHours(0, 0, 0, 0);
+    
+    // Create an array of unique days played
+    const daysPlayed = Array.from(new Set(
+      history.map(h => {
+        const d = new Date(h.startedAt);
+        d.setHours(0, 0, 0, 0);
+        return d.getTime();
+      })
+    )).sort((a, b) => b - a);
+
+    // If they played today or yesterday, start counting
+    const yesterday = new Date(currentDay);
+    yesterday.setDate(yesterday.getDate() - 1);
+    
+    if (daysPlayed[0] === currentDay.getTime() || daysPlayed[0] === yesterday.getTime()) {
+      streak = 1;
+      let checkDate = new Date(daysPlayed[0]);
+      for (let i = 1; i < daysPlayed.length; i++) {
+        checkDate.setDate(checkDate.getDate() - 1);
+        if (daysPlayed[i] === checkDate.getTime()) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
+  const formatRelativeDate = (isoString: string) => {
+    const d = new Date(isoString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - d.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0 && d.getDate() === now.getDate()) return "aujourd'hui";
+    if (diffDays === 1) return "hier";
+    
+    const days = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."];
+    if (diffDays < 7) return days[d.getDay()];
+    
+    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   };
 
-  const toggleMusic = () => {
-    const val = !musicEnabled;
-    setMusicEnabled(val);
-    storage.setAudioPreferences({ musicEnabled: val });
-  };
-
-  const toggleAmbience = () => {
-    const val = !ambienceEnabled;
-    setAmbienceEnabled(val);
-    storage.setAudioPreferences({ ambienceEnabled: val });
+  const handleToggleFavorite = async (sessionId: string) => {
+    const isFav = favorites.some(f => f.sessionId === sessionId);
+    if (isFav) {
+      await storage.removeFavorite(sessionId);
+    } else {
+      await storage.addFavorite(sessionId, "profile");
+    }
+    const newFavs = await storage.getFavorites();
+    setFavorites(newFavs);
   };
 
   return (
-    <div className="p-marge pb-8 flex flex-col flex-1">
-      <h1 className="font-poppins font-light text-[24px] leading-[1.2] mb-6 mt-2">
-        Profil & Réglages
+    <div className="p-marge pb-4 flex flex-col min-h-screen">
+      <h1 className="font-poppins font-light text-[32px] sm:text-[36px] leading-[1.1] pt-[max(1rem,env(safe-area-inset-top))] mb-[24px]">
+        {firstName}
       </h1>
-      
-      <div className="mb-8 bg-surface p-4 rounded-md shadow-p1">
-        <label className="block text-[13px] text-gris-2 mb-2 font-medium">Prénom (facultatif)</label>
-        <div className="flex gap-2">
-          <Input 
-            value={firstName} 
-            onChange={e => setFirstName(e.target.value)} 
-            placeholder="Votre prénom"
-          />
-          <Button variant="secondary" onClick={handleSaveName}>
-            {savedSuccess ? "Enregistré !" : "Enregistrer"}
-          </Button>
+
+      {/* Stats */}
+      <div className="flex gap-[7px] mt-[10px]">
+        <div className="flex-1 bg-coquille rounded-[13px] p-[11px] min-h-[96px] flex flex-col justify-center">
+          <b className="block font-poppins font-light text-[22px] sm:text-[24px]">{totalSessions}</b>
+          <i className="not-italic text-[10px] text-gris-2 mt-1">séances</i>
+        </div>
+        <div className="flex-1 bg-coquille rounded-[13px] p-[11px] min-h-[96px] flex flex-col justify-center">
+          <b className="block font-poppins font-light text-[22px] sm:text-[24px]">
+            {totalHours > 0 ? `${totalHours} h ${totalMinutes}` : `${totalMinutes} min`}
+          </b>
+          <i className="not-italic text-[10px] text-gris-2 mt-1">au total</i>
+        </div>
+        <div className="flex-1 bg-coquille rounded-[13px] p-[11px] min-h-[96px] flex flex-col justify-center">
+          <b className="block font-poppins font-light text-[22px] sm:text-[24px]">{streak}</b>
+          <i className="not-italic text-[10px] text-gris-2 mt-1">jours d'affilée</i>
         </div>
       </div>
 
-      <div className="bg-surface p-4 rounded-md shadow-p1">
-        <h2 className="font-poppins text-[16px] mb-2 font-medium">Préférences Audio</h2>
-        <p className="text-[12.5px] text-gris-2 mb-4">Ces réglages s&apos;appliqueront par défaut lors de vos séances.</p>
-        
-        <div className="flex items-center justify-between py-3.5 border-b border-filet">
-          <div>
-            <span className="text-[15px] font-medium text-encre block">Musique</span>
-            <span className="text-[12px] text-gris-3">Accompagnement mélodique</span>
-          </div>
-          <button 
-            onClick={toggleMusic}
-            aria-label="Activer ou désactiver la musique"
-            className={`w-11 h-6 rounded-full relative transition-colors ${musicEnabled ? "bg-sauge-p" : "bg-bord"}`}
-          >
-            <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${musicEnabled ? "translate-x-5" : ""}`} />
-          </button>
+      {/* History */}
+      <p className="text-[11.5px] font-semibold m-[24px_0_10px]">Historique</p>
+      <div className="flex flex-col">
+        {history.length === 0 ? (
+          <p className="text-[13px] text-gris-2">Aucune séance pour le moment.</p>
+        ) : (
+          history.slice(0, 5).map((item, idx) => {
+            const session = sessionsData.find(s => s.id === item.sessionId);
+            if (!session) return null;
+            const sit = getSituation(session.metadata.situation);
+            const isFav = favorites.some(f => f.sessionId === item.sessionId);
+            const mins = Math.max(1, Math.round(item.lastPosition / 60));
+
+            return (
+              <div 
+                key={`${item.sessionId}-${item.startedAt}-${idx}`} 
+                className="flex items-center gap-[10px] py-[10px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/50 transition-colors"
+                onClick={() => router.push(`/player?id=${session.id}`)}
+              >
+                <div 
+                  className="w-[9px] h-[9px] rounded-full shrink-0" 
+                  style={{ background: sit?.color || "var(--bord)" }}
+                />
+                <div className="flex-1 min-w-0">
+                  <b className="block text-[12.5px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
+                    {session.metadata.title}
+                  </b>
+                  <i className="block not-italic text-[10.5px] text-gris-2">
+                    {formatRelativeDate(item.startedAt)} · {mins} min
+                  </i>
+                </div>
+                <div 
+                  className="p-2 -mr-2 cursor-pointer" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleFavorite(session.id);
+                  }}
+                >
+                  <HeartIcon 
+                    size={16} 
+                    filled={isFav} 
+                    className={isFav ? "text-[#A26248]" : "text-gris-2"} 
+                  />
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Settings */}
+      <p className="text-[11.5px] font-semibold m-[24px_0_2px]">Réglages</p>
+      <div className="flex flex-col mb-[max(2rem,env(safe-area-inset-bottom))]">
+        <div className="flex justify-between items-center py-[12px] border-b border-filet text-[12.5px] cursor-pointer active:bg-coquille/50 transition-colors">
+          <span>Rappel quotidien</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gris2)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m9 5 7 7-7 7"/></svg>
         </div>
-        
-        <div className="flex items-center justify-between py-3.5">
-          <div>
-            <span className="text-[15px] font-medium text-encre block">Ambiance sonore</span>
-            <span className="text-[12px] text-gris-3">Sons de nature ou d&apos;ambiance</span>
-          </div>
-          <button 
-            onClick={toggleAmbience}
-            aria-label="Activer ou désactiver l'ambiance sonore"
-            className={`w-11 h-6 rounded-full relative transition-colors ${ambienceEnabled ? "bg-sauge-p" : "bg-bord"}`}
-          >
-            <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${ambienceEnabled ? "translate-x-5" : ""}`} />
-          </button>
+        <div className="flex justify-between items-center py-[12px] border-b border-filet text-[12.5px] cursor-pointer active:bg-coquille/50 transition-colors">
+          <span>Téléchargements</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gris2)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m9 5 7 7-7 7"/></svg>
         </div>
       </div>
     </div>

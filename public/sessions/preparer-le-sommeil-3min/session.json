@@ -5,7 +5,7 @@
     "title": "Préparer le sommeil",
     "category": "sleep",
     "language": "fr-FR",
-    "durationSeconds": 172.93,
+    "durationSeconds": 176.6,
     "level": null,
     "shortDescription": null,
     "technique": null
@@ -54,7 +54,7 @@
   ],
   "generation": {
     "ttsProvider": "google-gemini",
-    "ttsModel": "gemini-2.5-flash-preview-tts",
-    "voiceId": "Charon"
+    "ttsModel": "gemini-3.1-flash-tts-preview",
+    "voiceId": "Algenib"
   }
 }

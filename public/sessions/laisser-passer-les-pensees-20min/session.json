@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "id": "laisser-passer-les-pensees-20min",
+  "metadata": {
+    "title": "Laisser passer les pensées",
+    "category": "thoughts",
+    "language": "fr-FR",
+    "durationSeconds": 1182.27,
+    "level": null,
+    "shortDescription": null,
+    "technique": null
+  },
+  "audio": {
+    "voice": "audio/voice.m4a",
+    "music": {
+      "id": "inner-space",
+      "file": "audio/music.m4a",
+      "defaultVolume": 0.01
+    },
+    "ambience": {
+      "id": "soft-air",
+      "file": "audio/ambience.m4a",
+      "defaultVolume": 0.02
+    },
+    "cues": {
+      "file": "audio/cues.m4a",
+      "defaultVolume": 1
+    },
+    "final": "audio/final.m4a"
+  },
+  "mix": {
+    "voiceDefaultVolume": 1,
+    "musicDefaultVolume": 0.01,
+    "ambienceDefaultVolume": 0.02,
+    "cuesDefaultVolume": 1
+  },
+  "audioFormat": {
+    "codec": "aac",
+    "container": "m4a",
+    "sampleRate": 48000,
+    "bitrates": {
+      "voice": 64000,
+      "music": 96000,
+      "ambience": 96000,
+      "cues": 64000,
+      "final": 128000
+    }
+  },
+  "cues": [
+    {
+      "asset": "soft-chime",
+      "timeSeconds": 1152
+    },
+    {
+      "asset": "singing-bowl",
+      "timeSeconds": 0
+    },
+    {
+      "asset": "soft-bell",
+      "timeSeconds": 1182.26
+    }
+  ],
+  "generation": {
+    "ttsProvider": "google-gemini",
+    "ttsModel": "gemini-3.1-flash-tts-preview",
+    "voiceId": "Algenib"
+  }
+}

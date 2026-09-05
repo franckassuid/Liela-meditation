@@ -6,7 +6,7 @@ import { getSessionById, Session } from "@/lib/sessions";
 import { getSituation } from "@/config/situations";
 import { AudioState, AudioTrackManager } from "@/lib/audio/AudioTrackManager";
 import { storage, SessionHistoryItem, AudioPreferences } from "@/lib/storage";
-import { PlayIcon, PauseIcon, RewindIcon, ForwardIcon, SoundMixerIcon } from "@/components/ui/Icons";
+import { PlayIcon, PauseIcon, RewindIcon, ForwardIcon, SoundMixerIcon, HeartIcon } from "@/components/ui/Icons";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { BreathingVisualizer } from "@/components/ui/BreathingVisualizer";
 
@@ -22,8 +22,16 @@ function PlayerContent() {
   const [currentTime, setCurrentTime] = useState(0);
   const [showControls, setShowControls] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [rmsData, setRmsData] = useState<number[] | null>(null);
   
-  const [prefs, setPrefs] = useState<AudioPreferences>(() => storage.getAudioPreferences());
+  const [prefs, setPrefs] = useState<AudioPreferences>({
+    voiceVolume: 1,
+    musicVolume: 0.75,
+    ambienceVolume: 0.50,
+    musicEnabled: true,
+    ambienceEnabled: true,
+  });
 
   const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
   const saveProgressInterval = useRef<NodeJS.Timeout | null>(null);
@@ -36,28 +44,68 @@ function PlayerContent() {
       return;
     }
 
-    const savedPrefs = storage.getAudioPreferences();
-    const manager = new AudioTrackManager(session, savedPrefs);
-    managerRef.current = manager;
+    const init = async () => {
+      // Fetch RMS data for the visualization
+      try {
+        const res = await fetch(`/sessions/${session.id}/audio/rms.json`);
+        if (res.ok) {
+          const data = await res.json();
+          setRmsData(data);
+        }
+      } catch (e) {
+        console.warn("Failed to load RMS data", e);
+      }
 
-    manager.setCallbacks(
-      (s) => setState(s),
-      (t) => setCurrentTime(t)
-    );
+      const savedPrefs = await storage.getAudioPreferences();
+      setPrefs(savedPrefs);
+      
+      const manager = new AudioTrackManager(session, savedPrefs);
+      managerRef.current = manager;
 
-    manager.load().then(() => {
+      manager.setCallbacks(
+        (s) => setState(s),
+        (t) => setCurrentTime(t)
+      );
+
+      await manager.load();
+      
       // Seek to saved position if resuming
-      const inProgress = storage.getInProgressSession();
+      const inProgress = await storage.getInProgressSession();
       if (inProgress && inProgress.sessionId === session.id && inProgress.lastPosition > 0) {
         manager.seek(inProgress.lastPosition);
         setCurrentTime(inProgress.lastPosition);
       }
-    });
+      
+      const isFav = await storage.hasFavorite(session.id);
+      setIsFavorite(isFav);
+    };
+
+    init();
 
     return () => {
-      manager.cleanup();
+      managerRef.current?.cleanup();
       if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
       if (saveProgressInterval.current) clearInterval(saveProgressInterval.current);
+      
+      // Save stats on close if it didn't naturally end
+      if (managerRef.current && session) {
+        const time = managerRef.current.getCurrentTime();
+        const dur = session.metadata.durationSeconds;
+        if (time > 0 && time < dur - 1) { // If playing stopped in the middle
+          const completed = time >= dur * 0.8;
+          const abandoned = time < 90;
+          const item: SessionHistoryItem = {
+            sessionId: session.id,
+            startedAt: new Date().toISOString(), // roughly
+            lastPosition: time,
+            duration: dur,
+            completed,
+            abandoned,
+          };
+          storage.addHistoryItem(item);
+          storage.setInProgressSession(completed ? null : item);
+        }
+      }
     };
   }, [session, router]);
 
@@ -105,15 +153,7 @@ function PlayerContent() {
     if (!session || !("mediaSession" in navigator)) return;
 
     const situation = getSituation(session.metadata.situation);
-    const situationSlugMap: Record<string, string> = {
-      stress: "calmer-le-stress",
-      sleep: "trouver-le-sommeil",
-      thoughts: "calmer-les-pensees",
-      focus: "retrouver-sa-concentration",
-      tensions: "relacher-les-tensions",
-      recenter: "se-recentrer",
-    };
-    const slug = situation?.id ? situationSlugMap[situation.id] : "calmer-le-stress";
+    const slug = situation?.slug || "calmer-le-stress";
     const artistName = situation ? `Liela · ${situation.shortLabel}` : "Liela";
 
     navigator.mediaSession.metadata = new MediaMetadata({
@@ -196,6 +236,12 @@ function PlayerContent() {
     }
   }, [state, currentTime, session]);
 
+  // Keep a ref of current time for the interval
+  const currentTimeRef = useRef(currentTime);
+  useEffect(() => {
+    currentTimeRef.current = currentTime;
+  }, [currentTime]);
+
   // Handle saving progress periodically
   useEffect(() => {
     if (state === "playing" && session) {
@@ -203,7 +249,7 @@ function PlayerContent() {
         const item: SessionHistoryItem = {
           sessionId: session.id,
           startedAt: new Date().toISOString(),
-          lastPosition: currentTime,
+          lastPosition: currentTimeRef.current,
           duration: session.metadata.durationSeconds,
           completed: false,
         };
@@ -215,7 +261,7 @@ function PlayerContent() {
     return () => {
       if (saveProgressInterval.current) clearInterval(saveProgressInterval.current);
     };
-  }, [state, currentTime, session]);
+  }, [state, session]);
 
   // Handle end of session
   useEffect(() => {
@@ -227,10 +273,12 @@ function PlayerContent() {
         lastPosition: session.metadata.durationSeconds,
         duration: session.metadata.durationSeconds,
         completed: true,
+        abandoned: false,
       };
       storage.addHistoryItem(item);
       storage.setInProgressSession(null);
-      router.push("/history");
+      // Wait a moment then redirect to check-in or history
+      setTimeout(() => router.push("/profile"), 1000);
     }
   }, [state, session, router]);
 
@@ -257,10 +305,10 @@ function PlayerContent() {
   if (!session) return <div className="min-h-screen bg-creme" />;
 
   const situation = getSituation(session.metadata.situation);
-  const isSleep = situation?.id === "sleep";
+  const isDark = situation?.id === "trouver-le-sommeil";
   
-  const bgColor = isSleep ? "var(--sommeil-fond)" : (situation?.color || "var(--encre)");
-  const textColor = isSleep ? "var(--sommeil-texte)" : (situation?.textColor || "var(--creme)");
+  const bgColor = isDark ? "var(--sommeil-fond)" : (situation?.color || "var(--encre)");
+  const textColor = isDark ? "var(--sommeil-texte)" : (situation?.textColor || "var(--creme)");
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -277,6 +325,19 @@ function PlayerContent() {
       managerRef.current?.pause();
     } else {
       managerRef.current?.play();
+    }
+  };
+
+  const handleToggleFavorite = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    resetControlsTimeout();
+    if (!session) return;
+    if (isFavorite) {
+      await storage.removeFavorite(session.id);
+      setIsFavorite(false);
+    } else {
+      await storage.addFavorite(session.id, "player");
+      setIsFavorite(true);
     }
   };
 
@@ -376,7 +437,10 @@ function PlayerContent() {
       {/* Central visualizer and title: Perfectly centered */}
       <div className="flex-1 flex flex-col items-center justify-center text-center px-6 my-auto">
         <div className="w-[280px] h-[280px] sm:w-[360px] sm:h-[360px] relative flex items-center justify-center">
-          <BreathingVisualizer />
+          <BreathingVisualizer 
+            rmsData={rmsData}
+            getCurrentTime={() => managerRef.current?.getCurrentTime() || 0}
+          />
         </div>
 
         <h2 className="font-poppins font-light text-[20px] sm:text-[24px] leading-[1.25] mt-5 text-center max-w-[280px] sm:max-w-[340px]">
@@ -397,7 +461,15 @@ function PlayerContent() {
         
         <ProgressBar progress={currentTime / session.metadata.durationSeconds} isPlayer />
         
-        <div className="flex justify-center items-center gap-10 mt-8 mb-2">
+        <div className="flex justify-center items-center gap-6 mt-8 mb-2 px-2">
+          <button 
+            onClick={handleToggleFavorite} 
+            className="p-3 active:scale-90 transition-transform opacity-90 hover:opacity-100" 
+            aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+          >
+            <HeartIcon size={26} filled={isFavorite} className={isFavorite ? "text-[#FDF9F0]" : "text-white/60"} />
+          </button>
+
           <button 
             onClick={handleRewind} 
             className="p-3 active:scale-90 transition-transform opacity-90 hover:opacity-100" 
@@ -408,7 +480,7 @@ function PlayerContent() {
           
           <button 
             onClick={handlePlayPause} 
-            className="w-[66px] h-[66px] rounded-full bg-creme text-encre flex items-center justify-center active:scale-95 transition-transform shadow-p2 cursor-pointer"
+            className="w-[66px] h-[66px] rounded-full bg-creme text-encre flex items-center justify-center active:scale-95 transition-transform shadow-p2 cursor-pointer mx-2"
             aria-label={state === "playing" ? "Pause" : "Lecture"}
           >
             {state === "playing" ? <PauseIcon size={28} /> : <PlayIcon size={28} className="ml-1" />}
@@ -421,6 +493,8 @@ function PlayerContent() {
           >
             <ForwardIcon size={26} />
           </button>
+
+          <div className="w-[50px] shrink-0" /> {/* Spacer to balance the heart button */}
         </div>
       </div>
 

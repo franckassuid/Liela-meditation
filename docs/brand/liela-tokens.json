@@ -1,0 +1,149 @@
+{
+  "$description": "Jetons de design Liela. Source de vérité pour toute valeur de couleur, rayon, espacement, typographie, élévation et mouvement. Ne pas relire le CSS des maquettes : utiliser ce fichier.",
+  "$version": "1.0.0",
+
+  "color": {
+    "brand": {
+      "sauge":        { "value": "#919780", "rgb": [145,151,128], "role": "Logo, aplats décoratifs", "contrastSurBlanc": 3.0, "porteDuTexte": false },
+      "saugeProfond": { "value": "#5F6A52", "rgb": [95,106,82],   "role": "Texte de marque, liens, progression", "contrastSurBlanc": 5.7, "porteDuTexte": true },
+      "saugeVoile":   { "value": "#E7E9DF", "rgb": [231,233,223], "role": "Fond de tag, surface teintée", "porteDuTexte": false },
+      "terre":        { "value": "#D09B83", "rgb": [208,155,131], "role": "Logo, accent illustratif", "contrastSurBlanc": 2.4, "porteDuTexte": false },
+      "terreProfond": { "value": "#A26248", "rgb": [162,98,72],   "role": "Accent lisible, cœur des favoris", "contrastSurBlanc": 4.8, "porteDuTexte": true },
+      "terreVoile":   { "value": "#F5E4DA", "rgb": [245,228,218], "role": "Surface chaude, mise en avant", "porteDuTexte": false }
+    },
+
+    "neutral": {
+      "creme":    { "value": "#FDF9F0", "rgb": [253,249,240], "role": "Fond d'écran principal" },
+      "surface":  { "value": "#FFFFFF", "rgb": [255,255,255], "role": "Cartes, player, modal" },
+      "coquille": { "value": "#F8EFE4", "rgb": [248,239,228], "role": "Champs au repos, icône d'application" },
+      "sable":    { "value": "#F0E5D6", "rgb": [240,229,214], "role": "Zones groupées, états inactifs" },
+      "filet":    { "value": "#E5D9C7", "rgb": [229,217,199], "role": "Bordures, séparateurs" },
+      "bord":     { "value": "#D8CAB4", "rgb": [216,202,180], "role": "Contour actif, bouton secondaire" },
+      "coeurVide":{ "value": "#C6BBA9", "rgb": [198,187,169], "role": "Contour du cœur non actif" },
+      "gris3":    { "value": "#9A8E7C", "rgb": [154,142,124], "role": "Légendes, texte désactivé", "contrastSurCreme": 3.0, "grandTexteUniquement": true },
+      "gris2":    { "value": "#7A6E5E", "rgb": [122,110,94],  "role": "Texte secondaire", "contrastSurCreme": 4.7 },
+      "encre":    { "value": "#433528", "rgb": [67,53,40],    "role": "Texte principal, bouton principal", "contrastSurCreme": 11.2 }
+    },
+
+    "situation": {
+      "calmer-le-stress":           { "value": "#A26248", "libelle": "Calmer le stress", "sousTitre": "J'ai besoin de redescendre" },
+      "trouver-le-sommeil":         { "value": "#5D6A78", "libelle": "Trouver le sommeil", "sousTitre": "Je veux mieux m'endormir" },
+      "calmer-les-pensees":         { "value": "#6E6257", "libelle": "Calmer les pensées", "sousTitre": "Ruminations, mental qui tourne" },
+      "retrouver-sa-concentration": { "value": "#5F6A52", "libelle": "Retrouver sa concentration", "sousTitre": "Travail, étude, attention dispersée" },
+      "relacher-les-tensions":      { "value": "#94702B", "libelle": "Relâcher les tensions", "sousTitre": "Fatigue, tensions corporelles" },
+      "se-recentrer":               { "value": "#7A5560", "libelle": "Se recentrer", "sousTitre": "Revenir au présent, faire une pause" }
+    },
+
+    "functional": {
+      "succes":    { "value": "#4E7259", "role": "Séance terminée", "contrastSurBlanc": 5.4 },
+      "erreur":    { "value": "#A0483C", "role": "Échec de lecture, champ invalide", "contrastSurBlanc": 6.0 },
+      "attention": { "value": "#8E6A1C", "role": "Hors ligne, téléchargement interrompu", "contrastSurBlanc": 5.0 },
+      "info":      { "value": "#4A6474", "role": "Rappel, nouveauté", "contrastSurBlanc": 6.3 }
+    },
+
+    "sombre": {
+      "$description": "Uniquement pour l'univers sommeil. Ce n'est pas un thème sombre global.",
+      "fond":          { "value": "#3E4753" },
+      "surface":       { "value": "rgba(253,249,240,0.09)" },
+      "texte":         { "value": "#FDF9F0" },
+      "texteSecond":   { "value": "rgba(253,249,240,0.70)" },
+      "saugeEclairci": { "value": "#A8AE96", "role": "Logo sur fond sombre uniquement" }
+    },
+
+    "$regles": [
+      "sauge #919780 et terre #D09B83 ne portent jamais de texte ni d'élément tactile. Utiliser saugeProfond et terreProfond.",
+      "Le rouge est réservé aux erreurs. Le cœur des favoris est en terreProfond, jamais en rouge.",
+      "Répartition cible à l'écran : 70 % crème, 18 % surfaces blanches et coquille, 9 % encre, 3 % couleur."
+    ]
+  },
+
+  "radius": {
+    "xs":   { "value": 6,  "role": "Tag" },
+    "sm":   { "value": 12, "role": "Bouton, champ" },
+    "md":   { "value": 18, "role": "Carte" },
+    "lg":   { "value": 26, "role": "Feuille, modal" },
+    "full": { "value": 999, "role": "Pastille de durée, cercle" },
+    "$regle": "Le rayon croît avec la surface. Un rayon unique partout aplatit la hiérarchie."
+  },
+
+  "spacing": {
+    "base": 4,
+    "echelle": [4, 8, 12, 16, 24, 32, 48, 64, 96],
+    "margeEcran": 20,
+    "entreBlocs": 32,
+    "auDessusTitreEcran": 48
+  },
+
+  "typography": {
+    "families": {
+      "display": { "name": "Poppins", "weights": [300, 400], "usage": "Wordmark, titres d'écran, miniatures YouTube", "tailleMinimale": 19 },
+      "ui":      { "name": "Hanken Grotesk", "weights": [300, 400, 500, 600], "usage": "Interface, texte courant, libellés" }
+    },
+    "styles": {
+      "wordmark":     { "family": "display", "weight": 400, "tracking": "-0.01em", "casse": "bas de casse strict" },
+      "display":      { "family": "display", "weight": 300, "size": 40, "lineHeight": 1.10, "tracking": "-0.01em" },
+      "h1":           { "family": "display", "weight": 300, "size": 30, "lineHeight": 1.20, "tracking": "-0.005em" },
+      "h2":           { "family": "ui", "weight": 600, "size": 23, "lineHeight": 1.25, "tracking": "-0.01em" },
+      "h3":           { "family": "ui", "weight": 600, "size": 18, "lineHeight": 1.35 },
+      "body":         { "family": "ui", "weight": 400, "size": 16, "lineHeight": 1.60, "ligneMax": 60 },
+      "petiteInfo":   { "family": "ui", "weight": 500, "size": 13, "lineHeight": 1.45, "tracking": "0.005em" },
+      "bouton":       { "family": "ui", "weight": 600, "size": 16, "lineHeight": 1.0, "casse": "phrase" },
+      "legende":      { "family": "ui", "weight": 400, "size": 12, "lineHeight": 1.40 }
+    },
+    "$regles": [
+      "Aucune étiquette en capitales : elles durcissent le ton et abîment la lecture des accents français.",
+      "Un seul niveau de titre visible par écran. La hiérarchie vient de l'espace.",
+      "Les deux polices sont embarquées dans l'application, jamais chargées depuis le réseau."
+    ]
+  },
+
+  "elevation": {
+    "n0": { "value": "1px solid #E5D9C7", "role": "Fond, groupes. Filet seul." },
+    "n1": { "value": "0 1px 2px rgba(67,53,40,0.05), 0 10px 26px -14px rgba(67,53,40,0.16)", "role": "Cartes de séance" },
+    "n2": { "value": "0 2px 5px rgba(67,53,40,0.06), 0 26px 52px -22px rgba(67,53,40,0.24)", "role": "Player, modal" },
+    "$regles": [
+      "Ombres teintées d'encre chaude, jamais de gris neutre : sur fond crème une ombre grise vire au sale.",
+      "Il n'existe pas de niveau 3.",
+      "Aucun élément ne porte à la fois un contour et une ombre."
+    ]
+  },
+
+  "icon": {
+    "grille": 24,
+    "trait": 1.75,
+    "terminaisons": "round",
+    "jonctions": "round",
+    "rayonInterieurMin": 2,
+    "tailles": { "texte": 16, "liste": 20, "navigation": 24, "teteEcran": 28 },
+    "$regles": [
+      "Contour uniquement, jamais de plein.",
+      "L'icône prend la couleur du texte auquel elle appartient, ou la teinte de la situation.",
+      "Sauge et terre sont interdits sur les icônes.",
+      "Aucune icône ne représente une personne, aucune ne contient de texte."
+    ]
+  },
+
+  "motion": {
+    "courbeParDefaut": "cubic-bezier(0.22, 0.61, 0.36, 1)",
+    "durees": {
+      "retourTactile": 120,
+      "apparitionElement": 260,
+      "transitionEcran": 380,
+      "ouverturePlayer": 520,
+      "maximumHorsSeance": 600
+    },
+    "respiration": {
+      "cycleMs": 11000,
+      "inspireMs": 4000,
+      "palierMs": 1000,
+      "expireMs": 6000,
+      "easing": "ease-in-out sinusoïdal, jamais linéaire"
+    },
+    "$regles": [
+      "Rien n'accélère brutalement, tout décélère longuement.",
+      "Aucun rebond, aucun effet élastique.",
+      "prefers-reduced-motion respecté partout : transitions en fondu simple de 150 ms.",
+      "Aucune information n'est portée uniquement par le mouvement."
+    ]
+  }
+}

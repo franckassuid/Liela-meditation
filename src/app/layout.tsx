@@ -53,8 +53,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${poppins.variable} ${hankenGrotesk.variable}`}>
-      <body className="font-sans text-encre bg-creme antialiased">
+    <html lang="fr" className={`${poppins.variable} ${hankenGrotesk.variable}`} suppressHydrationWarning>
+      <body className="font-sans text-encre bg-creme antialiased" suppressHydrationWarning>
         <AppShell>{children}</AppShell>
       </body>
     </html>

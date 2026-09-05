@@ -1,0 +1,184 @@
+{
+  "id": "detendre-le-haut-du-corps-10min",
+  "metadata": {
+    "title": "Détendre le haut du corps",
+    "category": "tensions",
+    "durationTargetSeconds": 600,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "deep-relax",
+    "volumeDb": -37,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "stream-gentle",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous dans une position confortable, avec suffisamment de soutien. Laissez les bras reposer et prenez quelques secondes pour sentir le poids du corps.",
+      "silenceAfter": {
+        "durationSeconds": 10,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "face-1",
+      "type": "voice",
+      "text": "Commencez par le visage. Remarquez le front, les yeux, les joues et la mâchoire. Observez simplement les sensations présentes, sans chercher à les modifier.",
+      "silenceAfter": {
+        "durationSeconds": 27,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "neck-1",
+      "type": "voice",
+      "text": "Portez ensuite l'attention vers le cou. Remarquez l'avant, les côtés et l'arrière du cou. Si une zone est sensible, restez sur une observation très légère ou passez à une autre zone.",
+      "silenceAfter": {
+        "durationSeconds": 26,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "shoulders-1",
+      "type": "voice",
+      "text": "Déplacez l'attention vers les épaules. Observez leur position et le poids des bras qui y sont attachés. Laissez la respiration rester naturelle.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 39,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "movement-1",
+      "type": "voice",
+      "text": "Si cela vous convient, faites un petit cercle lent avec les épaules, puis laissez-les revenir au repos. Aucun mouvement ne doit être forcé. Vous pouvez aussi rester immobile.",
+      "silenceAfter": {
+        "durationSeconds": 26,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "arms-1",
+      "type": "voice",
+      "text": "Parcourez maintenant les bras, des épaules jusqu'aux mains. Remarquez les coudes, les avant-bras, les poignets et les doigts. Observez surtout les points de contact et le poids.",
+      "silenceAfter": {
+        "durationSeconds": 32,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 41,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "upper-back-1",
+      "type": "voice",
+      "text": "Portez l'attention vers le haut du dos et les omoplates. Remarquez comment cette zone est soutenue, puis observez les sensations qui changent avec la respiration naturelle.",
+      "silenceAfter": {
+        "durationSeconds": 32,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "chest-1",
+      "type": "voice",
+      "text": "Remarquez ensuite la poitrine et le haut du ventre. Il n'est pas nécessaire de modifier la respiration. Observez seulement les mouvements déjà présents.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "breathing"
+      }
+    },
+    {
+      "id": "practice-silence-3",
+      "type": "silence",
+      "durationSeconds": 41,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "whole-upper-1",
+      "type": "voice",
+      "text": "Élargissez maintenant l'attention au visage, au cou, aux épaules, aux bras et au haut du dos en même temps. Laissez cette zone être simplement présente dans votre attention.",
+      "silenceAfter": {
+        "durationSeconds": 34,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-4",
+      "type": "silence",
+      "durationSeconds": 38,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Commencez à retrouver l'ensemble du corps et les sons autour de vous. Faites quelques petits mouvements des mains ou des épaules si cela vous convient.",
+      "silenceAfter": {
+        "durationSeconds": 11,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Prenez encore quelques secondes avant de reprendre votre activité, en gardant des mouvements simples et confortables.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

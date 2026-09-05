@@ -1,0 +1,185 @@
+{
+  "id": "glisser-doucement-vers-le-sommeil-20min",
+  "metadata": {
+    "title": "Glisser doucement vers le sommeil",
+    "category": "sleep",
+    "durationTargetSeconds": 1200,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "sleep",
+    "volumeDb": -39,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "ocean-gentle",
+    "volumeDb": -31,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 4,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous pour la nuit et laissez le corps être complètement soutenu. Ajustez l'oreiller ou la couverture si nécessaire. Une fois installé, il n'y a plus rien à réussir.",
+      "silenceAfter": {
+        "durationSeconds": 12,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "arrival-1",
+      "type": "voice",
+      "text": "Prenez conscience de la pièce sans avoir besoin de l'explorer. Quelques sons lointains, la température de l'air, le contact du tissu. Puis laissez progressivement l'attention se rapprocher du corps.",
+      "silenceAfter": {
+        "durationSeconds": 25,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Commencez par le visage. Remarquez le front, les yeux, les joues et la mâchoire. Vous n'avez pas à détendre ces zones. Laissez seulement votre attention les rencontrer puis continuer.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-2",
+      "type": "voice",
+      "text": "Descendez vers le cou, les épaules, les bras et les mains. Remarquez le poids, la chaleur, les picotements, ou même l'absence de sensation particulière.",
+      "silenceAfter": {
+        "durationSeconds": 40,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-1",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "body-3",
+      "type": "voice",
+      "text": "Poursuivez vers la poitrine, le ventre et le dos. Laissez la respiration se faire sans intervention. Puis sentez le bassin et le contact plus large avec le matelas.",
+      "silenceAfter": {
+        "durationSeconds": 40,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-4",
+      "type": "voice",
+      "text": "Continuez vers les cuisses, les genoux, les mollets et les pieds. Prenez simplement note des sensations, puis laissez l'ensemble du corps devenir une seule présence plus diffuse.",
+      "silenceAfter": {
+        "durationSeconds": 50,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-2",
+      "type": "silence",
+      "durationSeconds": 60,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "breath-1",
+      "type": "voice",
+      "text": "Pendant quelques instants, remarquez la respiration naturelle au milieu de tout cela. Si elle devient trop présente, laissez-la repartir en arrière-plan et revenez au poids du corps ou au son régulier des vagues.",
+      "silenceAfter": {
+        "durationSeconds": 45,
+        "purpose": "breathing"
+      }
+    },
+    {
+      "id": "thoughts-1",
+      "type": "voice",
+      "text": "Si des pensées arrivent, vous pouvez les laisser inachevées. Rien ne demande une décision maintenant. Remarquez simplement qu'une pensée est apparue, puis laissez votre attention redevenir large.",
+      "silenceAfter": {
+        "durationSeconds": 55,
+        "purpose": "sleep_descent"
+      }
+    },
+    {
+      "id": "sleep-silence-1",
+      "type": "silence",
+      "durationSeconds": 90,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "descent-1",
+      "type": "voice",
+      "text": "À partir de maintenant, les mots vont devenir plus espacés. Vous pouvez cesser de les suivre. Laissez simplement le corps être là, la respiration continuer, et les sons rester autour de vous.",
+      "silenceAfter": {
+        "durationSeconds": 75,
+        "purpose": "sleep_descent"
+      }
+    },
+    {
+      "id": "sleep-silence-2",
+      "type": "silence",
+      "durationSeconds": 120,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "descent-2",
+      "type": "voice",
+      "text": "Il n'y a plus rien à comprendre. Plus rien à retenir. Si vous êtes encore éveillé, restez simplement avec le confort du lit et laissez la séance s'effacer progressivement.",
+      "silenceAfter": {
+        "durationSeconds": 80,
+        "purpose": "sleep_descent"
+      }
+    },
+    {
+      "id": "sleep-silence-3",
+      "type": "silence",
+      "durationSeconds": 150,
+      "purpose": "sleep_descent"
+    },
+    {
+      "id": "descent-3",
+      "type": "voice",
+      "text": "Vous pouvez maintenant laisser complètement les mots derrière vous.",
+      "silenceAfter": {
+        "durationSeconds": 40,
+        "purpose": "sleep_descent"
+      }
+    },
+    {
+      "id": "sleep-silence-4",
+      "type": "silence",
+      "durationSeconds": 48,
+      "purpose": "sleep_descent"
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -20
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

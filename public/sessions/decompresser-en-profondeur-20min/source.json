@@ -1,0 +1,241 @@
+{
+  "id": "decompresser-en-profondeur-20min",
+  "metadata": {
+    "title": "Décompresser en profondeur",
+    "category": "stress",
+    "durationTargetSeconds": 1200,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "deep-relax",
+    "volumeDb": -37,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "stream-gentle",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous dans une position où vous pourrez rester quelques minutes sans effort inutile. Ajustez votre posture, vos vêtements ou votre appui si nécessaire. Puis sentez simplement le corps soutenu.",
+      "silenceAfter": {
+        "durationSeconds": 10,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "orientation-1",
+      "type": "voice",
+      "text": "Commencez par regarder ou remarquer l'espace autour de vous. Les limites de la pièce. La lumière. Les sons les plus évidents. Prenez quelques instants pour laisser l'attention revenir vers ce qui est réellement présent ici.",
+      "silenceAfter": {
+        "durationSeconds": 28,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "grounding-1",
+      "type": "voice",
+      "text": "Portez ensuite l'attention vers les points de contact les plus stables. Les pieds, le bassin, le dos, les mains. Choisissez deux ou trois zones et remarquez leur poids sans chercher à modifier quoi que ce soit.",
+      "silenceAfter": {
+        "durationSeconds": 34,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "grounding-silence-1",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Parcourez maintenant le corps plus lentement. Le visage, la mâchoire, le cou et les épaules. Puis les bras et les mains. Observez les sensations comme elles se présentent : chaleur, pression, picotement, neutralité, ou simplement absence de sensation nette.",
+      "silenceAfter": {
+        "durationSeconds": 38,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-2",
+      "type": "voice",
+      "text": "Continuez vers la poitrine, le ventre et le dos. Remarquez les mouvements naturels qui accompagnent la respiration. Puis poursuivez vers le bassin, les jambes et les pieds.",
+      "silenceAfter": {
+        "durationSeconds": 38,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-1",
+      "type": "silence",
+      "durationSeconds": 50,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "breath-1",
+      "type": "voice",
+      "text": "Si cela vous convient, laissez maintenant la respiration devenir une ancre temporaire. Ne cherchez pas un rythme particulier. Remarquez seulement quelques cycles naturels, avec une attention légère.",
+      "silenceAfter": {
+        "durationSeconds": 36,
+        "purpose": "breathing"
+      }
+    },
+    {
+      "id": "breath-silence-1",
+      "type": "silence",
+      "durationSeconds": 50,
+      "purpose": "breathing"
+    },
+    {
+      "id": "attention-1",
+      "type": "voice",
+      "text": "Lorsque des pensées apparaissent, vous pouvez les reconnaître brièvement sans entrer dans leur contenu. Puis revenez à une sensation corporelle ou à la respiration naturelle. Ce mouvement de retour peut se répéter autant de fois que nécessaire.",
+      "silenceAfter": {
+        "durationSeconds": 43,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 54,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "sounds-1",
+      "type": "voice",
+      "text": "Laissez ensuite l'attention s'ouvrir aux sons. Les sons proches, puis plus lointains. Certains sont continus, d'autres très courts. Remarquez simplement leur présence et leur changement, sans chercher à les retenir.",
+      "silenceAfter": {
+        "durationSeconds": 41,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "sounds-silence-1",
+      "type": "silence",
+      "durationSeconds": 50,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "choice-1",
+      "type": "voice",
+      "text": "Choisissez maintenant l'ancre qui vous demande le moins d'effort : le contact des pieds, les mains, le poids du corps, la respiration ou les sons. Restez avec elle quelques instants.",
+      "silenceAfter": {
+        "durationSeconds": 41,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 54,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "wide-1",
+      "type": "voice",
+      "text": "Élargissez progressivement l'attention. Au lieu de suivre un seul point, remarquez le corps, les sons et la respiration dans un même ensemble. Rien n'a besoin d'être précis.",
+      "silenceAfter": {
+        "durationSeconds": 43,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-3",
+      "type": "silence",
+      "durationSeconds": 54,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "return-1",
+      "type": "voice",
+      "text": "Si l'esprit repart vers ce qui a occupé votre journée, remarquez simplement ce déplacement. Puis retrouvez un point concret : le sol sous les pieds, le siège sous le corps, ou un son régulier autour de vous.",
+      "silenceAfter": {
+        "durationSeconds": 42,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-4",
+      "type": "silence",
+      "durationSeconds": 54,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "body-3",
+      "type": "voice",
+      "text": "Revenez une dernière fois au corps entier. Remarquez son poids, sa position et les zones qui semblent aujourd'hui plus faciles à percevoir. Il n'est pas nécessaire de produire une sensation particulière.",
+      "silenceAfter": {
+        "durationSeconds": 42,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-2",
+      "type": "silence",
+      "durationSeconds": 50,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Commencez maintenant à retrouver plus clairement la pièce autour de vous. Remarquez la lumière, les sons et la position du corps. Laissez de petits mouvements revenir progressivement.",
+      "silenceAfter": {
+        "durationSeconds": 16,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Prenez encore quelques instants avant de reprendre. Choisissez une prochaine action simple et avancez à votre rythme, sans chercher à emporter une sensation particulière avec vous.",
+      "silenceAfter": {
+        "durationSeconds": 9,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

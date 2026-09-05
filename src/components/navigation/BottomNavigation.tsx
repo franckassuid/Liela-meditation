@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HomeIcon, ExploreIcon, HistoryIcon, ProfileIcon } from "../ui/Icons";
+import { HomeIcon, LibraryIcon, ProfileIcon } from "../ui/Icons";
 
 export function BottomNavigation() {
   const pathname = usePathname();
@@ -14,8 +14,7 @@ export function BottomNavigation() {
 
   const navItems = [
     { href: "/", icon: HomeIcon, label: "Accueil" },
-    { href: "/explore", icon: ExploreIcon, label: "Explorer" },
-    { href: "/history", icon: HistoryIcon, label: "Historique" },
+    { href: "/library", icon: LibraryIcon, label: "Bibliothèque" },
     { href: "/profile", icon: ProfileIcon, label: "Profil" },
   ];
 
@@ -34,11 +33,18 @@ export function BottomNavigation() {
             href={item.href}
             title={item.label}
             aria-label={item.label}
-            className={`p-2 transition-transform duration-120 active:scale-[0.97] ${
+            onClick={(e) => {
+              if (item.href === "/" && pathname === "/") {
+                e.preventDefault();
+                window.location.reload();
+              }
+            }}
+            className={`flex flex-col items-center gap-1 p-2 min-w-[70px] transition-transform duration-120 active:scale-[0.97] ${
               isActive ? "text-encre" : "text-gris-3"
             }`}
           >
             <Icon size={24} />
+            <span className="text-[11px] font-medium tracking-wide">{item.label}</span>
           </Link>
         );
       })}

@@ -19,7 +19,7 @@ const situationIcons: Record<string, React.ComponentType<{ size?: number; classN
 };
 
 export function SituationCard({ situation, onClick, className = "", selected = false }: SituationCardProps) {
-  const Icon = situationIcons[situation.id];
+  const Icon = situationIcons[situation.icon];
   
   return (
     <button

@@ -5,7 +5,7 @@
     "title": "Premiers pas en méditation",
     "category": "learn",
     "language": "fr-FR",
-    "durationSeconds": 187.46,
+    "durationSeconds": 181.1,
     "level": null,
     "shortDescription": null,
     "technique": null
@@ -53,12 +53,12 @@
     },
     {
       "asset": "soft-bell",
-      "timeSeconds": 187.45
+      "timeSeconds": 181.08
     }
   ],
   "generation": {
     "ttsProvider": "google-gemini",
-    "ttsModel": "gemini-2.5-flash-preview-tts",
+    "ttsModel": "gemini-3.1-flash-tts-preview",
     "voiceId": "Algenib"
   }
 }

@@ -1,0 +1,175 @@
+{
+  "id": "creer-un-peu-despace-10min",
+  "metadata": {
+    "title": "Créer un peu d'espace",
+    "category": "recenter",
+    "durationTargetSeconds": 600,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "inner-space",
+    "volumeDb": -37,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "soft-air",
+    "volumeDb": -35,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous dans une position confortable. Prenez quelques secondes pour sentir le poids du corps et laisser l'attention revenir vers des sensations simples.",
+      "silenceAfter": {
+        "durationSeconds": 11,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "sounds-1",
+      "type": "voice",
+      "text": "Commencez par les sons. Remarquez qu'ils peuvent être présents sans que vous ayez à faire quoi que ce soit avec eux. Écoutez simplement quelques instants.",
+      "silenceAfter": {
+        "durationSeconds": 32,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Portez ensuite l'attention vers le corps. Les pieds, les mains, le dos ou le bassin. Choisissez une zone facile à percevoir et laissez-la devenir votre ancre.",
+      "silenceAfter": {
+        "durationSeconds": 33,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 43,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "attention-1",
+      "type": "voice",
+      "text": "Si une pensée ou une préoccupation attire votre attention, remarquez-la puis revenez à l'ancre. Vous n'avez pas besoin de créer un vide complet. Quelques secondes de retour suffisent.",
+      "silenceAfter": {
+        "durationSeconds": 37,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 47,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "open-1",
+      "type": "voice",
+      "text": "Laissez maintenant l'attention s'élargir. Les sons, les sensations corporelles et les pensées peuvent tous être présents en même temps. Observez cet ensemble sans choisir.",
+      "silenceAfter": {
+        "durationSeconds": 39,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-3",
+      "type": "silence",
+      "durationSeconds": 46,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "anchor-2",
+      "type": "voice",
+      "text": "Revenez ensuite à une seule sensation corporelle. Remarquez comment l'attention peut passer d'un champ large à un point précis, puis revenir encore.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "breath-1",
+      "type": "voice",
+      "text": "Si la respiration est confortable à observer, laissez-la entrer dans ce champ pendant quelques instants. Sinon, gardez simplement l'ancre corporelle choisie.",
+      "silenceAfter": {
+        "durationSeconds": 33,
+        "purpose": "breathing"
+      }
+    },
+    {
+      "id": "practice-silence-4",
+      "type": "silence",
+      "durationSeconds": 41,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "wide-1",
+      "type": "voice",
+      "text": "Élargissez une dernière fois l'attention au corps entier et à la pièce. Remarquez l'espace physique autour de vous, les sons et la position de votre corps.",
+      "silenceAfter": {
+        "durationSeconds": 37,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Commencez maintenant à remettre du mouvement dans les mains ou les épaules et retrouvez votre environnement plus clairement.",
+      "silenceAfter": {
+        "durationSeconds": 12,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Prenez encore quelques secondes avant de reprendre ce que vous faisiez, sans vous presser.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

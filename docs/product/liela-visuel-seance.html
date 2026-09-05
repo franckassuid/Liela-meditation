@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liela — Visuel de séance, cinq propositions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&family=Hanken+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --creme:#FDF9F0;--coquille:#F8EFE4;--sable:#F0E5D6;--filet:#E5D9C7;
+  --gris3:#9A8E7C;--gris2:#7A6E5E;--encre:#433528;
+  --pop:"Poppins",system-ui,sans-serif;--sans:"Hanken Grotesk",system-ui,sans-serif;
+  --mono:ui-monospace,Menlo,monospace;--marge:clamp(20px,5vw,72px);
+  --teinte:#6E6257;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--creme);color:var(--encre);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:500}p{margin:0}
+.page{max-width:1200px;margin:0 auto;padding:0 var(--marge)}
+section{padding:clamp(44px,6vw,80px) 0;border-top:1px solid var(--filet)}
+.tete{display:flex;gap:18px;align-items:baseline;margin-bottom:26px;flex-wrap:wrap}
+.num{font-family:var(--mono);font-size:12px;color:var(--gris3);padding-top:6px}
+.tete h2{font-family:var(--pop);font-weight:300;font-size:clamp(24px,3.2vw,36px);letter-spacing:-.01em}
+.chapo{max-width:64ch;color:var(--gris2);font-size:16.5px}
+.note{font-size:13px;line-height:1.5;color:var(--gris3)}
+.grille{display:grid;gap:clamp(16px,2.2vw,26px);grid-template-columns:repeat(3,1fr)}
+@media(max-width:1000px){.grille{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.grille{grid-template-columns:1fr}}
+
+/* barre de contrôle */
+.controles{position:sticky;top:0;z-index:20;background:rgba(253,249,240,.94);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--filet);padding:12px var(--marge);display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.teintes{display:flex;gap:7px}
+.teintes button{width:26px;height:26px;border-radius:8px;border:0;cursor:pointer;padding:0;
+  box-shadow:inset 0 0 0 1px rgba(67,53,40,.14);transition:transform .18s cubic-bezier(.22,.61,.36,1)}
+.teintes button[aria-pressed="true"]{transform:scale(1.18);box-shadow:0 0 0 2px var(--creme),0 0 0 3.5px var(--encre)}
+.champ-slider{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--gris2)}
+input[type=range]{width:150px;accent-color:var(--encre)}
+.bt{font-family:var(--sans);font-weight:600;font-size:13.5px;border:0;border-radius:10px;padding:9px 16px;
+  background:var(--encre);color:var(--creme);cursor:pointer}
+.bt.sec{background:transparent;color:var(--encre);box-shadow:inset 0 0 0 1px var(--filet)}
+
+/* carte proposition */
+.prop{background:#fff;border:1px solid var(--filet);border-radius:22px;overflow:hidden;display:flex;flex-direction:column}
+.scene{aspect-ratio:1;background:var(--teinte);position:relative;display:flex;align-items:center;justify-content:center;transition:background .5s cubic-bezier(.22,.61,.36,1)}
+.scene canvas,.scene svg{width:100%;height:100%;display:block}
+.scene .hud{position:absolute;inset:auto 0 16px 0;text-align:center;color:rgba(253,249,240,.72);font-size:11.5px;letter-spacing:.02em}
+.corps{padding:20px 22px 22px;display:flex;flex-direction:column;gap:10px;flex:1}
+.corps h3{font-family:var(--pop);font-weight:400;font-size:19px}
+.corps p{font-size:14px;color:var(--gris2);line-height:1.55}
+.verdict{font-size:12.5px;color:var(--gris3);line-height:1.5;margin-top:auto;padding-top:12px;border-top:1px solid var(--coquille)}
+.verdict b{color:var(--gris2);font-weight:600}
+.bloc{background:#fff;border:1px solid var(--filet);border-radius:18px;padding:22px}
+.bloc h3{font-size:16px;font-weight:600;margin-bottom:8px}.bloc p{font-size:14.5px;color:var(--gris2)}
+.plat{background:var(--coquille);border-radius:18px;padding:22px}
+.plat h3{font-size:16px;font-weight:600;margin-bottom:8px}.plat p{font-size:14.5px;color:var(--gris2)}
+code{font-family:var(--mono);font-size:12px;color:var(--gris2)}
+.pied{padding:44px 0 80px;border-top:1px solid var(--filet);color:var(--gris2);font-size:15px}
+</style>
+</head>
+<body>
+
+<div class="controles">
+  <div class="teintes" id="teintes" role="group" aria-label="Teinte de situation"></div>
+  <label class="champ-slider">Niveau audio simulé
+    <input type="range" id="niveau" min="0" max="100" value="45">
+  </label>
+  <button class="bt sec" id="pause">Figer l'animation</button>
+  <span class="note" id="phase" style="margin-left:auto;font-family:var(--mono)"></span>
+</div>
+
+<div class="page" style="padding-top:clamp(32px,5vw,64px);padding-bottom:clamp(24px,3vw,40px)">
+  <p class="note" style="margin-bottom:18px">Liela · visuel central du lecteur</p>
+  <h1 style="font-family:var(--pop);font-weight:300;font-size:clamp(28px,5vw,54px);letter-spacing:-.02em;line-height:1.06;max-width:18ch">Cinq formes qui respirent avec la séance.</h1>
+  <p class="chapo" style="margin-top:22px">Un point avant de choisir : une forme qui suit littéralement le signal audio devient nerveuse, parce que la voix a des attaques et des silences. Les cinq propositions sont donc pilotées d'abord par le cycle respiratoire — quatre secondes d'inspiration, une de palier, six d'expiration — et l'audio ne fait que moduler légèrement l'amplitude. Le curseur ci-dessus simule ce niveau audio, poussez-le à fond pour voir jusqu'où chaque forme va.</p>
+</div>
+
+<section class="page">
+  <div class="tete"><span class="num">01</span><h2>Les propositions</h2></div>
+  <div class="grille" id="grille"></div>
+</section>
+
+<section class="page">
+  <div class="tete"><span class="num">02</span><h2>Règles communes</h2></div>
+  <div class="grille">
+    <div class="bloc"><h3>Pilotage</h3><p>Le cycle respiratoire porte 80 % du mouvement, le niveau audio 20 %. Le niveau est lissé sur environ 400 ms, sinon chaque syllabe de la voix fait sursauter la forme.</p></div>
+    <div class="bloc"><h3>Couleur</h3><p>Fond en teinte de situation pleine, forme en crème à opacité faible. Jamais deux couleurs dans la forme, jamais de dégradé multicolore.</p></div>
+    <div class="bloc"><h3>Cadence</h3><p>Rien ne dépasse 0,1 cycle par seconde en mouvement principal. Aucune accélération brutale : toutes les courbes sont sinusoïdales ou en <code>ease-in-out</code>.</p></div>
+    <div class="bloc"><h3>Accessibilité</h3><p>Avec <code>prefers-reduced-motion</code>, la forme se fige dans son état médian et seule l'opacité varie très lentement. L'information n'est jamais portée par le mouvement seul.</p></div>
+    <div class="bloc"><h3>Coût</h3><p>Une seule surface animée à l'écran, en canvas ou en SVG, jamais plus de soixante images par seconde et pas d'ombre portée animée : c'est ce qui vide la batterie sur une séance de vingt minutes.</p></div>
+    <div class="bloc"><h3>Silence</h3><p>Quand l'audio se tait — début, fin, pause — la forme continue de respirer sans s'arrêter. Une forme immobile donne l'impression que l'application a planté.</p></div>
+  </div>
+</section>
+
+<div class="page pied">
+  <p style="max-width:58ch">Dites-moi laquelle retenir, et si le mouvement doit être plus ample ou plus retenu. J'affine ensuite les constantes et je livre le composant.</p>
+</div>
+
+<script>
+(function(){
+  const SITUATIONS = [
+    ['Calmer le stress','#A26248'],
+    ['Trouver le sommeil','#5D6A78'],
+    ['Calmer les pensées','#6E6257'],
+    ['Retrouver sa concentration','#5F6A52'],
+    ['Relâcher les tensions','#94702B'],
+    ['Se recentrer','#7A5560']
+  ];
+  let teinte = '#6E6257', niveau = 0.45, fige = false;
+  const CREME = '253,249,240';
+
+  // --- barre de teintes ---
+  const bt = document.getElementById('teintes');
+  SITUATIONS.forEach(([label,hex],i)=>{
+    const b=document.createElement('button');
+    b.style.background=hex; b.title=label;
+    b.setAttribute('aria-pressed', String(i===2));
+    b.onclick=()=>{
+      teinte=hex;
+      document.documentElement.style.setProperty('--teinte',hex);
+      [...bt.children].forEach(c=>c.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true');
+    };
+    bt.appendChild(b);
+  });
+  document.documentElement.style.setProperty('--teinte',teinte);
+  document.getElementById('niveau').oninput=e=>niveau=e.target.value/100;
+  const btnPause=document.getElementById('pause');
+  btnPause.onclick=()=>{fige=!fige; btnPause.textContent = fige ? 'Reprendre' : "Figer l'animation";};
+
+  // --- moteur commun ---
+  const CYCLE = 11000, IN = 4000, HOLD = 1000; // 4 s / 1 s / 6 s
+  const easeIO = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+  function souffle(t){
+    const p = t % CYCLE;
+    if (p < IN) return {v: easeIO(p/IN), phase:'inspire'};
+    if (p < IN+HOLD) return {v:1, phase:'palier'};
+    return {v: 1-easeIO((p-IN-HOLD)/(CYCLE-IN-HOLD)), phase:'expire'};
+  }
+  let ampLisse = 0;
+  function audio(t){
+    // enveloppe pseudo-vocale : porteuse lente + micro-variations
+    const brut = 0.55 + 0.45*Math.sin(t/900) * Math.sin(t/430+1.2) * Math.sin(t/210+.4);
+    const cible = Math.max(0, brut) * niveau;
+    ampLisse += (cible-ampLisse)*0.06;   // lissage ≈ 400 ms
+    return ampLisse;
+  }
+
+  const PROPS = [
+    {
+      titre:'A — Le galet',
+      desc:"La forme organique de la charte, en version vivante : un galet asymétrique qui enfle à l'inspiration et se creuse à l'expiration. L'audio déforme légèrement ses bords.",
+      verdict:"La plus liée à la marque. Le mouvement reste lisible même très ample.",
+      draw(ctx,w,h,t,b,a){
+        const cx=w/2, cy=h/2, R=Math.min(w,h)*0.30*(0.80+0.30*b.v);
+        for(let k=0;k<2;k++){
+          const alpha = k? 0.10 : 0.20, ph = k? 1.7 : 0, rr = k? R*1.16 : R;
+          ctx.beginPath();
+          for(let i=0;i<=120;i++){
+            const ang = i/120*Math.PI*2;
+            const d = 1 + 0.10*Math.sin(3*ang + t/2600 + ph)
+                        + 0.06*Math.sin(2*ang - t/3900 + ph)
+                        + a*0.09*Math.sin(5*ang + t/900 + ph);
+            const x = cx + Math.cos(ang)*rr*d, y = cy + Math.sin(ang)*rr*d*0.94;
+            i? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+          }
+          ctx.closePath(); ctx.fillStyle=`rgba(${CREME},${alpha})`; ctx.fill();
+        }
+      }
+    },
+    {
+      titre:'B — Les anneaux',
+      desc:"Un anneau fin naît à chaque inspiration, s'élargit puis disparaît. Le niveau audio fait respirer leur épaisseur, pas leur vitesse.",
+      verdict:"La plus calme. Occupe bien un grand écran, un peu vide sur un petit.",
+      init(s){ s.anneaux=[]; s.dernier=-1e9; },
+      draw(ctx,w,h,t,b,a,s){
+        const cx=w/2, cy=h/2, Rmax=Math.min(w,h)*0.44;
+        if (t - s.dernier > 1900){ s.anneaux.push({t0:t}); s.dernier=t; }
+        s.anneaux = s.anneaux.filter(r => t-r.t0 < 7600);
+        for(const r of s.anneaux){
+          const p = (t-r.t0)/7600, e = easeIO(Math.min(1,p));
+          const rad = Rmax*(0.12+0.88*e);
+          ctx.beginPath(); ctx.arc(cx,cy,rad,0,Math.PI*2);
+          ctx.strokeStyle=`rgba(${CREME},${(1-p)*0.42})`;
+          ctx.lineWidth = 1 + a*1.8;
+          ctx.stroke();
+        }
+        ctx.beginPath(); ctx.arc(cx,cy,Rmax*0.10*(0.7+0.5*b.v),0,Math.PI*2);
+        ctx.fillStyle=`rgba(${CREME},0.34)`; ctx.fill();
+      }
+    },
+    {
+      titre:'C — L\'horizon',
+      desc:"Une seule ligne souple traverse l'écran. Elle monte à l'inspiration, redescend à l'expiration, et l'audio la fait onduler comme une surface d'eau.",
+      verdict:"La plus éditoriale et la plus sobre. C'est aussi la plus facile à rater si l'ondulation est trop marquée.",
+      draw(ctx,w,h,t,b,a){
+        const base = h*0.62 - h*0.14*b.v;
+        for(let k=0;k<3;k++){
+          const off = k*h*0.045, al = 0.30 - k*0.09;
+          ctx.beginPath();
+          for(let x=0;x<=w;x+=4){
+            const u = x/w;
+            const y = base + off
+              + Math.sin(u*4.2 + t/2400 + k*0.7) * (h*0.030) * (0.35+a)
+              + Math.sin(u*7.5 - t/3300 + k*1.4) * (h*0.016) * (0.35+a);
+            x? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+          }
+          ctx.strokeStyle=`rgba(${CREME},${al})`; ctx.lineWidth=1.6; ctx.stroke();
+        }
+      }
+    },
+    {
+      titre:'D — Le halo',
+      desc:"Un disque plein aux bords fondus, qui grandit et se dilue. Le niveau audio ajoute une onde très fine sur son pourtour.",
+      verdict:"La plus enveloppante, la plus proche d'une lumière. Attention aux dégradés sur écran OLED, qui peuvent baguer.",
+      draw(ctx,w,h,t,b,a){
+        const cx=w/2, cy=h/2, R=Math.min(w,h)*(0.20+0.16*b.v);
+        const g=ctx.createRadialGradient(cx,cy,R*0.15,cx,cy,R*2.05);
+        g.addColorStop(0,`rgba(${CREME},${0.30+0.10*b.v})`);
+        g.addColorStop(0.45,`rgba(${CREME},0.10)`);
+        g.addColorStop(1,`rgba(${CREME},0)`);
+        ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R*2.05,0,Math.PI*2); ctx.fill();
+        ctx.beginPath();
+        for(let i=0;i<=160;i++){
+          const ang=i/160*Math.PI*2;
+          const rr=R*1.35*(1 + a*0.055*Math.sin(9*ang + t/620));
+          const x=cx+Math.cos(ang)*rr, y=cy+Math.sin(ang)*rr;
+          i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+        }
+        ctx.closePath(); ctx.strokeStyle=`rgba(${CREME},${0.16+a*0.16})`; ctx.lineWidth=1.2; ctx.stroke();
+      }
+    },
+    {
+      titre:'E — La feuille',
+      desc:"Les deux arcs de la feuille du logo, qui s'ouvrent à l'inspiration et se referment à l'expiration. Le signe de la marque devient le guide de respiration.",
+      verdict:"La plus signée. Le risque est qu'elle attire l'œil au lieu de l'apaiser : à tenir très lente.",
+      draw(ctx,w,h,t,b,a){
+        const cx=w/2, cy=h/2, L=Math.min(w,h)*0.34;
+        const ouv = (0.26 + 0.52*b.v) * (1 + a*0.10);
+        for(let k=0;k<2;k++){
+          const rot = (k? 1 : -1) * 0.30 + Math.sin(t/5200)*0.05;
+          ctx.save(); ctx.translate(cx,cy); ctx.rotate(rot);
+          ctx.beginPath();
+          ctx.moveTo(-L*0.86, 0);
+          ctx.bezierCurveTo(-L*0.30, -L*ouv,  L*0.30, -L*ouv,  L*0.86, 0);
+          ctx.bezierCurveTo( L*0.30,  L*ouv, -L*0.30,  L*ouv, -L*0.86, 0);
+          ctx.closePath();
+          ctx.fillStyle=`rgba(${CREME},${k? 0.11 : 0.17})`; ctx.fill();
+          ctx.strokeStyle=`rgba(${CREME},0.22)`; ctx.lineWidth=1.1; ctx.stroke();
+          ctx.restore();
+        }
+        ctx.beginPath(); ctx.arc(cx,cy,2.6+a*2.2,0,Math.PI*2);
+        ctx.fillStyle=`rgba(${CREME},0.42)`; ctx.fill();
+      }
+    }
+  ];
+
+  // --- montage des cartes ---
+  const grille=document.getElementById('grille');
+  const scenes=[];
+  PROPS.forEach(p=>{
+    const card=document.createElement('div'); card.className='prop';
+    card.innerHTML = `<div class="scene"><canvas></canvas><div class="hud">Sortir de la boucle · 4:12</div></div>
+      <div class="corps"><h3>${p.titre}</h3><p>${p.desc}</p>
+      <p class="verdict"><b>Verdict :</b> ${p.verdict}</p></div>`;
+    grille.appendChild(card);
+    const s={canvas:card.querySelector('canvas'),ctx:null,def:p};
+    s.ctx=s.canvas.getContext('2d');
+    if(p.init) p.init(s);
+    scenes.push(s);
+  });
+
+  function taille(){
+    const dpr=Math.min(window.devicePixelRatio||1,2);
+    for(const s of scenes){
+      const r=s.canvas.getBoundingClientRect();
+      s.canvas.width=Math.max(1,Math.round(r.width*dpr));
+      s.canvas.height=Math.max(1,Math.round(r.height*dpr));
+      s.ctx.setTransform(dpr,0,0,dpr,0,0);
+      s.w=r.width; s.h=r.height;
+    }
+  }
+  window.addEventListener('resize',taille);
+
+  const reduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const phaseEl=document.getElementById('phase');
+  let t0=performance.now(), tGel=0;
+
+  function boucle(now){
+    const t = fige ? tGel : (tGel = now - t0);
+    const b = reduit ? {v:.5,phase:'figé'} : souffle(t);
+    const a = reduit ? niveau*.4 : audio(t);
+    phaseEl.textContent = b.phase + ' · niveau ' + Math.round(a*100);
+    for(const s of scenes){
+      s.ctx.clearRect(0,0,s.w,s.h);
+      s.def.draw(s.ctx, s.w, s.h, t, b, a, s);
+    }
+    requestAnimationFrame(boucle);
+  }
+  taille();
+  requestAnimationFrame(boucle);
+})();
+</script>
+</body>
+</html>

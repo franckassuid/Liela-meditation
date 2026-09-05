@@ -5,18 +5,15 @@ const PUBLIC_SESSIONS_DIR = path.join(process.cwd(), "public", "sessions");
 const GENERATED_FILE = path.join(process.cwd(), "src", "generated", "sessions.json");
 
 function mapCategoryToSituation(category?: string, id?: string): string {
-  if (id === "faire-de-la-place-dans-son-esprit-10min") return "thoughts";
   if (!category) return "";
   const map: Record<string, string> = {
-    stress: "stress",
-    sleep: "sleep",
-    thoughts: "thoughts",
-    focus: "focus",
-    relaxation: "tensions",
-    tensions: "tensions",
-    recenter: "recenter",
-    learn: "discovery",
-    discovery: "discovery",
+    stress: "calmer-le-stress",
+    sleep: "trouver-le-sommeil",
+    thoughts: "calmer-les-pensees",
+    focus: "retrouver-sa-concentration",
+    relaxation: "relacher-les-tensions",
+    tensions: "relacher-les-tensions",
+    recenter: "se-recentrer",
   };
   return map[category] || "";
 }

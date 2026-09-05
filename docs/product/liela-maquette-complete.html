@@ -1,0 +1,333 @@
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liela — Maquette complète</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400&family=Hanken+Grotesk:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--creme:#FDF9F0;--coquille:#F8EFE4;--sable:#F0E5D6;--filet:#E5D9C7;--bord:#D8CAB4;
+--gris3:#9A8E7C;--gris2:#7A6E5E;--encre:#433528;--terre:#A26248;
+--pop:"Poppins",system-ui,sans-serif;--sans:"Hanken Grotesk",system-ui,sans-serif;--mono:ui-monospace,Menlo,monospace;
+--marge:clamp(20px,5vw,72px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--creme);color:var(--encre);font-family:var(--sans);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-weight:500}p{margin:0}
+.page{max-width:1240px;margin:0 auto;padding:0 var(--marge)}
+section{padding:clamp(44px,6vw,88px) 0;border-top:1px solid var(--filet)}
+.tete{display:flex;gap:18px;align-items:baseline;margin-bottom:26px;flex-wrap:wrap}
+.num{font-family:var(--mono);font-size:12px;color:var(--gris3);padding-top:6px}
+.tete h2{font-family:var(--pop);font-weight:300;font-size:clamp(24px,3.2vw,36px);letter-spacing:-.01em}
+.chapo{max-width:64ch;color:var(--gris2);font-size:16.5px}
+.note{font-size:13px;line-height:1.5;color:var(--gris3)}
+.gr{display:grid;gap:clamp(20px,2.6vw,38px);grid-template-columns:repeat(4,1fr)}
+@media(max-width:1150px){.gr{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:880px){.gr{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.gr{grid-template-columns:1fr}}
+.gr3{display:grid;gap:20px;grid-template-columns:repeat(3,1fr)}
+@media(max-width:880px){.gr3{grid-template-columns:1fr}}
+.bloc{background:#fff;border:1px solid var(--filet);border-radius:18px;padding:22px}
+.bloc h3{font-size:16px;font-weight:600;margin-bottom:8px}.bloc p{font-size:14.5px;color:var(--gris2)}
+.plat{background:var(--coquille);border-radius:18px;padding:22px}
+.plat h3{font-size:16px;font-weight:600;margin-bottom:8px}.plat p{font-size:14.5px;color:var(--gris2)}
+.cap{text-align:left;font-size:14px;margin-top:14px}.cap b{font-weight:600}
+
+/* téléphone */
+.tel{width:100%;max-width:290px;margin:0 auto;aspect-ratio:290/600;background:var(--creme);
+ border-radius:32px;box-shadow:0 2px 5px rgba(67,53,40,.06),0 28px 56px -26px rgba(67,53,40,.32);
+ overflow:hidden;display:flex;flex-direction:column;position:relative}
+.tel.sombre-tel{background:#3E4753}
+.top{display:flex;align-items:center;gap:7px;padding:17px 16px 7px}
+.top .mot{font-family:var(--pop);font-weight:400;font-size:19px;letter-spacing:-.01em}
+.top .titre{font-family:var(--pop);font-weight:400;font-size:17px}
+.top .ico{display:flex}
+.top.sombre .titre{color:#FDF9F0}
+.scroll{flex:1;overflow:hidden;padding:4px 16px 10px}
+.scroll.sombre{color:#FDF9F0}
+.question{font-family:var(--pop);font-weight:300;font-size:25px;line-height:1.18;margin:8px 0 14px}
+.bandes{display:flex;flex-direction:column;gap:7px}
+.bande{display:flex;align-items:center;gap:10px;border-radius:13px;padding:13px;color:#FDF9F0}
+.bande b{font-family:var(--pop);font-weight:300;font-size:14px}
+.bande .fl{margin-left:auto;display:flex}
+.tiroir{background:#fff;border-radius:18px 18px 0 0;padding:8px 16px 10px;box-shadow:0 -14px 32px -22px rgba(67,53,40,.4)}
+.poignee{display:block;width:30px;height:3px;background:var(--filet);border-radius:99px;margin:0 auto 8px}
+
+.segments{display:flex;gap:6px;padding:4px 16px 8px}
+.seg{font-size:11.5px;font-weight:500;padding:6px 11px;border-radius:99px;color:var(--gris2);background:var(--coquille)}
+.seg.on{background:var(--encre);color:var(--creme)}
+.tuiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tuile{border-radius:13px;padding:10px;min-height:74px;display:flex;flex-direction:column;justify-content:space-between;color:#FDF9F0}
+.tuile b{font-family:var(--pop);font-weight:300;font-size:12.5px;line-height:1.15;display:block}
+.tuile i{font-style:normal;font-size:9.5px;opacity:.72}
+.sect{font-size:11.5px;font-weight:600;margin:16px 0 8px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11px;padding:6px 11px;border-radius:99px;background:#fff;box-shadow:inset 0 0 0 1px var(--bord);color:var(--gris2)}
+.chip.on{background:var(--encre);color:var(--creme);box-shadow:none}
+
+.pile{display:flex;flex-direction:column;gap:7px}
+.ligne{display:flex;align-items:center;gap:10px;background:#fff;border-radius:13px;padding:9px 11px;
+ box-shadow:0 1px 2px rgba(67,53,40,.05),0 8px 18px -14px rgba(67,53,40,.2)}
+.ligne.plat{box-shadow:none;background:transparent;padding:2px 0}
+.ligne.dark{background:rgba(253,249,240,.08);box-shadow:none;color:#FDF9F0}
+.ligne.dark i{color:rgba(253,249,240,.6)}
+.ligne div{flex:1;min-width:0}
+.ligne b{display:block;font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ligne i{display:block;font-style:normal;font-size:10.5px;color:var(--gris2)}
+.vign{width:36px;height:36px;border-radius:10px;flex:none}
+
+.vide{display:flex;align-items:center;justify-content:center}
+.videbox{text-align:center;padding:0 8px}
+.videico{display:inline-flex;width:56px;height:56px;border-radius:50%;background:var(--coquille);align-items:center;justify-content:center;margin-bottom:14px}
+.videt{font-family:var(--pop);font-weight:300;font-size:17px}
+.videp{font-size:11.5px;color:var(--gris2);line-height:1.5;margin-top:6px}
+.btn2{display:inline-block;margin-top:16px;font-size:12.5px;font-weight:600;padding:10px 18px;border-radius:11px;box-shadow:inset 0 0 0 1px var(--bord)}
+
+.entete{border-radius:15px;padding:14px;color:#FDF9F0;display:flex;flex-direction:column;gap:8px}
+.entete p{font-size:11.5px;line-height:1.45;opacity:.88}
+.p-sombre{font-size:12px;color:rgba(253,249,240,.7);margin-top:4px}
+.minuteur{display:flex;justify-content:space-between;align-items:center;margin-top:16px;padding:12px;border-radius:13px;background:rgba(253,249,240,.08);font-size:11.5px;color:rgba(253,249,240,.85)}
+.minuteur b{font-weight:600}
+
+.fiche{height:150px;border-radius:16px;overflow:hidden;margin-bottom:14px}
+.pill2{display:inline-block;font-size:10.5px;font-weight:600;padding:4px 10px;border-radius:99px;background:#EDEAE4;color:#6E6257}
+.ftitre{font-family:var(--pop);font-weight:300;font-size:22px;margin:8px 0 3px}
+.fmeta{font-size:11.5px;color:var(--gris2)}
+.fdesc{font-size:12px;color:var(--gris2);line-height:1.5;margin-top:10px}
+.btn{display:flex;align-items:center;justify-content:center;background:var(--encre);color:var(--creme);
+ font-size:13.5px;font-weight:600;padding:13px;border-radius:12px;margin-top:16px}
+.fnote{text-align:center;font-size:10.5px;color:var(--gris3);margin-top:9px}
+.opt{padding:13px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px var(--bord);font-size:13px}
+.opt.on{background:var(--encre);color:var(--creme);font-weight:600;box-shadow:none}
+
+.lecteur{color:#FDF9F0}
+.lec-centre{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:0 20px}
+.lec-galet{width:150px;height:150px;border-radius:50%;overflow:hidden}
+.anim .souffle{animation:souffle 11s cubic-bezier(.42,0,.58,1) infinite}
+@keyframes souffle{0%{transform:scale(.84)}36%{transform:scale(1.06)}45%{transform:scale(1.06)}100%{transform:scale(.84)}}
+@media(prefers-reduced-motion:reduce){.anim .souffle{animation:none}}
+.lec-titre{font-family:var(--pop);font-weight:300;font-size:19px}
+.lec-sous{font-size:11.5px;opacity:.75;margin-top:-10px}
+.lec-bas{padding:0 20px 22px}
+.barre{height:3px;background:rgba(253,249,240,.28);border-radius:99px}
+.barre i{display:block;height:100%;background:#FDF9F0;border-radius:99px}
+.tps{display:flex;justify-content:space-between;font-size:10.5px;opacity:.75;margin-top:7px}
+.cmd{display:flex;align-items:center;justify-content:space-between;margin-top:16px}
+.pp{width:50px;height:50px;border-radius:50%;background:#FDF9F0;display:flex;align-items:center;justify-content:center}
+
+.fin{display:flex;flex-direction:column;justify-content:center;gap:18px;padding:20px 16px}
+.finhaut{text-align:center}
+.finico{display:inline-flex;width:56px;height:56px;border-radius:50%;background:#E4EBE5;align-items:center;justify-content:center;margin-bottom:12px}
+.fintxt{font-family:var(--pop);font-weight:300;font-size:24px}
+.finsous{font-size:11.5px;color:var(--gris2);margin-top:3px}
+.finbox{background:#fff;border-radius:16px;padding:16px;text-align:center;box-shadow:0 1px 2px rgba(67,53,40,.05),0 10px 24px -16px rgba(67,53,40,.24)}
+.finq{font-family:var(--pop);font-weight:300;font-size:16px}
+.finact{display:flex;margin-top:4px}
+.finsec{display:block;font-size:11.5px;color:var(--gris3);margin-top:10px}
+.finpied{margin-top:2px}
+
+.stats{display:flex;gap:7px;margin-top:10px}
+.stat{flex:1;background:var(--coquille);border-radius:13px;padding:11px}
+.stat b{display:block;font-family:var(--pop);font-weight:300;font-size:20px}
+.stat i{font-style:normal;font-size:10px;color:var(--gris2)}
+.hist{display:flex;flex-direction:column}
+.hl{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--filet)}
+.hl div{flex:1;min-width:0}
+.hl b{display:block;font-size:12.5px;font-weight:600}
+.hl i{display:block;font-style:normal;font-size:10.5px;color:var(--gris2)}
+.pt{width:9px;height:9px;border-radius:50%;flex:none}
+.reg{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--filet);font-size:12.5px}
+
+.nav{display:flex;justify-content:space-around;padding:8px 0 11px;border-top:1px solid var(--filet);background:var(--creme)}
+.sombre-tel .nav{background:#3E4753;border-color:rgba(253,249,240,.14)}
+.navi{display:flex;flex-direction:column;align-items:center;gap:3px}
+.navi em{font-style:normal;font-size:9.5px;font-weight:500}
+.pied{padding:44px 0 84px;border-top:1px solid var(--filet);color:var(--gris2);font-size:15px}
+
+.salut{font-family:var(--pop);font-weight:300;font-size:24px;line-height:1.15;margin-top:6px}
+.sousA{font-size:11.5px;color:var(--gris2);margin-top:2px}
+.hero{margin-top:12px;border-radius:18px;overflow:hidden;position:relative;height:184px;box-shadow:0 10px 24px -14px rgba(67,53,40,.3)}
+.heroart{position:absolute;inset:0}
+.herotxt{position:absolute;inset:auto 0 0 0;padding:12px 13px 13px;color:#FDF9F0}
+.pillH{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:99px;background:rgba(253,249,240,.22)}
+.herotxt h4{font-family:var(--pop);font-weight:300;font-size:19px;margin:6px 0 3px}
+.pourquoi{font-size:10.5px;opacity:.82;line-height:1.4}
+.rowH{display:flex;align-items:center;margin-top:10px}
+.ctaH{display:inline-flex;align-items:center;gap:6px;background:#FDF9F0;color:#433528;font-size:12px;font-weight:600;padding:7px 13px;border-radius:99px}
+.favH{margin-left:auto;display:flex}
+.lienA{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--gris2);margin-top:11px;font-weight:500}
+.rail{display:flex;gap:8px;overflow:hidden}
+.mini{flex:none;width:92px;height:68px;border-radius:12px;padding:9px;color:#FDF9F0;display:flex;align-items:flex-end}
+.mini span{font-size:10.5px;line-height:1.2;font-weight:500}
+</style></head><body>
+
+<div class="page" style="padding-top:clamp(32px,5vw,64px);padding-bottom:clamp(20px,3vw,36px)">
+  <p class="note" style="margin-bottom:18px">Liela · maquette complète</p>
+  <h1 style="font-family:var(--pop);font-weight:300;font-size:clamp(28px,5vw,54px);letter-spacing:-.02em;line-height:1.06;max-width:18ch">Douze écrans, trois onglets, un geste à apprendre.</h1>
+  <p class="chapo" style="margin-top:22px">Deux accueils : la version question, à livrer maintenant, et la version recommandation, à activer quand il y aura des écoutes réelles. Dans les deux cas, Tout ce qui s'accumule — situations, favoris, téléchargements — vit dans la Bibliothèque. Le profil absorbe l'historique et les réglages.</p>
+</div>
+
+<section class="page">
+  <div class="tete"><span class="num">01</span><h2>Les écrans</h2></div>
+  <div class="gr"><div class="col"><div class="tel">
+ <div class="top"><svg viewBox="0 0 100 100" width="19" height="19" style="display:block;flex:none"><path fill="#919780" d="M15.23 6.27C14.97 6.55 14.97 6.55 14.99 34.79C15.01 63.04 15.01 63.04 15.23 64.48C15.98 69.58 17.66 74.06 20.41 78.24C21.04 79.18 22.26 80.83 22.73 81.37C24.46 83.32 24.79 83.65 26.6 85.22C27.61 86.11 30.54 88.15 31.88 88.9C33.2 89.65 34.69 90.34 36.84 91.2C37.55 91.49 39.6 92.11 41.15 92.51C46.7 93.94 53.08 94 59.4 92.69C60.45 92.48 60.85 92.37 62.32 91.91C67.7 90.27 71.9 87.92 75.84 84.35C77.18 83.15 77.53 82.73 77.23 82.73C77.17 82.73 76.82 82.94 76.46 83.19C76.1 83.44 75.64 83.73 75.43 83.84C74.71 84.25 71.49 85.87 70.74 86.22C67.82 87.51 64.74 88.35 61.7 88.66C61.18 88.72 60.51 88.8 60.22 88.85C59.53 88.96 55.9 88.96 55.05 88.85C54.69 88.8 54.07 88.72 53.68 88.67C52.02 88.46 49.22 87.79 47.45 87.18C46.34 86.8 43.93 85.59 42.67 84.79C39.54 82.79 38.22 81.68 36.09 79.3C35.05 78.14 33.3 75.76 32.75 74.76C32.65 74.59 32.46 74.25 32.33 74.02C31.52 72.59 30.63 70.68 30.27 69.62C29.92 68.58 29.44 66.84 29.34 66.3C29.28 66 29.22 65.74 29.2 65.7C29.12 65.57 28.68 62.84 28.57 61.79C28.49 61 28.45 54.83 28.4 38.2C28.36 16.64 28.35 15.66 28.18 15.13C28.09 14.82 27.98 14.41 27.93 14.2C27.5 12.16 26.01 9.86 24.2 8.47C21.94 6.72 19.82 6 16.98 6C15.5 6 15.5 6 15.23 6.27Z"/><path fill="#D09B83" stroke="#FDF9F0" stroke-width="2.4" d="M84.25 49.45C84.19 49.54 82.63 50.58 81.69 51.19C81.04 51.59 80.2 52.02 79.35 52.38C78.94 52.57 78.5 52.75 78.4 52.8C77.4 53.26 75.29 53.91 74.04 54.14C73.64 54.22 73.12 54.32 72.89 54.37C72.5 54.47 71.85 54.55 70.01 54.74C68.83 54.87 65.01 55.1 62.05 55.21C60.61 55.27 59.19 55.36 58.9 55.4C58.61 55.44 58.09 55.52 57.73 55.57C57.08 55.66 56.85 55.72 55.18 56.19C52.86 56.84 50.87 57.7 49.18 58.79C47.6 59.8 45.7 61.54 44.48 63.07C43.11 64.77 41.56 67.71 41.15 69.4C41.02 69.92 40.87 70.52 40.81 70.71C40.61 71.46 40.36 73.22 40.36 73.9C40.36 74.88 40.62 77.06 40.77 77.42C40.85 77.59 40.98 77.73 41.06 77.73C41.15 77.73 42.11 76.82 43.19 75.7C44.29 74.59 45.57 73.36 46.04 72.98C46.97 72.21 49.05 70.8 50.47 69.94C51.64 69.23 53.54 68.34 55.22 67.71C55.63 67.55 56.13 67.37 56.32 67.29C57.51 66.85 58.75 66.5 59.91 66.28C60.29 66.21 60.9 66.09 61.25 66.01C62.2 65.8 62.41 65.82 62.41 66.09C62.41 66.26 62.36 66.31 62.08 66.36C61.33 66.48 57.29 68.24 56.07 68.97C55.86 69.09 55.61 69.23 55.5 69.28C55.28 69.39 53.69 70.45 53.01 70.96C52.76 71.15 52.19 71.56 51.76 71.88C50.15 73.07 48.8 74.44 46.99 76.71C46.05 77.89 45.58 78.58 45.29 79.23C45.18 79.48 45 79.85 44.9 80.07C44.8 80.29 44.71 80.53 44.71 80.62C44.71 81.21 48.23 82.78 51.11 83.46C54.21 84.2 56.9 84.29 60.56 83.79C63.93 83.32 67.7 81.89 70.75 79.91C73.52 78.13 77.01 74.77 78.64 72.34C79.41 71.19 80.21 69.95 80.21 69.9C80.21 69.87 80.37 69.56 80.59 69.23C82.05 66.81 83.79 62.09 84.25 59.33C84.27 59.13 84.36 58.75 84.43 58.5C84.54 58.08 84.72 56.56 84.93 54.05C85.03 52.99 84.95 49.78 84.82 49.53C84.74 49.36 84.33 49.3 84.25 49.45Z"/></svg><span class="mot">liela</span></div>
+ <div class="scroll" style="padding-top:4px">
+  <p class="salut">Bonsoir</p>
+  <p class="sousA">Il est 21 h 40.</p>
+  <div class="hero">
+   <div class="heroart"><svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" style="display:block;width:100%;height:100%"><rect width="200" height="200" fill="#5D6A78"/><path fill="#FDF9F0" opacity="0.2" d="M32 118C32 74 62 46 106 46c40 0 70 20 76 46 5 20-12 38-38 38-32 0-48-12-70-12-22 0-42 6-42 0z"/><path fill="#FDF9F0" opacity="0.1" d="M50 132C50 98 76 76 112 76c32 0 54 16 58 34 3 14-10 24-30 24-24 0-38-8-54-8-16 0-24 4-36 6z"/></svg></div>
+   <div class="herotxt">
+    <span class="pillH">Trouver le sommeil</span>
+    <h4>Descendre d'un cran</h4>
+    <p class="pourquoi">Parce qu'il est tard et que vous avez aimé « Histoire calme ».</p>
+    <div class="rowH"><span class="ctaH"><svg width="14" height="14" viewBox="0 0 24 24" fill="#433528" stroke="#433528" stroke-width="0" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5.5v13l11-6.5Z"/></svg><b>9 min</b></span><span class="favH"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.85)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></span></div>
+   </div>
+  </div>
+  <div class="lienA">Autre chose ?<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A6E5E" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></div>
+  <p class="sect">Reprendre</p>
+  <div class="ligne"><span class="vign" style="background:#6E6257"></span><div><b>Sortir de la boucle</b><i>6 min restantes</i></div><svg width="17" height="17" viewBox="0 0 24 24" fill="#433528" stroke="#433528" stroke-width="0" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5.5v13l11-6.5Z"/></svg></div>
+  <p class="sect">Vos favoris</p>
+  <div class="rail">
+   <div class="mini" style="background:#5F6A52"><span>Avant une réunion</span></div>
+   <div class="mini" style="background:#A26248"><span>Respirer 3 min</span></div>
+   <div class="mini" style="background:#7A5560"><span>Pause du midi</span></div>
+  </div>
+ </div>
+ <div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#433528">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#9A8E7C">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#9A8E7C">Profil</em></span></div>
+</div><p class="cap"><b>Accueil — version recommandation</b></p><p class="note" style="margin-top:6px">La variante à activer une fois qu'il y a des écoutes réelles. L'application propose une séance et dit pourquoi, en une ligne. Les six situations passent derrière « Autre chose ? ». À garder derrière un drapeau tant que la règle n'est pas fiable.</p></div><div class="col"><div class="tel "><div class="top"><svg viewBox="0 0 100 100" width="19" height="19" style="display:block;flex:none"><path fill="#919780" d="M15.23 6.27C14.97 6.55 14.97 6.55 14.99 34.79C15.01 63.04 15.01 63.04 15.23 64.48C15.98 69.58 17.66 74.06 20.41 78.24C21.04 79.18 22.26 80.83 22.73 81.37C24.46 83.32 24.79 83.65 26.6 85.22C27.61 86.11 30.54 88.15 31.88 88.9C33.2 89.65 34.69 90.34 36.84 91.2C37.55 91.49 39.6 92.11 41.15 92.51C46.7 93.94 53.08 94 59.4 92.69C60.45 92.48 60.85 92.37 62.32 91.91C67.7 90.27 71.9 87.92 75.84 84.35C77.18 83.15 77.53 82.73 77.23 82.73C77.17 82.73 76.82 82.94 76.46 83.19C76.1 83.44 75.64 83.73 75.43 83.84C74.71 84.25 71.49 85.87 70.74 86.22C67.82 87.51 64.74 88.35 61.7 88.66C61.18 88.72 60.51 88.8 60.22 88.85C59.53 88.96 55.9 88.96 55.05 88.85C54.69 88.8 54.07 88.72 53.68 88.67C52.02 88.46 49.22 87.79 47.45 87.18C46.34 86.8 43.93 85.59 42.67 84.79C39.54 82.79 38.22 81.68 36.09 79.3C35.05 78.14 33.3 75.76 32.75 74.76C32.65 74.59 32.46 74.25 32.33 74.02C31.52 72.59 30.63 70.68 30.27 69.62C29.92 68.58 29.44 66.84 29.34 66.3C29.28 66 29.22 65.74 29.2 65.7C29.12 65.57 28.68 62.84 28.57 61.79C28.49 61 28.45 54.83 28.4 38.2C28.36 16.64 28.35 15.66 28.18 15.13C28.09 14.82 27.98 14.41 27.93 14.2C27.5 12.16 26.01 9.86 24.2 8.47C21.94 6.72 19.82 6 16.98 6C15.5 6 15.5 6 15.23 6.27Z"/><path fill="#D09B83" stroke="#FDF9F0" stroke-width="2.4" d="M84.25 49.45C84.19 49.54 82.63 50.58 81.69 51.19C81.04 51.59 80.2 52.02 79.35 52.38C78.94 52.57 78.5 52.75 78.4 52.8C77.4 53.26 75.29 53.91 74.04 54.14C73.64 54.22 73.12 54.32 72.89 54.37C72.5 54.47 71.85 54.55 70.01 54.74C68.83 54.87 65.01 55.1 62.05 55.21C60.61 55.27 59.19 55.36 58.9 55.4C58.61 55.44 58.09 55.52 57.73 55.57C57.08 55.66 56.85 55.72 55.18 56.19C52.86 56.84 50.87 57.7 49.18 58.79C47.6 59.8 45.7 61.54 44.48 63.07C43.11 64.77 41.56 67.71 41.15 69.4C41.02 69.92 40.87 70.52 40.81 70.71C40.61 71.46 40.36 73.22 40.36 73.9C40.36 74.88 40.62 77.06 40.77 77.42C40.85 77.59 40.98 77.73 41.06 77.73C41.15 77.73 42.11 76.82 43.19 75.7C44.29 74.59 45.57 73.36 46.04 72.98C46.97 72.21 49.05 70.8 50.47 69.94C51.64 69.23 53.54 68.34 55.22 67.71C55.63 67.55 56.13 67.37 56.32 67.29C57.51 66.85 58.75 66.5 59.91 66.28C60.29 66.21 60.9 66.09 61.25 66.01C62.2 65.8 62.41 65.82 62.41 66.09C62.41 66.26 62.36 66.31 62.08 66.36C61.33 66.48 57.29 68.24 56.07 68.97C55.86 69.09 55.61 69.23 55.5 69.28C55.28 69.39 53.69 70.45 53.01 70.96C52.76 71.15 52.19 71.56 51.76 71.88C50.15 73.07 48.8 74.44 46.99 76.71C46.05 77.89 45.58 78.58 45.29 79.23C45.18 79.48 45 79.85 44.9 80.07C44.8 80.29 44.71 80.53 44.71 80.62C44.71 81.21 48.23 82.78 51.11 83.46C54.21 84.2 56.9 84.29 60.56 83.79C63.93 83.32 67.7 81.89 70.75 79.91C73.52 78.13 77.01 74.77 78.64 72.34C79.41 71.19 80.21 69.95 80.21 69.9C80.21 69.87 80.37 69.56 80.59 69.23C82.05 66.81 83.79 62.09 84.25 59.33C84.27 59.13 84.36 58.75 84.43 58.5C84.54 58.08 84.72 56.56 84.93 54.05C85.03 52.99 84.95 49.78 84.82 49.53C84.74 49.36 84.33 49.3 84.25 49.45Z"/></svg><span class="mot">liela</span></div>
+<div class="scroll" style="padding-top:6px">
+ <h3 class="question">De quoi<br>avez-vous besoin<br>maintenant&nbsp;?</h3>
+ <div class="bandes"><div class="bande" style="background:#A26248"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-5 3 10 2.5-7 1.8 4H21"/></svg><b>Calmer le stress</b><span class="fl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.55)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span></div><div class="bande" style="background:#5D6A78"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"/></svg><b>Trouver le sommeil</b><span class="fl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.55)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span></div><div class="bande" style="background:#6E6257"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5c3.5-1 5.5-4 6.5-8.5 2.5 3.5 5 5 9 5"/><circle cx="19.5" cy="13" r="1.6"/></svg><b>Calmer les pensées</b><span class="fl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.55)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span></div><div class="bande" style="background:#5F6A52"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/></svg><b>Retrouver sa concentration</b><span class="fl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.55)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span></div><div class="bande" style="background:#94702B"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c4 3.4 6 6 6 8.8a6 6 0 0 1-12 0c0-2.8 2-5.4 6-8.8Z"/></svg><b>Relâcher les tensions</b><span class="fl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.55)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span></div><div class="bande" style="background:#7A5560"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.92)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v2.6M12 17.9v2.6M3.5 12h2.6M17.9 12h2.6"/></svg><b>Se recentrer</b><span class="fl"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.55)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span></div></div>
+</div>
+<div class="tiroir"><span class="poignee"></span>
+ <div class="ligne plat"><span class="vign" style="background:#6E6257"></span><div><b>Sortir de la boucle</b><i>Reprendre · 6 min restantes</i></div><svg width="17" height="17" viewBox="0 0 24 24" fill="#433528" stroke="#433528" stroke-width="0" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5.5v13l11-6.5Z"/></svg></div>
+</div><div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#433528">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#9A8E7C">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#9A8E7C">Profil</em></span></div></div><p class="cap"><b>Accueil</b></p><p class="note" style="margin-top:6px">La question occupe l'écran. Le tiroir du bas ne réapparaît que s'il y a une séance interrompue.</p></div><div class="col"><div class="tel "><div class="top"><span class="titre">Bibliothèque</span></div>
+<div class="segments"><span class="seg on">Situations</span><span class="seg">Favoris</span><span class="seg">Téléchargées</span></div>
+<div class="scroll">
+ <div class="tuiles"><div class="tuile" style="background:#A26248"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.9)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h3l2-5 3 10 2.5-7 1.8 4H21"/></svg><b>Calmer le stress</b><i>9 séances</i></div><div class="tuile" style="background:#5D6A78"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.9)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z"/></svg><b>Trouver le sommeil</b><i>12 séances</i></div><div class="tuile" style="background:#6E6257"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.9)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5c3.5-1 5.5-4 6.5-8.5 2.5 3.5 5 5 9 5"/><circle cx="19.5" cy="13" r="1.6"/></svg><b>Calmer les pensées</b><i>8 séances</i></div><div class="tuile" style="background:#5F6A52"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.9)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/></svg><b>Retrouver sa concentration</b><i>7 séances</i></div><div class="tuile" style="background:#94702B"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.9)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.2c4 3.4 6 6 6 8.8a6 6 0 0 1-12 0c0-2.8 2-5.4 6-8.8Z"/></svg><b>Relâcher les tensions</b><i>6 séances</i></div><div class="tuile" style="background:#7A5560"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.9)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v2.6M12 17.9v2.6M3.5 12h2.6M17.9 12h2.6"/></svg><b>Se recentrer</b><i>5 séances</i></div></div>
+ <p class="sect">Durée</p>
+ <div class="chips"><span class="chip">3 min</span><span class="chip">5–10 min</span><span class="chip">10–20 min</span><span class="chip">20 min et +</span></div>
+</div><div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#9A8E7C">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#433528">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#9A8E7C">Profil</em></span></div></div><p class="cap"><b>Bibliothèque — Situations</b></p><p class="note" style="margin-top:6px">Trois segments plutôt que trois onglets. Le compte de séances par situation évite l'effet catalogue vide.</p></div><div class="col"><div class="tel "><div class="top"><span class="titre">Bibliothèque</span></div>
+<div class="segments"><span class="seg">Situations</span><span class="seg on">Favoris</span><span class="seg">Téléchargées</span></div>
+<div class="scroll">
+ <p class="sect">7 séances</p>
+ <div class="pile">
+ <div class="ligne"><span class="vign" style="background:#6E6257"></span><div><b>Sortir de la boucle</b><i>10 min · Calmer les pensées</i></div><svg width="18" height="18" viewBox="0 0 24 24" fill="#A26248" stroke="#A26248" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ <div class="ligne"><span class="vign" style="background:#5D6A78"></span><div><b>Descendre d'un cran</b><i>9 min · Trouver le sommeil</i></div><svg width="18" height="18" viewBox="0 0 24 24" fill="#A26248" stroke="#A26248" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ <div class="ligne"><span class="vign" style="background:#5F6A52"></span><div><b>Avant une réunion</b><i>5 min · Concentration</i></div><svg width="18" height="18" viewBox="0 0 24 24" fill="#A26248" stroke="#A26248" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ <div class="ligne"><span class="vign" style="background:#A26248"></span><div><b>Respirer 3 minutes</b><i>3 min · Calmer le stress</i></div><svg width="18" height="18" viewBox="0 0 24 24" fill="#A26248" stroke="#A26248" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ <div class="ligne"><span class="vign" style="background:#94702B"></span><div><b>Le corps lourd</b><i>12 min · Relâcher</i></div><svg width="18" height="18" viewBox="0 0 24 24" fill="#A26248" stroke="#A26248" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ </div>
+</div><div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#9A8E7C">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#433528">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#9A8E7C">Profil</em></span></div></div><p class="cap"><b>Bibliothèque — Favoris</b></p><p class="note" style="margin-top:6px">Le cœur est plein et coloré : il s'enlève d'un appui, sans confirmation ni menu.</p></div><div class="col"><div class="tel "><div class="top"><span class="titre">Bibliothèque</span></div>
+<div class="segments"><span class="seg">Situations</span><span class="seg on">Favoris</span><span class="seg">Téléchargées</span></div>
+<div class="scroll vide">
+ <div class="videbox">
+  <span class="videico"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#D8CAB4" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></span>
+  <p class="videt">Rien ici pour l'instant</p>
+  <p class="videp">À la fin d'une séance, on vous demandera si vous voulez la retrouver. Celles que vous gardez apparaîtront ici.</p>
+  <span class="btn2">Voir les situations</span>
+ </div>
+</div><div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#9A8E7C">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#433528">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#9A8E7C">Profil</em></span></div></div><p class="cap"><b>Favoris — état vide</b></p><p class="note" style="margin-top:6px">L'écran vide explique comment on remplit, au lieu de s'excuser. C'est là qu'on apprend le geste.</p></div><div class="col"><div class="tel "><div class="top"><span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></span><span class="titre">Calmer les pensées</span></div>
+<div class="scroll">
+ <div class="entete" style="background:#6E6257"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.9)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5c3.5-1 5.5-4 6.5-8.5 2.5 3.5 5 5 9 5"/><circle cx="19.5" cy="13" r="1.6"/></svg><p>Quand les mêmes pensées reviennent sans arrêt, ou que vous n'arrivez pas à décrocher.</p></div>
+ <div class="chips" style="margin-top:14px"><span class="chip on">Toutes</span><span class="chip">Courtes</span><span class="chip">Longues</span></div>
+ <div class="pile" style="margin-top:12px">
+ <div class="ligne"><span class="vign" style="background:#6E6257"></span><div><b>Sortir de la boucle</b><i>10 min</i></div><svg width="17" height="17" viewBox="0 0 24 24" fill="#A26248" stroke="#A26248" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ <div class="ligne"><span class="vign" style="background:#6E6257"></span><div><b>Poser les pensées</b><i>6 min</i></div><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ <div class="ligne"><span class="vign" style="background:#6E6257"></span><div><b>Le mental du soir</b><i>14 min</i></div><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ <div class="ligne"><span class="vign" style="background:#6E6257"></span><div><b>Quand ça tourne en rond</b><i>8 min</i></div><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ </div>
+</div><div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#9A8E7C">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#433528">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#9A8E7C">Profil</em></span></div></div><p class="cap"><b>Une situation</b></p><p class="note" style="margin-top:6px">Description courte en tête, filtre par durée, puis la liste. Le cœur est présent sur chaque ligne.</p></div><div class="col"><div class="tel sombre-tel"><div class="top sombre"><span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#FDF9F0" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></span><span class="titre" style="color:#FDF9F0">Trouver le sommeil</span></div>
+<div class="scroll sombre">
+ <p class="p-sombre">L'écran s'éteindra tout seul.</p>
+ <div class="pile" style="margin-top:14px">
+  <div class="ligne dark"><span class="vign" style="background:rgba(253,249,240,.14)"></span><div><b>S'endormir vite</b><i>12 min</i></div><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.45)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+  <div class="ligne dark"><span class="vign" style="background:rgba(253,249,240,.14)"></span><div><b>Réveil nocturne</b><i>8 min</i></div><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.45)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+  <div class="ligne dark"><span class="vign" style="background:rgba(253,249,240,.14)"></span><div><b>Histoire calme</b><i>25 min</i></div><svg width="17" height="17" viewBox="0 0 24 24" fill="#D09B83" stroke="#D09B83" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ </div>
+ <div class="minuteur"><span>Minuteur d'arrêt</span><b>30 min</b></div>
+</div><div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#9A8E7C">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#433528">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#9A8E7C">Profil</em></span></div></div><p class="cap"><b>Sommeil</b></p><p class="note" style="margin-top:6px">La seule situation en sombre, avec son minuteur d'arrêt. C'est un territoire, pas un thème.</p></div><div class="col"><div class="tel "><div class="top"><span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></span><span style="margin-left:auto;display:flex;gap:14px"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#7A6E5E" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 19.5h14"/></svg><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></span></div>
+<div class="scroll">
+ <div class="fiche"><svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" class="" style="display:block;width:100%;height:100%"><rect width="200" height="200" fill="#6E6257"/><g class="souffle" style="transform-origin:100px 100px"><path fill="#FDF9F0" opacity="0.2" d="M32 118C32 74 62 46 106 46c40 0 70 20 76 46 5 20-12 38-38 38-32 0-48-12-70-12-22 0-42 6-42 0z"/><path fill="#FDF9F0" opacity="0.1" d="M50 132C50 98 76 76 112 76c32 0 54 16 58 34 3 14-10 24-30 24-24 0-38-8-54-8-16 0-24 4-36 6z"/></g></svg></div>
+ <span class="pill2">Calmer les pensées</span>
+ <h4 class="ftitre">Sortir de la boucle</h4>
+ <p class="fmeta">10 min · voix masculine · sans musique</p>
+ <p class="fdesc">Pour quand les mêmes pensées reviennent sans arrêt. Vous pouvez la faire assis ou allongé, les yeux ouverts ou fermés.</p>
+ <div class="btn">Commencer</div>
+ <p class="fnote">Déjà écoutée 3 fois</p>
+</div><div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#9A8E7C">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#433528">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#9A8E7C">Profil</em></span></div></div><p class="cap"><b>Fiche séance</b></p><p class="note" style="margin-top:6px">Cœur et téléchargement en haut à droite, jamais dans le corps. Le nombre d'écoutes remplace une note.</p></div><div class="col"><div class="tel "><div class="top"><span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m15 5-7 7 7 7"/></svg></span><span class="titre">Calmer les pensées</span></div>
+<div class="scroll">
+ <h3 class="question" style="font-size:24px">Combien de temps<br>avez-vous&nbsp;?</h3>
+ <div class="pile">
+  <div class="opt">3 minutes</div>
+  <div class="opt on">10 minutes</div>
+  <div class="opt">20 minutes</div>
+  <div class="opt">Je ne sais pas</div>
+ </div>
+ <div class="btn" style="margin-top:18px">Voir ma séance</div>
+</div><div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#433528">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#9A8E7C">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#9A8E7C">Profil</em></span></div></div><p class="cap"><b>Choix de durée</b></p><p class="note" style="margin-top:6px">Vient après la situation, jamais avant. « Je ne sais pas » évite de bloquer quelqu'un qui va mal.</p></div><div class="col"><div class="tel lecteur" style="background:#6E6257">
+ <div class="top" style="padding-bottom:0"><span class="ico"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.8)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></span><span class="titre" style="color:rgba(253,249,240,.85);font-size:12px;font-weight:500">Calmer les pensées</span><span style="margin-left:auto"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.8)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg></span></div>
+ <div class="lec-centre">
+  <div class="lec-galet"><svg viewBox="0 0 200 200" preserveAspectRatio="xMidYMid slice" class="anim" style="display:block;width:100%;height:100%"><rect width="200" height="200" fill="#6E6257"/><g class="souffle" style="transform-origin:100px 100px"><path fill="#FDF9F0" opacity="0.22" d="M32 118C32 74 62 46 106 46c40 0 70 20 76 46 5 20-12 38-38 38-32 0-48-12-70-12-22 0-42 6-42 0z"/><path fill="#FDF9F0" opacity="0.11" d="M50 132C50 98 76 76 112 76c32 0 54 16 58 34 3 14-10 24-30 24-24 0-38-8-54-8-16 0-24 4-36 6z"/></g></svg></div>
+  <p class="lec-titre">Sortir de la boucle</p>
+  <p class="lec-sous">Inspirez…</p>
+ </div>
+ <div class="lec-bas">
+  <div class="barre"><i style="width:42%"></i></div>
+  <div class="tps"><span>4:12</span><span>−5:48</span></div>
+  <div class="cmd"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.75)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.9)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 9.5A8 8 0 1 1 4 13"/><path d="M4.2 5v4.6h4.6"/></svg><span class="pp"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6E6257" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5v14M15 5v14"/></svg></span><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.9)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19.5 9.5A8 8 0 1 0 20 13"/><path d="M19.8 5v4.6h-4.6"/></svg><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.75)" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10m0 0 4-4m-4 4-4-4M5 19.5h14"/></svg></div>
+ </div>
+</div><p class="cap"><b>Lecteur</b></p><p class="note" style="margin-top:6px">Le galet respire au centre. Le cœur est à gauche des commandes, atteignable au pouce sans viser.</p></div><div class="col"><div class="tel "><div class="scroll fin">
+ <div class="finhaut">
+  <span class="finico"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4E7259" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6.5 9.5 17 4 11.5"/></svg></span>
+  <p class="fintxt">C'est fini.</p>
+  <p class="finsous">10 minutes · Calmer les pensées</p>
+ </div>
+ <div class="finbox">
+  <p class="finq">Vous voulez la retrouver&nbsp;?</p>
+  <div class="finact">
+    <span class="btn" style="flex:1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#FDF9F0" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg>&nbsp;&nbsp;Ajouter aux favoris</span>
+  </div>
+  <span class="finsec">Non merci</span>
+ </div>
+ <div class="finpied">
+  <p class="sect" style="margin-top:0">Ensuite</p>
+  <div class="ligne"><span class="vign" style="background:#5D6A78"></span><div><b>Descendre d'un cran</b><i>9 min · pour enchaîner vers le sommeil</i></div><svg width="17" height="17" viewBox="0 0 24 24" fill="#433528" stroke="#433528" stroke-width="0" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5.5v13l11-6.5Z"/></svg></div>
+ </div>
+</div><div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#433528">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#9A8E7C">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#9A8E7C">Profil</em></span></div></div><p class="cap"><b>Fin de séance</b></p><p class="note" style="margin-top:6px">Le moment décisif pour les favoris : c'est là que l'on sait si la séance a aidé.</p></div><div class="col"><div class="tel "><div class="top"><span class="titre">Franck</span></div>
+<div class="scroll">
+ <div class="stats"><div class="stat"><b>14</b><i>séances</i></div><div class="stat"><b>2 h 40</b><i>au total</i></div><div class="stat"><b>4</b><i>jours d'affilée</i></div></div>
+ <p class="sect">Historique</p>
+ <div class="hist">
+  <div class="hl"><span class="pt" style="background:#6E6257"></span><div><b>Sortir de la boucle</b><i>hier · 10 min</i></div><svg width="16" height="16" viewBox="0 0 24 24" fill="#A26248" stroke="#A26248" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+  <div class="hl"><span class="pt" style="background:#5D6A78"></span><div><b>Descendre d'un cran</b><i>dim. · 9 min</i></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+  <div class="hl"><span class="pt" style="background:#5F6A52"></span><div><b>Avant une réunion</b><i>ven. · 5 min</i></div><svg width="16" height="16" viewBox="0 0 24 24" fill="#A26248" stroke="#A26248" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/></svg></div>
+ </div>
+ <p class="sect">Réglages</p>
+ <div class="reg"><span>Rappel quotidien</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></div>
+ <div class="reg"><span>Téléchargements</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></div>
+ <div class="reg"><span>Compte</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="m9 5 7 7-7 7"/></svg></div>
+</div><div class="nav"><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/></svg><em style="color:#9A8E7C">Accueil</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#9A8E7C" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h5v14H4zM11.5 5.5h3v14h-3z"/><path d="m17.5 6.4 3 13.1"/></svg><em style="color:#9A8E7C">Bibliothèque</em></span><span class="navi"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#433528" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="3.6"/><path d="M5.5 19.5c1.4-3 3.9-4.5 6.5-4.5s5.1 1.5 6.5 4.5"/></svg><em style="color:#433528">Profil</em></span></div></div><p class="cap"><b>Profil</b></p><p class="note" style="margin-top:6px">Historique, statistiques et réglages réunis. Le cœur est actionnable directement depuis l'historique.</p></div></div>
+</section>
+
+<section class="page">
+  <div class="tete"><span class="num">02</span><h2>Les favoris</h2></div>
+  <p class="chapo" style="margin-bottom:26px">Un favori ne se demande pas au bon endroit, il se demande au bon moment. Trois points de contact, un seul qui compte vraiment.</p>
+  <div class="gr3">
+    <div class="bloc"><h3>À la fin de la séance — le principal</h3><p>C'est le seul instant où la personne sait si la séance l'a aidée. La question est posée une fois, en clair, avec un refus aussi facile que l'acceptation. C'est aussi là qu'on apprend le geste, ce qui rend le cœur compréhensible partout ailleurs.</p></div>
+    <div class="bloc"><h3>Dans le lecteur — le rattrapage</h3><p>Un cœur à gauche des commandes, atteignable au pouce sans viser. Pour celui qui sait déjà, à la troisième minute, qu'il reviendra.</p></div>
+    <div class="bloc"><h3>Dans les listes — la gestion</h3><p>Sur chaque ligne et sur la fiche. Un appui ajoute, un appui retire, sans confirmation ni menu contextuel. Retirer un favori n'est pas une action dangereuse.</p></div>
+  </div>
+  <div class="plat" style="margin-top:22px">
+    <h3>Trois règles</h3>
+    <p style="max-width:80ch">Le cœur plein est en terre profonde <code style="font-family:var(--mono);font-size:12px">#A26248</code>, jamais en rouge : le rouge est réservé aux erreurs. Le cœur vide est un contour en <code style="font-family:var(--mono);font-size:12px">#C6BBA9</code>, visible mais discret. Et l'ajout ne déclenche aucune animation de célébration, aucun compteur, aucun message : la personne sort d'une méditation, on ne la félicite pas.</p>
+  </div>
+</section>
+
+<section class="page">
+  <div class="tete"><span class="num">03</span><h2>Deux points à trancher</h2></div>
+  <div class="gr3">
+    <div class="plat"><h3>Les téléchargements</h3><p>Je les ai mis en troisième segment de la Bibliothèque. Si vous ne prévoyez pas le hors-ligne au lancement, retirez ce segment plutôt que de le laisser vide : un segment qui ne contient jamais rien apprend à ne plus regarder les segments.</p></div>
+    <div class="plat"><h3>Le nombre d'écoutes</h3><p>Sur la fiche, « Déjà écoutée 3 fois » remplace une note ou un nombre de likes. C'est une information personnelle et utile, alors qu'une note publique installerait une comparaison dont ce produit n'a pas besoin.</p></div>
+    <div class="plat"><h3>Le rappel quotidien</h3><p>Présent dans les réglages, désactivé par défaut. Une application qui promet de répondre à un besoin ponctuel ne devrait pas réclamer une habitude quotidienne dès le premier jour.</p></div>
+  </div>
+</section>
+
+<div class="page pied"><p style="max-width:58ch">Dites-moi ce qui cloche et j'ajuste. Ensuite, je peux en faire un prompt Antigravity comme pour le reste.</p></div>
+</body></html>

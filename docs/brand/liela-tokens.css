@@ -1,0 +1,96 @@
+/* Généré depuis liela-tokens.json — ne pas éditer à la main */
+:root{
+
+  /* brand */
+  --brand-sauge: #919780;
+  --brand-saugeProfond: #5F6A52;
+  --brand-saugeVoile: #E7E9DF;
+  --brand-terre: #D09B83;
+  --brand-terreProfond: #A26248;
+  --brand-terreVoile: #F5E4DA;
+
+  /* neutral */
+  --neutral-creme: #FDF9F0;
+  --neutral-surface: #FFFFFF;
+  --neutral-coquille: #F8EFE4;
+  --neutral-sable: #F0E5D6;
+  --neutral-filet: #E5D9C7;
+  --neutral-bord: #D8CAB4;
+  --neutral-coeurVide: #C6BBA9;
+  --neutral-gris3: #9A8E7C;
+  --neutral-gris2: #7A6E5E;
+  --neutral-encre: #433528;
+
+  /* situation */
+  --situation-calmer-le-stress: #A26248;
+  --situation-trouver-le-sommeil: #5D6A78;
+  --situation-calmer-les-pensees: #6E6257;
+  --situation-retrouver-sa-concentration: #5F6A52;
+  --situation-relacher-les-tensions: #94702B;
+  --situation-se-recentrer: #7A5560;
+
+  /* functional */
+  --functional-succes: #4E7259;
+  --functional-erreur: #A0483C;
+  --functional-attention: #8E6A1C;
+  --functional-info: #4A6474;
+
+  /* sombre */
+  --sombre-fond: #3E4753;
+  --sombre-surface: rgba(253,249,240,0.09);
+  --sombre-texte: #FDF9F0;
+  --sombre-texteSecond: rgba(253,249,240,0.70);
+  --sombre-saugeEclairci: #A8AE96;
+
+  /* radius */
+  --radius-xs: 6px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 26px;
+  --radius-full: 999px;
+
+  /* spacing */
+  --space-4: 4px;
+  --space-8: 8px;
+  --space-12: 12px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-48: 48px;
+  --space-64: 64px;
+  --space-96: 96px;
+  --space-marge-ecran: 20px;
+
+  /* elevation */
+  --elevation-n0: 1px solid #E5D9C7;
+  --elevation-n1: 0 1px 2px rgba(67,53,40,0.05), 0 10px 26px -14px rgba(67,53,40,0.16);
+  --elevation-n2: 0 2px 5px rgba(67,53,40,0.06), 0 26px 52px -22px rgba(67,53,40,0.24);
+
+  /* type */
+  --font-display: "Poppins", system-ui, sans-serif;
+  --font-ui: "Hanken Grotesk", system-ui, sans-serif;
+  --type-display-size: 40px;
+  --type-display-lh: 1.1;
+  --type-h1-size: 30px;
+  --type-h1-lh: 1.2;
+  --type-h2-size: 23px;
+  --type-h2-lh: 1.25;
+  --type-h3-size: 18px;
+  --type-h3-lh: 1.35;
+  --type-body-size: 16px;
+  --type-body-lh: 1.6;
+  --type-petiteInfo-size: 13px;
+  --type-petiteInfo-lh: 1.45;
+  --type-bouton-size: 16px;
+  --type-bouton-lh: 1.0;
+  --type-legende-size: 12px;
+  --type-legende-lh: 1.4;
+
+  /* motion */
+  --motion-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --motion-retourTactile: 120ms;
+  --motion-apparitionElement: 260ms;
+  --motion-transitionEcran: 380ms;
+  --motion-ouverturePlayer: 520ms;
+  --motion-maximumHorsSeance: 600ms;
+}

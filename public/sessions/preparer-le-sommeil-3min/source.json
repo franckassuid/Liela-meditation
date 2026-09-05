@@ -8,8 +8,8 @@
   },
   "voice": {
     "provider": "google-gemini",
-    "voiceId": "Charon",
-    "model": "gemini-2.5-flash-preview-tts",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
     "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
   },
   "music": {

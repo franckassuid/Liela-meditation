@@ -1,0 +1,178 @@
+{
+  "id": "retrouver-de-la-stabilite-10min",
+  "metadata": {
+    "title": "Retrouver de la stabilité",
+    "category": "stress",
+    "durationTargetSeconds": 600,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "deep-relax",
+    "volumeDb": -36,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "rain-gentle",
+    "volumeDb": -34,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Prenez le temps de vous installer dans une position stable. Vous pouvez garder les yeux ouverts, légèrement baissés, ou les fermer si cela vous convient. Sentez d'abord le support sous votre corps.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "orientation-1",
+      "type": "voice",
+      "text": "Remarquez quelques éléments simples autour de vous. Les sons les plus proches, puis les plus lointains. La lumière dans la pièce. La température de l'air. Laissez l'environnement reprendre doucement sa place dans votre attention.",
+      "silenceAfter": {
+        "durationSeconds": 21,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "feet-1",
+      "type": "voice",
+      "text": "Portez maintenant l'attention vers les pieds. Sentez leur contact avec le sol, ou leur poids s'ils sont allongés. Il n'est pas nécessaire de ressentir quelque chose de particulier. Restez simplement avec ce qui est perceptible.",
+      "silenceAfter": {
+        "durationSeconds": 25,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "hands-1",
+      "type": "voice",
+      "text": "Déplacez ensuite l'attention vers les mains. Remarquez leur position, la température, les points de contact entre les doigts ou avec le tissu. Laissez cette sensation devenir une seconde ancre simple.",
+      "silenceAfter": {
+        "durationSeconds": 25,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "breath-1",
+      "type": "voice",
+      "text": "Si la respiration est confortable à observer, remarquez son rythme naturel. Suivez une inspiration du début à la fin, puis une expiration. Si cela vous semble moins agréable, restez avec les pieds ou les mains.",
+      "silenceAfter": {
+        "durationSeconds": 27,
+        "purpose": "breathing"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 37,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "attention-1",
+      "type": "voice",
+      "text": "Il est probable que des pensées reviennent. C'est une partie normale de l'expérience. Lorsque vous remarquez que l'attention s'est éloignée, identifiez simplement ce qui est présent, puis revenez à l'ancre la plus facile.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Élargissez maintenant l'attention à plusieurs zones en même temps. Les pieds. Les mains. Le poids du bassin ou du dos. Sans chercher à tout sentir précisément, remarquez simplement que le corps occupe un espace stable.",
+      "silenceAfter": {
+        "durationSeconds": 34,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 43,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "sounds-1",
+      "type": "voice",
+      "text": "Laissez ensuite les sons entrer dans le champ de l'attention. Un son peut apparaître, rester quelques secondes, puis changer. Vous n'avez rien à suivre. Remarquez seulement ce qui est là, puis revenez au corps.",
+      "silenceAfter": {
+        "durationSeconds": 30,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "stability-1",
+      "type": "voice",
+      "text": "Pendant quelques instants, alternez librement entre une sensation corporelle stable et un son autour de vous. Chaque retour est un point de repère. Il n'est pas nécessaire de maintenir une concentration parfaite.",
+      "silenceAfter": {
+        "durationSeconds": 35,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-3",
+      "type": "silence",
+      "durationSeconds": 40,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Commencez maintenant à élargir l'attention vers toute la pièce. Sentez à nouveau le corps dans sa position, puis laissez quelques petits mouvements revenir dans les mains ou les épaules.",
+      "silenceAfter": {
+        "durationSeconds": 11,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Avant de reprendre, choisissez une seule chose simple à faire ensuite. Gardez cette sensation de contact avec le sol et prenez le temps de revenir complètement.",
+      "silenceAfter": {
+        "durationSeconds": 7,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

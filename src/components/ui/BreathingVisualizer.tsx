@@ -26,9 +26,22 @@ function easeIO(x: number): number {
   return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
 }
 
-export function BreathingVisualizer() {
+interface BreathingVisualizerProps {
+  rmsData?: number[] | null;
+  getCurrentTime?: () => number;
+}
+
+export function BreathingVisualizer({ rmsData, getCurrentTime }: BreathingVisualizerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  
+  const rmsDataRef = useRef(rmsData);
+  const getCurrentTimeRef = useRef(getCurrentTime);
+
+  useEffect(() => {
+    rmsDataRef.current = rmsData;
+    getCurrentTimeRef.current = getCurrentTime;
+  }, [rmsData, getCurrentTime]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -103,8 +116,22 @@ export function BreathingVisualizer() {
 
       const shapeSouffle = isReduced ? 0.5 : souffle;
       
-      const R = S * CONFIG.baseRadiusFactor * (CONFIG.radiusMinFactor + CONFIG.radiusVarFactor * shapeSouffle);
-      const a = CONFIG.audioLevelA;
+      // Calculate RMS value
+      let currentRms = 0;
+      const currentRmsData = rmsDataRef.current;
+      const currentGetTime = getCurrentTimeRef.current;
+      
+      if (currentRmsData && currentRmsData.length > 0 && currentGetTime) {
+        const timeSec = currentGetTime();
+        const index = Math.floor(timeSec * 10); // 10 Hz
+        if (index >= 0 && index < currentRmsData.length) {
+          currentRms = currentRmsData[index];
+        }
+      }
+
+      // Modulate parameters based on RMS
+      const a = CONFIG.audioLevelA + 0.65 * currentRms; 
+      const R = S * CONFIG.baseRadiusFactor * (CONFIG.radiusMinFactor + CONFIG.radiusVarFactor * shapeSouffle) * (1 + 0.05 * currentRms);
 
       // Draw Layers
       for (const layer of CONFIG.layers) {
@@ -112,8 +139,6 @@ export function BreathingVisualizer() {
         
         // If reduced motion, animate opacity slightly instead of the shape
         if (isReduced) {
-          // opacité varie entre 0.16 et 0.22 pour la couche 1, on calcule un multiplicateur
-          // base = 0.20. (0.16 to 0.22) is factor of (0.8 to 1.1)
           const opacityFactor = 0.8 + 0.3 * souffle;
           currentAlpha *= opacityFactor;
         }
@@ -157,7 +182,7 @@ export function BreathingVisualizer() {
       resizeObserver.disconnect();
       cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, []); // Run once, using refs for dynamic data
 
   return (
     <div ref={containerRef} className="w-full h-full absolute inset-0 flex items-center justify-center pointer-events-none">

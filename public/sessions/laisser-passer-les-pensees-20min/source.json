@@ -1,0 +1,256 @@
+{
+  "id": "laisser-passer-les-pensees-20min",
+  "metadata": {
+    "title": "Laisser passer les pensées",
+    "category": "thoughts",
+    "durationTargetSeconds": 1200,
+    "language": "fr-FR"
+  },
+  "voice": {
+    "provider": "google-gemini",
+    "voiceId": "Algenib",
+    "model": "gemini-3.1-flash-tts-preview",
+    "voiceStyle": "Native French male voice. Warm, calm, deep and reassuring. Speak slowly, slightly slower than normal conversation, with soft pacing and gentle sentence endings. Sound grounded, safe and present, with subtle expression. Never theatrical, robotic, breathy or whispered."
+  },
+  "music": {
+    "enabled": true,
+    "asset": "inner-space",
+    "volumeDb": -38,
+    "fadeInSeconds": 5,
+    "fadeOutSeconds": 8,
+    "duckingDb": 4
+  },
+  "ambience": {
+    "enabled": true,
+    "asset": "soft-air",
+    "volumeDb": -35,
+    "fadeInSeconds": 4,
+    "fadeOutSeconds": 6,
+    "duckingDb": 4
+  },
+  "segments": [
+    {
+      "id": "opening-silence",
+      "type": "silence",
+      "durationSeconds": 3,
+      "purpose": "execution"
+    },
+    {
+      "id": "installation-1",
+      "type": "voice",
+      "text": "Installez-vous dans une position confortable et stable. Prenez le temps de remarquer le soutien sous votre corps, puis laissez le regard se poser ou les yeux se fermer si cela vous convient.",
+      "silenceAfter": {
+        "durationSeconds": 9,
+        "purpose": "execution"
+      }
+    },
+    {
+      "id": "orientation-1",
+      "type": "voice",
+      "text": "Commencez par l'environnement. Remarquez les sons, la température de l'air et quelques points de contact du corps. L'objectif est simplement de revenir vers des informations présentes et concrètes.",
+      "silenceAfter": {
+        "durationSeconds": 28,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "anchor-1",
+      "type": "voice",
+      "text": "Choisissez maintenant une ancre principale. Les pieds au sol, les mains, le poids du corps ou un son régulier. Gardez cette ancre simple et facile à retrouver.",
+      "silenceAfter": {
+        "durationSeconds": 31,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "practice-silence-1",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "thoughts-1",
+      "type": "voice",
+      "text": "À un moment, une pensée attirera probablement votre attention. Lorsque vous vous en rendez compte, reconnaissez simplement qu'une pensée est présente. Puis revenez à l'ancre choisie.",
+      "silenceAfter": {
+        "durationSeconds": 34,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "thoughts-2",
+      "type": "voice",
+      "text": "Il peut s'agir d'une image, d'une phrase intérieure, d'un souvenir ou d'une anticipation. Il n'est pas nécessaire de préciser davantage. Remarquez la forme générale de l'expérience, puis revenez.",
+      "silenceAfter": {
+        "durationSeconds": 37,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-2",
+      "type": "silence",
+      "durationSeconds": 49,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "label-1",
+      "type": "voice",
+      "text": "Si cela vous aide, utilisez un mot très simple lorsque vous remarquez une distraction : pensée, souvenir, planification. Un seul mot suffit. Puis retrouvez votre point d'ancrage.",
+      "silenceAfter": {
+        "durationSeconds": 37,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-3",
+      "type": "silence",
+      "durationSeconds": 49,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "body-1",
+      "type": "voice",
+      "text": "Déplacez maintenant l'attention vers le corps entier. Remarquez plusieurs points de contact en même temps. Cette perception plus large peut devenir une nouvelle base pour la pratique.",
+      "silenceAfter": {
+        "durationSeconds": 37,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "body-silence-1",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "open-1",
+      "type": "voice",
+      "text": "Laissez pendant quelques instants les sons, les sensations et les pensées entrer dans le même champ d'attention. Vous n'avez pas besoin de suivre ce qui apparaît. Remarquez seulement les changements.",
+      "silenceAfter": {
+        "durationSeconds": 39,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "open-silence-1",
+      "type": "silence",
+      "durationSeconds": 49,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "return-1",
+      "type": "voice",
+      "text": "Puis revenez à une seule ancre. Sentez la différence entre l'attention ouverte et ce retour vers un point simple. Aucun état particulier n'est à obtenir.",
+      "silenceAfter": {
+        "durationSeconds": 38,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-4",
+      "type": "silence",
+      "durationSeconds": 49,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "thoughts-3",
+      "type": "voice",
+      "text": "Si une pensée insiste, remarquez surtout ce qu'elle fait à votre attention : elle attire, elle occupe, puis vous vous en rendez compte. À cet instant, revenez à une sensation présente.",
+      "silenceAfter": {
+        "durationSeconds": 39,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-5",
+      "type": "silence",
+      "durationSeconds": 49,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "sounds-1",
+      "type": "voice",
+      "text": "Utilisez maintenant les sons comme ancre pendant quelques instants. Remarquez leur début, leur durée, puis leur changement. Les pensées peuvent continuer d'exister en arrière-plan.",
+      "silenceAfter": {
+        "durationSeconds": 37,
+        "purpose": "observe"
+      }
+    },
+    {
+      "id": "sounds-silence-1",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "choice-1",
+      "type": "voice",
+      "text": "Choisissez librement l'ancre qui fonctionne le mieux maintenant : le corps, les sons ou la respiration naturelle. Restez avec elle et revenez simplement lorsqu'une pensée prend toute la place.",
+      "silenceAfter": {
+        "durationSeconds": 39,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-6",
+      "type": "silence",
+      "durationSeconds": 49,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "wide-1",
+      "type": "voice",
+      "text": "Élargissez une dernière fois l'attention au corps entier et à l'environnement. Remarquez que plusieurs expériences peuvent être présentes en même temps, sans qu'il soit nécessaire de s'occuper de chacune.",
+      "silenceAfter": {
+        "durationSeconds": 38,
+        "purpose": "contemplation"
+      }
+    },
+    {
+      "id": "practice-silence-7",
+      "type": "silence",
+      "durationSeconds": 45,
+      "purpose": "contemplation"
+    },
+    {
+      "id": "integration-1",
+      "type": "voice",
+      "text": "Commencez maintenant à revenir plus clairement vers la pièce. Remarquez la lumière, les sons et votre posture. Laissez quelques mouvements revenir dans les mains et les pieds.",
+      "silenceAfter": {
+        "durationSeconds": 13,
+        "purpose": "integration"
+      }
+    },
+    {
+      "id": "integration-2",
+      "type": "voice",
+      "text": "Prenez encore un instant avant de reprendre votre journée. Choisissez la prochaine action simple que vous souhaitez faire, puis revenez à votre rythme.",
+      "silenceAfter": {
+        "durationSeconds": 8,
+        "purpose": "integration"
+      }
+    }
+  ],
+  "cues": [
+    {
+      "asset": "singing-bowl",
+      "trigger": "session_start",
+      "volumeDb": -18
+    },
+    {
+      "asset": "soft-chime",
+      "trigger": "before_segment",
+      "volumeDb": -20,
+      "segmentId": "integration-1"
+    },
+    {
+      "asset": "soft-bell",
+      "trigger": "session_end",
+      "volumeDb": -18
+    }
+  ],
+  "mastering": {
+    "targetLufs": -18,
+    "truePeakDbtp": -1
+  }
+}

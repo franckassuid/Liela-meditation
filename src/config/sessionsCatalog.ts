@@ -10,6 +10,7 @@ export interface CatalogSession {
   isAvailable: boolean; // dynamically computed based on real audio on disk
   realSessionId?: string; // id in generated/sessions.json
   description?: string;
+  estPorteEntree?: boolean;
 }
 
 export interface Collection {
@@ -47,7 +48,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Une pause pour souffler",
     durationMinutes: 3,
     durationSeconds: 180,
-    situationId: "stress",
+    situationId: "calmer-le-stress",
     description: "Une courte pause respiratoire pour relâcher la pression immédiatement.",
   },
   {
@@ -55,7 +56,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Revenir au calme",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "stress",
+    situationId: "calmer-le-stress",
     description: "Ralentir le souffle et retrouver un état de tranquillité intérieure.",
   },
   {
@@ -63,7 +64,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Couper la montée du stress",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "stress",
+    situationId: "calmer-le-stress",
     description: "Désamorcer les signaux d'alerte corporels quand la tension monte.",
   },
   {
@@ -71,7 +72,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Faire redescendre la pression",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "stress",
+    situationId: "calmer-le-stress",
     description: "Un temps prolongé pour calmer le système nerveux et déposer les tensions.",
   },
   {
@@ -79,7 +80,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Retrouver de la stabilité",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "stress",
+    situationId: "calmer-le-stress",
     description: "S'ancrer dans ses appuis et retrouver un socle solide en soi.",
   },
   {
@@ -87,7 +88,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Décompresser en profondeur",
     durationMinutes: 20,
     durationSeconds: 1200,
-    situationId: "stress",
+    situationId: "calmer-le-stress",
     description: "Une immersion complète pour évacuer la surcharge émotionnelle et physique.",
   },
 
@@ -97,7 +98,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Préparer le sommeil",
     durationMinutes: 3,
     durationSeconds: 180,
-    situationId: "sleep",
+    situationId: "trouver-le-sommeil",
     description: "Une transition douce pour inviter le corps à ralentir avant d'éteindre la lumière.",
   },
   {
@@ -105,7 +106,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Se poser avant de dormir",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "sleep",
+    situationId: "trouver-le-sommeil",
     description: "Déposer les pensées de la journée et s'installer dans un état propice au repos.",
   },
   {
@@ -113,7 +114,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Quand le sommeil ne vient pas",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "sleep",
+    situationId: "trouver-le-sommeil",
     description: "Dédramatiser l'insomnie et apaiser l'impatience dans le lit.",
   },
   {
@@ -121,7 +122,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Laisser la journée derrière soi",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "sleep",
+    situationId: "trouver-le-sommeil",
     description: "Fermer symboliquement les portes de la journée écoulée pour libérer la nuit.",
   },
   {
@@ -129,7 +130,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Calmer le mental pour la nuit",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "sleep",
+    situationId: "trouver-le-sommeil",
     description: "Désamorcer le flux des pensées et plonger dans une douce pénombre intérieure.",
   },
   {
@@ -137,7 +138,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Glisser doucement vers le sommeil",
     durationMinutes: 20,
     durationSeconds: 1200,
-    situationId: "sleep",
+    situationId: "trouver-le-sommeil",
     description: "Une guidance progressive qui s'efface peu à peu pour laisser place au sommeil.",
   },
 
@@ -147,7 +148,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Sortir de la boucle",
     durationMinutes: 3,
     durationSeconds: 180,
-    situationId: "thoughts",
+    situationId: "calmer-les-pensees",
     description: "Interrompre net une spirale de ruminations et revenir au concret.",
   },
   {
@@ -155,7 +156,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Quand tout tourne dans la tête",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "thoughts",
+    situationId: "calmer-les-pensees",
     description: "Créer une première distance entre vous et le bavardage incessant de l'esprit.",
   },
   {
@@ -163,7 +164,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Prendre du recul sur ses pensées",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "thoughts",
+    situationId: "calmer-les-pensees",
     description: "Observer ses pensées comme des nuages qui passent sans s'y accrocher.",
   },
   {
@@ -171,7 +172,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Faire de la place dans son esprit",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "thoughts",
+    situationId: "calmer-les-pensees",
     description: "Clarifier le paysage intérieur et aérer l'espace mental encombré.",
   },
   {
@@ -179,7 +180,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Calmer un mental agité",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "thoughts",
+    situationId: "calmer-les-pensees",
     description: "Apaiser la turbulence mentale en canalisant doucement l'attention.",
   },
   {
@@ -187,7 +188,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Laisser passer les pensées",
     durationMinutes: 20,
     durationSeconds: 1200,
-    situationId: "thoughts",
+    situationId: "calmer-les-pensees",
     description: "Un entraînement approfondi au détachement et à la paix de l'esprit.",
   },
 
@@ -197,7 +198,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Revenir à l'essentiel",
     durationMinutes: 3,
     durationSeconds: 180,
-    situationId: "focus",
+    situationId: "retrouver-sa-concentration",
     realSessionId: "revenir-a-lessentiel-3min",
     description: "Recentrer instantanément son regard sur la priorité du moment.",
   },
@@ -206,7 +207,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Retrouver son attention",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "focus",
+    situationId: "retrouver-sa-concentration",
     description: "Resserrer le faisceau de l'attention quand l'esprit commence à papillonner.",
   },
   {
@@ -214,7 +215,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Se préparer à travailler",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "focus",
+    situationId: "retrouver-sa-concentration",
     description: "Poser une intention claire et entrer dans un état de concentration fluide.",
   },
   {
@@ -222,7 +223,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Se concentrer sur une seule chose",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "focus",
+    situationId: "retrouver-sa-concentration",
     description: "Apprendre à maintenir une présence soutenue sur un seul objet d'attention.",
   },
   {
@@ -230,7 +231,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Revenir après une distraction",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "focus",
+    situationId: "retrouver-sa-concentration",
     description: "Se remettre au travail sans culpabilité après une interruption.",
   },
   {
@@ -238,7 +239,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Stabiliser son attention",
     durationMinutes: 20,
     durationSeconds: 1200,
-    situationId: "focus",
+    situationId: "retrouver-sa-concentration",
     description: "Développer une clarté et une endurance cognitive durables.",
   },
 
@@ -248,7 +249,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Relâcher les épaules",
     durationMinutes: 3,
     durationSeconds: 180,
-    situationId: "tensions",
+    situationId: "relacher-les-tensions",
     description: "Libérer les raideurs accumulées dans la nuque et les épaules.",
   },
   {
@@ -256,7 +257,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Pause détente",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "tensions",
+    situationId: "relacher-les-tensions",
     description: "Prendre un instant pour dénouer le corps et relâcher la pression physique.",
   },
   {
@@ -264,7 +265,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Souffler après une journée chargée",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "tensions",
+    situationId: "relacher-les-tensions",
     description: "Marquer une coupure nette entre le rythme de la journée et le repos.",
   },
   {
@@ -272,7 +273,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Relâcher les tensions",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "tensions",
+    situationId: "relacher-les-tensions",
     description: "Parcourir les zones de résistance et leur offrir de la douceur.",
   },
   {
@@ -280,7 +281,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Détendre le haut du corps",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "tensions",
+    situationId: "relacher-les-tensions",
     description: "Dénouer le dos, les trapèzes et la mâchoire pour retrouver de l'aisance.",
   },
   {
@@ -288,7 +289,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Détendre le corps progressivement",
     durationMinutes: 20,
     durationSeconds: 1200,
-    situationId: "tensions",
+    situationId: "relacher-les-tensions",
     description: "Un scan corporel méthodique et profond des pieds jusqu'au sommet du crâne.",
   },
 
@@ -298,7 +299,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Revenir au présent",
     durationMinutes: 3,
     durationSeconds: 180,
-    situationId: "recenter",
+    situationId: "se-recentrer",
     description: "Quitter le mode pilote automatique pour habiter pleinement l'instant.",
   },
   {
@@ -306,7 +307,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Se recentrer",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "recenter",
+    situationId: "se-recentrer",
     description: "Rassembler son énergie dispersée et retrouver son équilibre intérieur.",
   },
   {
@@ -314,7 +315,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Faire une pause mentale",
     durationMinutes: 5,
     durationSeconds: 300,
-    situationId: "recenter",
+    situationId: "se-recentrer",
     description: "S'accorder un sas de calme au milieu du tourbillon quotidien.",
   },
   {
@@ -322,7 +323,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Retrouver ses repères",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "recenter",
+    situationId: "se-recentrer",
     description: "Prendre de la hauteur et renouer avec ce qui compte vraiment.",
   },
   {
@@ -330,7 +331,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Créer un peu d'espace",
     durationMinutes: 10,
     durationSeconds: 600,
-    situationId: "recenter",
+    situationId: "se-recentrer",
     description: "Ouvrir une respiration ample et dégager de l'espace en soi.",
   },
   {
@@ -338,7 +339,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     title: "Retrouver un rythme plus calme",
     durationMinutes: 20,
     durationSeconds: 1200,
-    situationId: "recenter",
+    situationId: "se-recentrer",
     description: "Ralentir durablement la cadence et goûter à une paix profonde.",
   },
 
@@ -373,7 +374,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
  * Dynamically resolves availability against verified audio sessions in sessions.json
  */
 export const SESSIONS_CATALOG: CatalogSession[] = RAW_CATALOG.map((item) => {
-  const real = (sessionsData as Array<{ id: string; metadata?: { durationSeconds?: number } }>).find(
+  const real = (sessionsData as Array<{ id: string; metadata?: { durationSeconds?: number; estPorteEntree?: boolean } }>).find(
     (s) => s.id === item.id || (item.realSessionId && s.id === item.realSessionId)
   );
   return {
@@ -381,6 +382,7 @@ export const SESSIONS_CATALOG: CatalogSession[] = RAW_CATALOG.map((item) => {
     isAvailable: Boolean(real),
     realSessionId: real ? real.id : undefined,
     durationSeconds: real?.metadata?.durationSeconds || item.durationSeconds,
+    estPorteEntree: real?.metadata?.estPorteEntree || false,
   };
 });
 

@@ -5,7 +5,7 @@
     "title": "Quand tout tourne dans la tête",
     "category": "thoughts",
     "language": "fr-FR",
-    "durationSeconds": 285.55,
+    "durationSeconds": 289.43,
     "level": null,
     "shortDescription": null,
     "technique": null
@@ -49,7 +49,7 @@
   "cues": [
     {
       "asset": "soft-chime",
-      "timeSeconds": 263.53
+      "timeSeconds": 268.8
     },
     {
       "asset": "singing-bowl",
@@ -57,12 +57,12 @@
     },
     {
       "asset": "soft-bell",
-      "timeSeconds": 285.54
+      "timeSeconds": 289.40999999999997
     }
   ],
   "generation": {
     "ttsProvider": "google-gemini",
-    "ttsModel": "gemini-2.5-flash-preview-tts",
-    "voiceId": "Charon"
+    "ttsModel": "gemini-3.1-flash-tts-preview",
+    "voiceId": "Algenib"
   }
 }

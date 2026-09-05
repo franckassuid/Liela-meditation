@@ -1,6 +1,6 @@
 import React from "react";
 import { ProgressBar } from "./ProgressBar";
-import { LockIcon } from "./Icons";
+import { LockIcon, HeartIcon } from "./Icons";
 
 interface SessionCardProps {
   title: string;
@@ -8,6 +8,9 @@ interface SessionCardProps {
   situationName?: string;
   situationColor?: string;
   situationVoile?: string;
+  textColor?: string;
+  isFavorite?: boolean;
+  onToggleFavorite?: (e: React.MouseEvent) => void;
   progress?: number; // 0 to 1
   isLocked?: boolean;
   onClick?: () => void;
@@ -20,56 +23,67 @@ export function SessionCard({
   situationName,
   situationColor,
   situationVoile,
+  textColor,
+  isFavorite,
+  onToggleFavorite,
   progress,
   isLocked = false,
   onClick,
   className = "",
 }: SessionCardProps) {
   const durationMinutes = Math.round(duration / 60);
+  
+  // Si textColor est fourni (généralement pour Sommeil où le fond est sombre)
+  const isDark = !!textColor;
+  const cardBgClass = isDark 
+    ? "bg-creme/8 shadow-none text-creme" 
+    : "bg-white shadow-[0_1px_2px_rgba(67,53,40,0.05),_0_8px_18px_-14px_rgba(67,53,40,0.2)] text-encre";
+  
+  const subtextColor = isDark ? "text-creme/60" : "text-gris-2";
 
   return (
     <div
       onClick={onClick}
-      className={`rounded-md p-[18px] shadow-p1 cursor-pointer transition-transform duration-120 active:scale-[0.97] border-l-4 ${
-        isLocked
-          ? "bg-surface/75 opacity-70 border-filet grayscale-[20%]"
-          : "bg-surface"
-      } ${className}`}
-      style={{
-        borderLeftColor: isLocked ? "var(--filet)" : situationColor || "var(--bord)",
-      }}
+      className={`flex items-center gap-[10px] rounded-[13px] p-[9px_11px] cursor-pointer transition-transform duration-120 active:scale-[0.98] ${cardBgClass} ${className}`}
     >
-      <div className="flex items-center justify-between mb-2.5">
-        <div className="flex items-center gap-2">
-          {situationName && (
-            <span 
-              className="inline-block text-[12px] font-semibold px-[11px] py-[3px] rounded-xs"
-              style={{
-                backgroundColor: isLocked ? "var(--sable)" : situationVoile || "var(--sable)",
-                color: isLocked ? "var(--gris-2)" : situationColor || "var(--gris-2)",
-              }}
-            >
-              {situationName}
-            </span>
-          )}
-          {isLocked && (
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-[2px] rounded-full bg-sable text-gris-2">
-              <LockIcon size={12} />
-              <span>Pro</span>
-            </span>
-          )}
-        </div>
-        <span className="text-[13px] text-gris-2 font-medium">{durationMinutes} min</span>
+      <span 
+        className="w-[36px] h-[36px] rounded-[10px] shrink-0" 
+        style={{ background: isDark ? "rgba(253,249,240,.14)" : situationColor || "var(--bord)" }}
+      ></span>
+      
+      <div className="flex-1 min-w-0">
+        <b className="block text-[12.5px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
+          {title}
+        </b>
+        <i className={`block not-italic text-[10.5px] ${subtextColor}`}>
+          {durationMinutes} min {situationName && `· ${situationName}`}
+        </i>
+        {progress !== undefined && progress > 0 && (
+          <div className="mt-1.5 max-w-[120px]">
+            <ProgressBar progress={progress} />
+          </div>
+        )}
       </div>
 
-      <h4 className={`font-poppins font-normal text-[18px] leading-[1.2] ${isLocked ? "text-gris-2" : "text-encre"}`}>
-        {title}
-      </h4>
-      
-      {progress !== undefined && !isLocked && (
-        <div className="mt-3.5">
-          <ProgressBar progress={progress} />
-        </div>
+      {onToggleFavorite && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleFavorite(e);
+          }}
+          className="p-1 -mr-1 rounded-full transition-transform active:scale-90"
+          aria-label={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+        >
+          {isFavorite ? (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#A26248" stroke="#A26248" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/>
+            </svg>
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={isDark ? "rgba(253,249,240,.45)" : "#C6BBA9"} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z"/>
+            </svg>
+          )}
+        </button>
       )}
     </div>
   );

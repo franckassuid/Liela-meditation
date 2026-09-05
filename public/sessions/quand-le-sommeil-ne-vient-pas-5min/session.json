@@ -5,7 +5,7 @@
     "title": "Quand le sommeil ne vient pas",
     "category": "sleep",
     "language": "fr-FR",
-    "durationSeconds": 286.68,
+    "durationSeconds": 292.84000000000003,
     "level": null,
     "shortDescription": null,
     "technique": null
@@ -54,7 +54,7 @@
   ],
   "generation": {
     "ttsProvider": "google-gemini",
-    "ttsModel": "gemini-2.5-flash-preview-tts",
-    "voiceId": "Charon"
+    "ttsModel": "gemini-3.1-flash-tts-preview",
+    "voiceId": "Algenib"
   }
 }
