@@ -7,6 +7,9 @@ import {
   AppSettings,
   DEFAULT_SETTINGS,
   DownloadedSession,
+  ALL_DAYS,
+  DayOfWeek,
+  formatReminderDays,
 } from "@/lib/storage";
 
 type ScreenType = "main" | "compte" | "telechargements" | "aide" | "confidentialite";
@@ -27,6 +30,8 @@ export default function SettingsPage() {
   const [showExportSheet, setShowExportSheet] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [showFullPrivacy, setShowFullPrivacy] = useState(false);
+  const [showDaysSheet, setShowDaysSheet] = useState(false);
+  const [showTimeSheet, setShowTimeSheet] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
   const [accountEmailModal, setAccountEmailModal] = useState<"email" | "apple" | null>(null);
   const [emailInput, setEmailInput] = useState("");
@@ -58,6 +63,49 @@ export default function SettingsPage() {
     const next = { ...settings, [key]: value };
     setSettings(next);
     await storage.setSettings({ [key]: value });
+  };
+
+  const handleToggleDay = async (dayKey: DayOfWeek) => {
+    const currentDays = settings.dailyReminderCustomDays || ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
+    let updatedDays: DayOfWeek[];
+    if (currentDays.includes(dayKey)) {
+      updatedDays = currentDays.filter((d) => d !== dayKey);
+    } else {
+      updatedDays = [...currentDays, dayKey];
+    }
+    const formatted = formatReminderDays(updatedDays);
+    const nextSettings = {
+      ...settings,
+      dailyReminderCustomDays: updatedDays,
+      dailyReminderDays: formatted,
+    };
+    setSettings(nextSettings);
+    await storage.setSettings({
+      dailyReminderCustomDays: updatedDays,
+      dailyReminderDays: formatted,
+    });
+  };
+
+  const handleSetPresetDays = async (type: "all" | "weekdays" | "weekend") => {
+    let updatedDays: DayOfWeek[];
+    if (type === "all") {
+      updatedDays = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
+    } else if (type === "weekdays") {
+      updatedDays = ["lun", "mar", "mer", "jeu", "ven"];
+    } else {
+      updatedDays = ["sam", "dim"];
+    }
+    const formatted = formatReminderDays(updatedDays);
+    const nextSettings = {
+      ...settings,
+      dailyReminderCustomDays: updatedDays,
+      dailyReminderDays: formatted,
+    };
+    setSettings(nextSettings);
+    await storage.setSettings({
+      dailyReminderCustomDays: updatedDays,
+      dailyReminderDays: formatted,
+    });
   };
 
   const totalDownloadedMo = downloads.reduce((acc, cur) => acc + (cur.sizeMo || 0), 0);
@@ -341,21 +389,7 @@ export default function SettingsPage() {
               {settings.dailyReminderEnabled && (
                 <>
                   <div
-                    onClick={() =>
-                      setChoiceSheet({
-                        title: "Heure du rappel",
-                        key: "reminderTime",
-                        options: [
-                          { label: "08:00", value: "08:00" },
-                          { label: "12:30", value: "12:30" },
-                          { label: "18:00", value: "18:00" },
-                          { label: "20:00", value: "20:00" },
-                          { label: "21:00", value: "21:00" },
-                          { label: "22:00", value: "22:00" },
-                        ],
-                        currentValue: settings.dailyReminderTime,
-                      })
-                    }
+                    onClick={() => setShowTimeSheet(true)}
                     className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
@@ -370,18 +404,7 @@ export default function SettingsPage() {
                   </div>
 
                   <div
-                    onClick={() =>
-                      setChoiceSheet({
-                        title: "Jours de rappel",
-                        key: "reminderDays",
-                        options: [
-                          { label: "Tous les jours", value: "Tous les jours" },
-                          { label: "En semaine", value: "En semaine", subtitle: "Du lundi au vendredi" },
-                          { label: "Le week-end", value: "Le week-end", subtitle: "Samedi et dimanche" },
-                        ],
-                        currentValue: settings.dailyReminderDays,
-                      })
-                    }
+                    onClick={() => setShowDaysSheet(true)}
                     className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
@@ -1091,6 +1114,168 @@ export default function SettingsPage() {
               className="w-full bg-encre text-creme rounded-[12px] p-[12px] text-[13.5px] font-semibold mt-5 active:opacity-90 transition-opacity"
             >
               Fermer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL 6: JOURS DE RAPPEL (Sélection précise des jours)
+      ========================================================================== */}
+      {showDaysSheet && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div
+            className="fixed inset-0 bg-[rgba(67,53,40,0.34)] animate-in fade-in"
+            onClick={() => setShowDaysSheet(false)}
+          />
+          <div className="relative w-full max-w-[480px] bg-creme rounded-t-[24px] p-[10px_16px_24px] text-center z-51 shadow-2xl animate-in slide-in-from-bottom duration-200">
+            <span className="block w-[32px] h-[3px] bg-[#E5D9C7] rounded-full mx-auto mb-[14px]" />
+            <p className="font-poppins font-light text-[17px]">Jours de rappel</p>
+
+            {/* Raccourcis rapides */}
+            <div className="flex justify-center gap-2 mt-3 mb-1">
+              <button
+                onClick={() => handleSetPresetDays("all")}
+                className={`text-[11.5px] font-medium px-3 py-[6px] rounded-full transition-colors ${
+                  settings.dailyReminderCustomDays?.length === 7
+                    ? "bg-encre text-creme"
+                    : "bg-white text-[#7A6E5E] shadow-[0_1px_2px_rgba(67,53,40,0.04)]"
+                }`}
+              >
+                Tous les jours
+              </button>
+              <button
+                onClick={() => handleSetPresetDays("weekdays")}
+                className={`text-[11.5px] font-medium px-3 py-[6px] rounded-full transition-colors ${
+                  settings.dailyReminderDays === "En semaine"
+                    ? "bg-encre text-creme"
+                    : "bg-white text-[#7A6E5E] shadow-[0_1px_2px_rgba(67,53,40,0.04)]"
+                }`}
+              >
+                En semaine
+              </button>
+              <button
+                onClick={() => handleSetPresetDays("weekend")}
+                className={`text-[11.5px] font-medium px-3 py-[6px] rounded-full transition-colors ${
+                  settings.dailyReminderDays === "Le week-end"
+                    ? "bg-encre text-creme"
+                    : "bg-white text-[#7A6E5E] shadow-[0_1px_2px_rgba(67,53,40,0.04)]"
+                }`}
+              >
+                Le week-end
+              </button>
+            </div>
+
+            {/* Liste des 7 jours configurables individuellement */}
+            <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)] mt-3 text-left">
+              {ALL_DAYS.map((day) => {
+                const isSelected = settings.dailyReminderCustomDays?.includes(day.key);
+                return (
+                  <div
+                    key={day.key}
+                    onClick={() => handleToggleDay(day.key)}
+                    className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] last:border-b-0 cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
+                        {day.label}
+                      </b>
+                    </div>
+                    {isSelected && (
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#5F6A52"
+                        strokeWidth="2.1"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M20 6.5 9.5 17 4 11.5" />
+                      </svg>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setShowDaysSheet(false)}
+              className="w-full bg-encre text-creme rounded-[12px] p-[13px] text-[13.5px] font-semibold mt-4 active:opacity-90 transition-opacity"
+            >
+              Terminer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL 7: HEURE DU RAPPEL (Choix précis ou raccourcis)
+      ========================================================================== */}
+      {showTimeSheet && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center">
+          <div
+            className="fixed inset-0 bg-[rgba(67,53,40,0.34)] animate-in fade-in"
+            onClick={() => setShowTimeSheet(false)}
+          />
+          <div className="relative w-full max-w-[480px] bg-creme rounded-t-[24px] p-[10px_16px_24px] text-center z-51 shadow-2xl animate-in slide-in-from-bottom duration-200">
+            <span className="block w-[32px] h-[3px] bg-[#E5D9C7] rounded-full mx-auto mb-[14px]" />
+            <p className="font-poppins font-light text-[17px]">Heure du rappel</p>
+
+            {/* Saisie d'heure personnalisée */}
+            <div className="bg-white rounded-[15px] p-4 shadow-[0_1px_2px_rgba(67,53,40,0.04)] mt-3 flex flex-col items-center">
+              <label className="text-[11px] text-[#9A8E7C] mb-2 font-medium">Choisir une heure précise</label>
+              <input
+                type="time"
+                value={settings.dailyReminderTime}
+                onChange={(e) => updateSetting("dailyReminderTime", e.target.value)}
+                className="font-poppins font-light text-[32px] text-encre bg-[#F8EFE4] px-4 py-1 rounded-xl outline-none border border-[#E5D9C7] text-center"
+              />
+            </div>
+
+            {/* Raccourcis fréquents */}
+            <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)] mt-3 text-left">
+              {["08:00", "12:30", "18:00", "20:00", "21:00", "22:00"].map((t) => {
+                const isSelected = settings.dailyReminderTime === t;
+                return (
+                  <div
+                    key={t}
+                    onClick={() => {
+                      updateSetting("dailyReminderTime", t);
+                      setShowTimeSheet(false);
+                    }}
+                    className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] last:border-b-0 cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
+                        {t}
+                      </b>
+                    </div>
+                    {isSelected && (
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#5F6A52"
+                        strokeWidth="2.1"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M20 6.5 9.5 17 4 11.5" />
+                      </svg>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setShowTimeSheet(false)}
+              className="w-full bg-encre text-creme rounded-[12px] p-[13px] text-[13.5px] font-semibold mt-4 active:opacity-90 transition-opacity"
+            >
+              Terminer
             </button>
           </div>
         </div>

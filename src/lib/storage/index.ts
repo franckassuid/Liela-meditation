@@ -24,6 +24,37 @@ export interface Favori {
   source?: string;
 }
 
+export type DayOfWeek = "lun" | "mar" | "mer" | "jeu" | "ven" | "sam" | "dim";
+
+export const ALL_DAYS: { key: DayOfWeek; label: string; short: string }[] = [
+  { key: "lun", label: "Lundi", short: "Lun." },
+  { key: "mar", label: "Mardi", short: "Mar." },
+  { key: "mer", label: "Mercredi", short: "Mer." },
+  { key: "jeu", label: "Jeudi", short: "Jeu." },
+  { key: "ven", label: "Vendredi", short: "Ven." },
+  { key: "sam", label: "Samedi", short: "Sam." },
+  { key: "dim", label: "Dimanche", short: "Dim." },
+];
+
+export function formatReminderDays(days: DayOfWeek[]): string {
+  if (!days || days.length === 0) return "Aucun jour";
+  if (days.length === 7) return "Tous les jours";
+
+  const isWeekdays =
+    days.length === 5 &&
+    ["lun", "mar", "mer", "jeu", "ven"].every((d) => days.includes(d as DayOfWeek));
+  if (isWeekdays) return "En semaine";
+
+  const isWeekend =
+    days.length === 2 &&
+    ["sam", "dim"].every((d) => days.includes(d as DayOfWeek));
+  if (isWeekend) return "Le week-end";
+
+  const order: Record<DayOfWeek, number> = { lun: 1, mar: 2, mer: 3, jeu: 4, ven: 5, sam: 6, dim: 7 };
+  const sorted = [...days].sort((a, b) => order[a] - order[b]);
+  return sorted.map((d) => ALL_DAYS.find((item) => item.key === d)?.short || d).join(", ");
+}
+
 export interface AppSettings {
   // Lecture
   resumePlayback: boolean;
@@ -34,7 +65,8 @@ export interface AppSettings {
   // Rappel
   dailyReminderEnabled: boolean;
   dailyReminderTime: string;
-  dailyReminderDays: "Tous les jours" | "En semaine" | "Le week-end";
+  dailyReminderDays: string;
+  dailyReminderCustomDays: DayOfWeek[];
 
   // Compte
   accountUser?: { email?: string; method?: string } | null;
@@ -55,6 +87,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   dailyReminderEnabled: false,
   dailyReminderTime: "21:00",
   dailyReminderDays: "Tous les jours",
+  dailyReminderCustomDays: ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"],
   accountUser: null,
 };
 
