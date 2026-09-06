@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { SESSIONS_CATALOG, getCategoryInfo, CatalogSession, getCatalogSessionById } from "@/config/sessionsCatalog";
-import { getAvailableSituations } from "@/lib/sessions";
-import { storage, Favori } from "@/lib/storage";
+import { getAvailableSituations, getSituation } from "@/lib/sessions";
+import { storage, Favori, SessionHistoryItem } from "@/lib/storage";
 import { ProModal } from "@/components/ui/ProModal";
 import { SessionCard } from "@/components/ui/SessionCard";
+import { HeartIcon } from "@/components/ui/Icons";
+import sessionsData from "@/generated/sessions.json";
 
-type LibrarySegment = "situations" | "favoris";
+type LibrarySegment = "situations" | "favoris" | "historique";
 
 // Galet SVG — forme organique inspirée du logo Liela
 function GaletIcon({ color, voile, situationId }: { color: string; voile: string; situationId: string }) {
@@ -67,17 +69,39 @@ export default function LibraryPage() {
   const [activeSegment, setActiveSegment] = useState<LibrarySegment>("situations");
   const [proModalSession, setProModalSession] = useState<CatalogSession | null>(null);
   const [favorites, setFavorites] = useState<Favori[]>([]);
+  const [history, setHistory] = useState<SessionHistoryItem[]>([]);
   const [toastMessage, setToastMessage] = useState<{ id: string, timer: NodeJS.Timeout } | null>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     let active = true;
-    const loadFavs = async () => {
-      const favs = await storage.getFavorites();
-      if (active) setFavorites(favs);
+    const loadData = async () => {
+      const [favs, hist] = await Promise.all([
+        storage.getFavorites(),
+        storage.getHistory(),
+      ]);
+      if (active) {
+        setFavorites(favs);
+        setHistory(hist.filter(h => h.completed || h.duration > 0));
+      }
     };
-    loadFavs();
+    loadData();
     return () => { active = false; };
   }, []);
+
+  const formatRelativeDate = (isoString: string) => {
+    const d = new Date(isoString);
+    const now = new Date();
+    const diffTime = Math.abs(now.getTime() - d.getTime());
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0 && d.getDate() === now.getDate()) return "aujourd'hui";
+    if (diffDays === 1) return "hier";
+    
+    const days = ["dim.", "lun.", "mar.", "mer.", "jeu.", "ven.", "sam."];
+    if (diffDays < 7) return days[d.getDay()];
+    
+    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+  };
 
   const availableSituations = getAvailableSituations();
 
@@ -113,6 +137,17 @@ export default function LibraryPage() {
         clearTimeout(toastMessage.timer);
         setToastMessage(null);
       }
+    }
+    const newFavs = await storage.getFavorites();
+    setFavorites(newFavs);
+  };
+
+  const handleToggleHistoryFavorite = async (sessionId: string) => {
+    const isFav = favorites.some((f) => f.sessionId === sessionId);
+    if (isFav) {
+      await storage.removeFavorite(sessionId);
+    } else {
+      await storage.addFavorite(sessionId, "historique");
     }
     const newFavs = await storage.getFavorites();
     setFavorites(newFavs);
@@ -155,6 +190,16 @@ export default function LibraryPage() {
           }`}
         >
           Favoris
+        </button>
+        <button
+          onClick={() => setActiveSegment("historique")}
+          className={`text-[12px] font-medium px-[14px] py-[7px] rounded-full transition-colors ${
+            activeSegment === "historique"
+              ? "bg-encre text-creme"
+              : "bg-coquille text-gris-2"
+          }`}
+        >
+          Historique
         </button>
       </div>
 
@@ -233,6 +278,77 @@ export default function LibraryPage() {
                 />
               );
             })
+          )}
+        </div>
+      )}
+
+      {/* Historique */}
+      {activeSegment === "historique" && (
+        <div className="flex flex-col flex-1">
+          {history.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center mt-[14px]">
+              <div className="px-2">
+                <span className="inline-flex w-[56px] h-[56px] rounded-full bg-coquille items-center justify-center mb-[14px]">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--bord)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                </span>
+                <p className="font-poppins font-light text-[17px]">Aucune séance pour le moment</p>
+                <p className="text-[11.5px] text-gris-2 leading-[1.5] mt-[6px]">
+                  Vos séances terminées apparaîtront ici.
+                </p>
+                <button
+                  onClick={() => setActiveSegment("situations")}
+                  className="inline-block mt-[16px] text-[12.5px] font-semibold px-[18px] py-[10px] rounded-[11px] shadow-[inset_0_0_0_1px_var(--bord)] transition-colors active:bg-coquille"
+                >
+                  Découvrir les séances
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col">
+              {history.map((item, idx) => {
+                const session = sessionsData.find(s => s.id === item.sessionId);
+                if (!session) return null;
+                const sit = getSituation(session.metadata.situation);
+                const isFav = favorites.some(f => f.sessionId === item.sessionId);
+
+                return (
+                  <div
+                    key={`${item.sessionId}-${item.startedAt}-${idx}`}
+                    className="flex items-center gap-[12px] py-[12px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/50 transition-colors"
+                    onClick={() => router.push(`/player?id=${session.id}`)}
+                  >
+                    <div
+                      className="w-[9px] h-[9px] rounded-full shrink-0"
+                      style={{ background: sit?.color || "var(--bord)" }}
+                    />
+                    <div className="flex-1 min-w-0">
+                      <b className="block text-[13px] font-medium whitespace-nowrap overflow-hidden text-ellipsis text-encre">
+                        {session.metadata.title}
+                      </b>
+                      <i className="block not-italic text-[11px] text-gris-2 mt-[1px]">
+                        {formatRelativeDate(item.startedAt)} · {Math.max(1, Math.round((item.duration || session.metadata.durationSeconds) / 60))} min
+                      </i>
+                    </div>
+                    <div
+                      className="p-2 -mr-2 cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleToggleHistoryFavorite(session.id);
+                      }}
+                    >
+                      <HeartIcon
+                        size={16}
+                        filled={isFav}
+                        className={isFav ? "text-[#A26248]" : "text-gris-2"}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       )}
