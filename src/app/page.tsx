@@ -110,18 +110,19 @@ export default function HomePage() {
 
   return (
     <div className="p-marge pb-4 flex flex-col flex-1">
-      {/* Header with prominent Logo */}
-      <div 
+      {/* Logo */}
+      <div
         className="flex justify-between items-center pt-[4px] cursor-pointer"
         onClick={() => window.location.reload()}
       >
         <BrandLogo variant="horizontal" width={110} className="h-8 w-auto" />
       </div>
-      
-      <h1 className="font-poppins font-light text-[24px] leading-[1.15] mt-[6px]">
+
+      {/* Greeting */}
+      <p className="font-poppins font-light text-[25px] leading-[1.15] mt-[8px]">
         {getGreeting()}
-      </h1>
-      <p className="text-[11.5px] text-gris-2 mt-[2px]">
+      </p>
+      <p className="text-[11.5px] text-gris-2 mt-[2px] mb-[12px]">
         Il est {new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }).replace(':', ' h ')}.
       </p>
 
@@ -191,20 +192,20 @@ export default function HomePage() {
         </div>
       ) : (
         <>
-          <h3 className="font-poppins font-light text-[24px] leading-[1.2] mt-[6px] mb-[14px]">
+          <h3 className="font-poppins font-light text-[25px] leading-[1.18] mt-[8px] mb-[14px]">
             De quoi<br />avez-vous besoin<br />maintenant&nbsp;?
           </h3>
-          {/* Full-width color bands per maquette */}
-          <div className="flex flex-col gap-[6px]">
+          {/* Full-width color bands — .bande style from maquette */}
+          <div className="flex flex-col gap-[7px]">
             {getAvailableSituations().map((situation) => (
               <button
                 key={situation.id}
                 onClick={() => router.push(`/situation/${situation.id}`)}
-                className="w-full flex items-center gap-3 rounded-[14px] px-[16px] py-[15px] text-creme text-left active:scale-[0.98] transition-transform"
+                className="w-full flex items-center gap-[10px] rounded-[13px] px-[13px] py-[13px] text-creme text-left active:scale-[0.98] transition-transform"
                 style={{ background: situation.color }}
               >
                 <span className="shrink-0" dangerouslySetInnerHTML={{ __html: getSituationIcon(situation.id) }} />
-                <b className="flex-1 text-[15px] font-semibold">{situation.shortLabel}</b>
+                <b className="flex-1 font-poppins font-light text-[14px]">{situation.shortLabel}</b>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(253,249,240,.55)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"><path d="m9 5 7 7-7 7"/></svg>
               </button>
             ))}
@@ -212,62 +213,59 @@ export default function HomePage() {
         </>
       )}
 
-      {inProgress && (
-        <div className="mb-2 animate-in fade-in slide-in-from-bottom-4">
-          <p className="text-[11.5px] font-semibold m-[16px_0_8px]">Reprendre</p>
-          {(() => {
-            const session = sessionsData.find(s => s.id === inProgress.sessionId);
-            if (!session) return null;
-            const situation = getSituation(session.metadata.situation);
-            const remainingMinutes = Math.max(1, Math.round((session.metadata.durationSeconds - inProgress.lastPosition) / 60));
-            
-            return (
-              <div 
-                className="flex items-center gap-[10px] bg-white rounded-[13px] p-[9px_11px] shadow-[0_1px_2px_rgba(67,53,40,0.05),_0_8px_18px_-14px_rgba(67,53,40,0.2)] cursor-pointer active:scale-[0.98] transition-transform"
-                onClick={() => router.push(`/player?id=${session.id}`)}
-              >
-                <span 
-                  className="w-[36px] h-[36px] rounded-[10px] shrink-0" 
-                  style={{ background: situation?.color || "var(--bord)" }}
-                ></span>
-                <div className="flex-1 min-w-0">
-                  <b className="block text-[12.5px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
-                    {session.metadata.title}
-                  </b>
-                  <i className="block not-italic text-[10.5px] text-gris-2">
-                    {remainingMinutes} min restantes
-                  </i>
-                </div>
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="#433528" stroke="#433528" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M8 5.5v13l11-6.5Z"/>
-                </svg>
+      {/* Reprendre — tiroir style */}
+      {inProgress && (() => {
+        const session = sessionsData.find(s => s.id === inProgress.sessionId);
+        if (!session) return null;
+        const situation = getSituation(session.metadata.situation);
+        const remainingMinutes = Math.max(1, Math.round((session.metadata.durationSeconds - inProgress.lastPosition) / 60));
+        return (
+          <div className="mt-[14px] animate-in fade-in">
+            <p className="text-[11.5px] font-semibold mb-[8px]">Reprendre</p>
+            <div
+              className="flex items-center gap-[10px] bg-white rounded-[13px] p-[9px_11px] shadow-[0_1px_2px_rgba(67,53,40,0.05),_0_8px_18px_-14px_rgba(67,53,40,0.2)] cursor-pointer active:scale-[0.98] transition-transform"
+              onClick={() => router.push(`/player?id=${session.id}`)}
+            >
+              <span
+                className="w-[36px] h-[36px] rounded-[10px] shrink-0"
+                style={{ background: situation?.color || "var(--bord)" }}
+              />
+              <div className="flex-1 min-w-0">
+                <b className="block text-[12.5px] font-semibold whitespace-nowrap overflow-hidden text-ellipsis">
+                  {session.metadata.title}
+                </b>
+                <i className="block not-italic text-[10.5px] text-gris-2">
+                  {remainingMinutes} min restantes
+                </i>
               </div>
-            );
-          })()}
-        </div>
-      )}
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="#433528" stroke="#433528" strokeWidth="0" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M8 5.5v13l11-6.5Z"/>
+              </svg>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Favoris */}
-      <div className="animate-in fade-in mb-2">
-        <p className="text-[11.5px] font-semibold m-[16px_0_8px]">Vos favoris</p>
+      <div className="animate-in fade-in mt-[14px]">
+        <p className="text-[11.5px] font-semibold mb-[8px]">Vos favoris</p>
         {favorites.length === 0 ? (
-          <div className="rounded-[12px] p-[16px] bg-coquille text-center">
+          <div className="rounded-[12px] p-[14px] bg-coquille text-center">
             <p className="text-[12px] text-gris-2 leading-[1.5]">
-              Rien ici pour l'instant.<br/>
               Celles que vous gardez apparaîtront ici.
             </p>
           </div>
         ) : (
-          <div className="flex gap-[8px] overflow-x-auto pb-2 scrollbar-none">
+          <div className="flex gap-[8px] overflow-x-auto pb-1 scrollbar-none -mx-[var(--marge-px)] px-[var(--marge-px)]">
             {favorites.map(fav => {
               const session = sessionsData.find(s => s.id === fav.sessionId);
               if (!session) return null;
               const situation = getCategoryInfo(session.metadata.situation);
               return (
-                <div 
+                <div
                   key={session.id}
                   onClick={() => router.push(`/player?id=${session.id}`)}
-                  className="flex-none w-[92px] h-[68px] rounded-[12px] p-[9px] text-creme flex flex-col justify-end cursor-pointer active:scale-[0.95] transition-transform relative"
+                  className="flex-none w-[92px] h-[68px] rounded-[12px] p-[9px] text-creme flex items-end cursor-pointer active:scale-[0.95] transition-transform relative overflow-hidden"
                   style={{ background: situation?.color || "var(--terre)" }}
                 >
                   <span className="absolute top-[8px] right-[8px]">
