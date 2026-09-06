@@ -24,6 +24,49 @@ export interface Favori {
   source?: string;
 }
 
+export interface AppSettings {
+  // Lecture
+  resumePlayback: boolean;
+  fadeInDuration: number; // in seconds: 0, 2, 3, 5
+  backgroundVolume: "Désactivé" | "Faible" | "Moyen" | "Fort";
+  defaultSleepTimer: "15 min" | "30 min" | "45 min" | "1 heure" | "Jamais";
+
+  // Rappel
+  dailyReminderEnabled: boolean;
+  dailyReminderTime: string;
+  dailyReminderDays: "Tous les jours" | "En semaine" | "Le week-end";
+
+  // Compte
+  accountUser?: { email?: string; method?: string } | null;
+}
+
+export interface DownloadedSession {
+  sessionId: string;
+  title: string;
+  duration: number; // in seconds
+  sizeMo: number;
+}
+
+export const DEFAULT_SETTINGS: AppSettings = {
+  resumePlayback: true,
+  fadeInDuration: 3,
+  backgroundVolume: "Moyen",
+  defaultSleepTimer: "30 min",
+  dailyReminderEnabled: false,
+  dailyReminderTime: "21:00",
+  dailyReminderDays: "Tous les jours",
+  accountUser: null,
+};
+
+export const DEFAULT_DOWNLOADS: DownloadedSession[] = [
+  { sessionId: "calmer-le-stress-1", title: "Sortir de la boucle", duration: 600, sizeMo: 24 },
+  { sessionId: "trouver-le-sommeil-1", title: "Histoire calme", duration: 1500, sizeMo: 55 },
+  { sessionId: "calmer-les-pensees-1", title: "Descendre d’un cran", duration: 540, sizeMo: 21 },
+  { sessionId: "se-recentrer-1", title: "Respirer 3 minutes", duration: 180, sizeMo: 8 },
+  { sessionId: "relacher-les-tensions-1", title: "Se poser", duration: 900, sizeMo: 30 },
+  { sessionId: "retrouver-sa-concentration-1", title: "Retour au corps", duration: 300, sizeMo: 10 },
+];
+
 const STORAGE_KEYS = {
   ONBOARDING_COMPLETED: "liela_onboarding",
   USER_PROFILE: "liela_profile",
@@ -33,6 +76,8 @@ const STORAGE_KEYS = {
   FAVORITES: "liela_favorites",
   FAVORITES_REFUSALS: "liela_favorites_refusals",
   RECOMMENDATION_HISTORY: "liela_recommendation_history",
+  APP_SETTINGS: "liela_settings",
+  DOWNLOADS: "liela_downloads",
 };
 
 // Demande la persistance permanente du stockage (évite la purge Safari des 7 jours)
@@ -198,6 +243,77 @@ export const storage = {
     const history = await storage.getRecommendationHistory();
     history.unshift({ sessionId, recommendedAt: new Date().toISOString() });
     await set(STORAGE_KEYS.RECOMMENDATION_HISTORY, history.slice(0, 50)); // Keep last 50 recs
+  },
+
+  getSettings: async (): Promise<AppSettings> => {
+    if (typeof window === "undefined") return DEFAULT_SETTINGS;
+    const data = await get<AppSettings>(STORAGE_KEYS.APP_SETTINGS);
+    return { ...DEFAULT_SETTINGS, ...(data || {}) };
+  },
+  setSettings: async (partial: Partial<AppSettings>): Promise<void> => {
+    if (typeof window === "undefined") return;
+    const current = await storage.getSettings();
+    const updated = { ...current, ...partial };
+    await set(STORAGE_KEYS.APP_SETTINGS, updated);
+
+    // Synchronize backgroundVolume with audioPreferences if changed
+    if (partial.backgroundVolume !== undefined) {
+      if (partial.backgroundVolume === "Désactivé") {
+        await storage.setAudioPreferences({ musicEnabled: false, ambienceEnabled: false });
+      } else if (partial.backgroundVolume === "Faible") {
+        await storage.setAudioPreferences({ musicEnabled: true, ambienceEnabled: true, musicVolume: 0.35, ambienceVolume: 0.25 });
+      } else if (partial.backgroundVolume === "Moyen") {
+        await storage.setAudioPreferences({ musicEnabled: true, ambienceEnabled: true, musicVolume: 0.75, ambienceVolume: 0.50 });
+      } else if (partial.backgroundVolume === "Fort") {
+        await storage.setAudioPreferences({ musicEnabled: true, ambienceEnabled: true, musicVolume: 1.0, ambienceVolume: 0.85 });
+      }
+    }
+  },
+
+  getDownloads: async (): Promise<DownloadedSession[]> => {
+    if (typeof window === "undefined") return DEFAULT_DOWNLOADS;
+    const data = await get<DownloadedSession[]>(STORAGE_KEYS.DOWNLOADS);
+    if (data === undefined) {
+      await set(STORAGE_KEYS.DOWNLOADS, DEFAULT_DOWNLOADS);
+      return DEFAULT_DOWNLOADS;
+    }
+    return data || [];
+  },
+  clearDownloads: async (): Promise<void> => {
+    if (typeof window === "undefined") return;
+    await set(STORAGE_KEYS.DOWNLOADS, []);
+  },
+
+  exportAllData: async (): Promise<string> => {
+    const profile = await storage.getProfile();
+    const history = await storage.getHistory();
+    const favorites = await storage.getFavorites();
+    const settings = await storage.getSettings();
+    const audioPrefs = await storage.getAudioPreferences();
+    const exportObject = {
+      app: "Liela",
+      version: "1.0.0",
+      exportedAt: new Date().toISOString(),
+      profile,
+      settings,
+      audioPreferences: audioPrefs,
+      favorites,
+      history,
+    };
+    return JSON.stringify(exportObject, null, 2);
+  },
+
+  clearAllData: async (): Promise<void> => {
+    if (typeof window === "undefined") return;
+    await del(STORAGE_KEYS.HISTORY);
+    await del(STORAGE_KEYS.IN_PROGRESS);
+    await del(STORAGE_KEYS.FAVORITES);
+    await del(STORAGE_KEYS.FAVORITES_REFUSALS);
+    await del(STORAGE_KEYS.USER_PROFILE);
+    await del(STORAGE_KEYS.AUDIO_PREFERENCES);
+    await del(STORAGE_KEYS.RECOMMENDATION_HISTORY);
+    await del(STORAGE_KEYS.APP_SETTINGS);
+    // Note: Downloads are intentionally kept intact per spec!
   },
 };
 

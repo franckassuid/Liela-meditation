@@ -73,11 +73,14 @@ function PlayerContent() {
 
       await manager.load();
       
-      // Seek to saved position if resuming
-      const inProgress = await storage.getInProgressSession();
-      if (inProgress && inProgress.sessionId === session.id && inProgress.lastPosition > 0) {
-        manager.seek(inProgress.lastPosition);
-        setCurrentTime(inProgress.lastPosition);
+      // Seek to saved position if resuming setting is enabled
+      const userSettings = await storage.getSettings();
+      if (userSettings.resumePlayback) {
+        const inProgress = await storage.getInProgressSession();
+        if (inProgress && inProgress.sessionId === session.id && inProgress.lastPosition > 0) {
+          manager.seek(inProgress.lastPosition);
+          setCurrentTime(inProgress.lastPosition);
+        }
       }
       
       const isFav = await storage.hasFavorite(session.id);
@@ -149,6 +152,32 @@ function PlayerContent() {
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       releaseWakeLock();
+    };
+  }, [state]);
+
+  // Default Sleep Timer from settings
+  useEffect(() => {
+    if (state !== "playing") return;
+
+    let timer: NodeJS.Timeout | null = null;
+    const checkSleepTimer = async () => {
+      const s = await storage.getSettings();
+      if (s.defaultSleepTimer && s.defaultSleepTimer !== "Jamais") {
+        let mins = 30;
+        if (s.defaultSleepTimer === "15 min") mins = 15;
+        else if (s.defaultSleepTimer === "30 min") mins = 30;
+        else if (s.defaultSleepTimer === "45 min") mins = 45;
+        else if (s.defaultSleepTimer === "1 heure") mins = 60;
+
+        timer = setTimeout(() => {
+          managerRef.current?.pause();
+        }, mins * 60 * 1000);
+      }
+    };
+    checkSleepTimer();
+
+    return () => {
+      if (timer) clearTimeout(timer);
     };
   }, [state]);
 

@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { HomeIcon, LibraryIcon, ProfileIcon } from "../ui/Icons";
+import { HomeIcon, LibraryIcon, SettingsIcon } from "../ui/Icons";
 
 export function BottomNavigation() {
   const pathname = usePathname();
@@ -15,7 +15,7 @@ export function BottomNavigation() {
   const navItems = [
     { href: "/", icon: HomeIcon, label: "Accueil" },
     { href: "/library", icon: LibraryIcon, label: "Bibliothèque" },
-    { href: "/profile", icon: ProfileIcon, label: "Profil" },
+    { href: "/settings", icon: SettingsIcon, label: "Réglages" },
   ];
 
   return (
@@ -25,7 +25,7 @@ export function BottomNavigation() {
         const isActive =
           item.href === "/"
             ? pathname === "/"
-            : pathname.startsWith(item.href);
+            : pathname.startsWith(item.href) || (item.href === "/settings" && pathname?.startsWith("/profile"));
 
         return (
           <Link
