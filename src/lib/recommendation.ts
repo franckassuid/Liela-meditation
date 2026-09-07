@@ -1,6 +1,7 @@
 import { SESSIONS_CATALOG, CatalogSession } from "@/config/sessionsCatalog";
 import { storage, SessionHistoryItem } from "@/lib/storage";
 import { TIME_WINDOWS, REC_WEIGHTS, PENALTIES, HARD_RULES } from "@/config/recommendation";
+import { getSituation } from "@/config/situations";
 
 export interface RecommendationResult {
   session: CatalogSession;
@@ -51,36 +52,68 @@ export async function getRepriseSession(): Promise<SessionHistoryItem | null> {
   return inProgress;
 }
 
-export async function getRecommendedSession(currentDate: Date = new Date(), forceRecalculate = false): Promise<RecommendationResult | null> {
+export interface RecommendationOptions {
+  isOffline?: boolean;
+  excludeSessionId?: string;
+  forceRecalculate?: boolean;
+}
+
+export async function getRecommendedSession(
+  currentDate: Date = new Date(),
+  optionsOrForce: boolean | RecommendationOptions = false
+): Promise<RecommendationResult | null> {
+  const options: RecommendationOptions =
+    typeof optionsOrForce === "boolean" ? { forceRecalculate: optionsOrForce } : optionsOrForce;
   const now = Date.now();
-  if (!forceRecalculate && cachedRecommendation && (now - lastCalculationTime < CACHE_DURATION_MS)) {
+  if (!options.forceRecalculate && cachedRecommendation && now - lastCalculationTime < CACHE_DURATION_MS) {
     return cachedRecommendation;
   }
 
   const history = await storage.getHistory();
-  const completedHistory = history.filter(h => h.completed);
+  const completedHistory = history.filter((h) => h.completed);
   const hour = currentDate.getHours();
   const minutes = currentDate.getMinutes();
   const timeDecimal = hour + minutes / 60;
+  const timeStr = `${hour} h ${minutes < 10 ? "0" + minutes : minutes}`;
+  const isLateNight = timeDecimal >= 21.5 || timeDecimal < 5;
+  const timeReason = isLateNight
+    ? `Il est ${timeStr}, restons sur dix minutes.`
+    : `Il est ${timeStr}, une courte séance suffira.`;
 
   const currentSituations = getSituationsForTime(timeDecimal);
   const neighboringSituations = getNeighboringSituations(timeDecimal);
 
   // Cold Start : < 3 completed sessions
   if (completedHistory.length < 3) {
-    const initiations = SESSIONS_CATALOG.filter(s => s.isAvailable && s.estPorteEntree && currentSituations.includes(s.situationId));
-    let target = initiations.length > 0 ? initiations : SESSIONS_CATALOG.filter(s => s.isAvailable && s.estPorteEntree);
-    
+    const initiations = SESSIONS_CATALOG.filter(
+      (s) =>
+        s.isAvailable &&
+        s.estPorteEntree &&
+        currentSituations.includes(s.situationId) &&
+        (!options.excludeSessionId ||
+          (s.id !== options.excludeSessionId && s.realSessionId !== options.excludeSessionId))
+    );
+    let target =
+      initiations.length > 0
+        ? initiations
+        : SESSIONS_CATALOG.filter(
+            (s) =>
+              s.isAvailable &&
+              s.estPorteEntree &&
+              (!options.excludeSessionId ||
+                (s.id !== options.excludeSessionId && s.realSessionId !== options.excludeSessionId))
+          );
+
     if (target.length > 0) {
       // Hash based on day to keep it stable for the day
       const daySeed = Math.floor(now / (24 * 60 * 60 * 1000));
       const sessionIndex = daySeed % target.length;
-      
+      const recSession = target[sessionIndex];
       const rec = {
-        session: target[sessionIndex],
-        reason: "Il est " + hour + " h " + (minutes < 10 ? "0" + minutes : minutes) + "."
+        session: recSession,
+        reason: options.isOffline ? "Téléchargée, elle se lit sans connexion." : timeReason,
       };
-      
+
       cachedRecommendation = rec;
       lastCalculationTime = now;
       await storage.addRecommendationHistory(rec.session.id);
@@ -112,6 +145,9 @@ export async function getRecommendedSession(currentDate: Date = new Date(), forc
 
   let candidates = SESSIONS_CATALOG.map(session => {
     if (!session.isAvailable) return null;
+    if (options.excludeSessionId && (session.id === options.excludeSessionId || session.realSessionId === options.excludeSessionId)) {
+      return null;
+    }
 
     // Hard Rules
     if (HARD_RULES.noSleepBetween7And18 && session.situationId === "trouver-le-sommeil") {
@@ -197,9 +233,20 @@ export async function getRecommendedSession(currentDate: Date = new Date(), forc
 
   // Fallback if empty (all filtered by hard rules)
   if (candidates.length === 0) {
-    const fallback = SESSIONS_CATALOG.find(s => s.isAvailable && s.estPorteEntree && currentSituations.includes(s.situationId));
+    const fallback = SESSIONS_CATALOG.find(
+      (s) =>
+        s.isAvailable &&
+        s.estPorteEntree &&
+        currentSituations.includes(s.situationId) &&
+        (!options.excludeSessionId ||
+          (s.id !== options.excludeSessionId && s.realSessionId !== options.excludeSessionId))
+    );
     if (fallback) {
-      cachedRecommendation = { session: fallback, reason: "Il est " + hour + " h " + (minutes < 10 ? "0" + minutes : minutes) + "." };
+      const rec = {
+        session: fallback,
+        reason: options.isOffline ? "Téléchargée, elle se lit sans connexion." : timeReason,
+      };
+      cachedRecommendation = rec;
       lastCalculationTime = now;
       await storage.addRecommendationHistory(fallback.id);
       return cachedRecommendation;
@@ -211,24 +258,25 @@ export async function getRecommendedSession(currentDate: Date = new Date(), forc
 
   // If the best score is very negative, it means everything is penalized. We just take the top one (least penalized).
   const bestCandidate = candidates[0];
-  
+
   if (bestCandidate) {
-    let reason = "Il est " + hour + " h " + (minutes < 10 ? "0" + minutes : minutes) + ".";
-    
-    if (bestCandidate.ruleName === "favori") {
-      reason = "Parce que vous avez aimé « " + bestCandidate.session.title + " ».";
+    let reason = timeReason;
+
+    if (options.isOffline) {
+      reason = "Téléchargée, elle se lit sans connexion.";
+    } else if (bestCandidate.ruleName === "favori") {
+      const favInSituation = favorites.find((f) => {
+        const s = SESSIONS_CATALOG.find((cat) => cat.id === f.sessionId);
+        return s && s.situationId === bestCandidate.session.situationId;
+      });
+      const favSession = favInSituation
+        ? SESSIONS_CATALOG.find((cat) => cat.id === favInSituation.sessionId)
+        : null;
+      const refTitle = favSession?.title || bestCandidate.session.title;
+      reason = `Parce que vous avez aimé « ${refTitle} ».`;
     } else if (bestCandidate.ruleName === "situation") {
-      // Find the label for the situation using a plain string mapping
-      const SIT_LABELS: Record<string, string> = {
-        "calmer-le-stress": "le calme des pensées",
-        "calmer-les-pensees": "calmer les pensées",
-        "retrouver-sa-concentration": "la concentration",
-        "relacher-les-tensions": "relâcher les tensions",
-        "trouver-le-sommeil": "préparer le sommeil",
-        "se-recentrer": "vous recentrer",
-      };
-      const sitLabel: string = SIT_LABELS[bestCandidate.session.situationId] || bestCandidate.session.situationId;
-      reason = "Vous revenez souvent à " + sitLabel + ".";
+      const sit = getSituation(bestCandidate.session.situationId);
+      reason = `Vous revenez souvent à ${sit?.shortLabel || "cette situation"}.`;
     }
 
     cachedRecommendation = { session: bestCandidate.session, reason };

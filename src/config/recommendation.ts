@@ -26,6 +26,6 @@ export const PENALTIES = {
 export const HARD_RULES = {
   noSleepBetween7And18: true,
   noFocusBetween22And5: true,
-  maxNightDuration2130: 15 * 60,
+  maxNightDuration2130: 10 * 60,
   maxNightDuration2330: 10 * 60,
 };

@@ -39,6 +39,7 @@ interface RawCatalogItem {
   situationId: SituationId | "discovery";
   realSessionId?: string;
   description?: string;
+  estPorteEntree?: boolean;
 }
 
 const RAW_CATALOG: RawCatalogItem[] = [
@@ -50,6 +51,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     durationSeconds: 180,
     situationId: "calmer-le-stress",
     description: "Une courte pause respiratoire pour relâcher la pression immédiatement.",
+    estPorteEntree: true,
   },
   {
     id: "revenir-au-calme-5min",
@@ -100,6 +102,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     durationSeconds: 180,
     situationId: "trouver-le-sommeil",
     description: "Une transition douce pour inviter le corps à ralentir avant d'éteindre la lumière.",
+    estPorteEntree: true,
   },
   {
     id: "se-poser-avant-de-dormir-5min",
@@ -150,6 +153,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     durationSeconds: 180,
     situationId: "calmer-les-pensees",
     description: "Interrompre net une spirale de ruminations et revenir au concret.",
+    estPorteEntree: true,
   },
   {
     id: "quand-tout-tourne-dans-la-tete-5min",
@@ -201,6 +205,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     situationId: "retrouver-sa-concentration",
     realSessionId: "revenir-a-lessentiel-3min",
     description: "Recentrer instantanément son regard sur la priorité du moment.",
+    estPorteEntree: true,
   },
   {
     id: "retrouver-son-attention-5min",
@@ -251,6 +256,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     durationSeconds: 180,
     situationId: "relacher-les-tensions",
     description: "Libérer les raideurs accumulées dans la nuque et les épaules.",
+    estPorteEntree: true,
   },
   {
     id: "pause-detente-5min",
@@ -301,6 +307,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     durationSeconds: 180,
     situationId: "se-recentrer",
     description: "Quitter le mode pilote automatique pour habiter pleinement l'instant.",
+    estPorteEntree: true,
   },
   {
     id: "se-recentrer-5min",
@@ -351,6 +358,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
     durationSeconds: 180,
     situationId: "discovery",
     description: "Une initiation très simple sans jargon ni contrainte de posture.",
+    estPorteEntree: true,
   },
   {
     id: "decouvrir-la-respiration-5min",
@@ -382,7 +390,7 @@ export const SESSIONS_CATALOG: CatalogSession[] = RAW_CATALOG.map((item) => {
     isAvailable: Boolean(real),
     realSessionId: real ? real.id : undefined,
     durationSeconds: real?.metadata?.durationSeconds || item.durationSeconds,
-    estPorteEntree: real?.metadata?.estPorteEntree || false,
+    estPorteEntree: real?.metadata?.estPorteEntree ?? item.estPorteEntree ?? false,
   };
 });
 
