@@ -41,6 +41,22 @@ let cachedRecommendation: RecommendationResult | null = null;
 let lastCalculationTime = 0;
 const CACHE_DURATION_MS = 30 * 60 * 1000;
 
+export function isSameSession(session: CatalogSession, targetId?: string | null): boolean {
+  if (!targetId) return false;
+  if (session.id === targetId) return true;
+  if (session.realSessionId && session.realSessionId === targetId) return true;
+
+  const targetCatalog = SESSIONS_CATALOG.find((s) => s.id === targetId || s.realSessionId === targetId);
+  if (targetCatalog) {
+    if (targetCatalog.id === session.id) return true;
+    if (targetCatalog.realSessionId && session.realSessionId && targetCatalog.realSessionId === session.realSessionId) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export async function getRepriseSession(): Promise<SessionHistoryItem | null> {
   const inProgress = await storage.getInProgressSession();
   if (!inProgress || inProgress.completed) return null;
@@ -65,7 +81,22 @@ export async function getRecommendedSession(
   const options: RecommendationOptions =
     typeof optionsOrForce === "boolean" ? { forceRecalculate: optionsOrForce } : optionsOrForce;
   const now = Date.now();
-  if (!options.forceRecalculate && cachedRecommendation && now - lastCalculationTime < CACHE_DURATION_MS) {
+
+  // Always check inProgress session so a session in progress is never recommended
+  const inProgress = await getRepriseSession();
+  const excludeId = options.excludeSessionId || inProgress?.sessionId;
+
+  // Invalidate cache if it matches the excluded session
+  if (cachedRecommendation && excludeId && isSameSession(cachedRecommendation.session, excludeId)) {
+    cachedRecommendation = null;
+  }
+
+  if (
+    !options.forceRecalculate &&
+    cachedRecommendation &&
+    now - lastCalculationTime < CACHE_DURATION_MS &&
+    (!excludeId || !isSameSession(cachedRecommendation.session, excludeId))
+  ) {
     return cachedRecommendation;
   }
 
@@ -90,8 +121,7 @@ export async function getRecommendedSession(
         s.isAvailable &&
         s.estPorteEntree &&
         currentSituations.includes(s.situationId) &&
-        (!options.excludeSessionId ||
-          (s.id !== options.excludeSessionId && s.realSessionId !== options.excludeSessionId))
+        (!excludeId || !isSameSession(s, excludeId))
     );
     let target =
       initiations.length > 0
@@ -100,9 +130,14 @@ export async function getRecommendedSession(
             (s) =>
               s.isAvailable &&
               s.estPorteEntree &&
-              (!options.excludeSessionId ||
-                (s.id !== options.excludeSessionId && s.realSessionId !== options.excludeSessionId))
+              (!excludeId || !isSameSession(s, excludeId))
           );
+
+    if (target.length === 0) {
+      target = SESSIONS_CATALOG.filter(
+        (s) => s.isAvailable && (!excludeId || !isSameSession(s, excludeId))
+      );
+    }
 
     if (target.length > 0) {
       // Hash based on day to keep it stable for the day
@@ -145,7 +180,7 @@ export async function getRecommendedSession(
 
   let candidates = SESSIONS_CATALOG.map(session => {
     if (!session.isAvailable) return null;
-    if (options.excludeSessionId && (session.id === options.excludeSessionId || session.realSessionId === options.excludeSessionId)) {
+    if (excludeId && isSameSession(session, excludeId)) {
       return null;
     }
 
@@ -233,14 +268,18 @@ export async function getRecommendedSession(
 
   // Fallback if empty (all filtered by hard rules)
   if (candidates.length === 0) {
-    const fallback = SESSIONS_CATALOG.find(
-      (s) =>
-        s.isAvailable &&
-        s.estPorteEntree &&
-        currentSituations.includes(s.situationId) &&
-        (!options.excludeSessionId ||
-          (s.id !== options.excludeSessionId && s.realSessionId !== options.excludeSessionId))
-    );
+    const fallback =
+      SESSIONS_CATALOG.find(
+        (s) =>
+          s.isAvailable &&
+          s.estPorteEntree &&
+          currentSituations.includes(s.situationId) &&
+          (!excludeId || !isSameSession(s, excludeId))
+      ) ||
+      SESSIONS_CATALOG.find(
+        (s) => s.isAvailable && (!excludeId || !isSameSession(s, excludeId))
+      );
+
     if (fallback) {
       const rec = {
         session: fallback,
@@ -256,8 +295,8 @@ export async function getRecommendedSession(
   // Sort by score
   candidates.sort((a, b) => b!.score - a!.score);
 
-  // If the best score is very negative, it means everything is penalized. We just take the top one (least penalized).
-  const bestCandidate = candidates[0];
+  // If the best score is very negative, it means everything is penalized. We just take the top one that is not excluded.
+  const bestCandidate = candidates.find((c) => !excludeId || !isSameSession(c!.session, excludeId));
 
   if (bestCandidate) {
     let reason = timeReason;

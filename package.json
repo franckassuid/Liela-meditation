@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "sync:sessions": "tsx scripts/sync-sessions.ts",
+    "boost:cues": "tsx scripts/boost-all-cues.ts",
     "predev": "npm run sync:sessions",
     "prebuild": "tsx scripts/sync-sessions.ts || echo 'Using pre-committed sessions'",
     "dev": "next dev --webpack",

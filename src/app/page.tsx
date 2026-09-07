@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { storage, SessionHistoryItem, Favori, requestPersistence } from "@/lib/storage";
 import sessionsData from "@/generated/sessions.json";
 import { getSituation, getAvailableSituations } from "@/lib/sessions";
-import { getRecommendedSession, getRepriseSession, RecommendationResult } from "@/lib/recommendation";
+import { getRecommendedSession, getRepriseSession, RecommendationResult, isSameSession } from "@/lib/recommendation";
 import { SESSIONS_CATALOG, CatalogSession } from "@/config/sessionsCatalog";
 import { ProModal } from "@/components/ui/ProModal";
 
@@ -98,11 +98,25 @@ export default function HomePage() {
       const rep = await getRepriseSession();
       const favs = await storage.getFavorites();
 
-      // Recommend a session (excluding the session in progress if any)
-      const rec = await getRecommendedSession(new Date(), {
+      // Recommend a session (strictly excluding the session in progress if any)
+      let rec = await getRecommendedSession(new Date(), {
         isOffline: typeof navigator !== "undefined" && !navigator.onLine,
         excludeSessionId: rep?.sessionId,
+        forceRecalculate: Boolean(rep),
       });
+
+      // Absolute safety guard: ensure recommendation is NEVER the reprise session
+      if (rep && rec && isSameSession(rec.session, rep.sessionId)) {
+        const alt = SESSIONS_CATALOG.find(
+          (s) => s.isAvailable && !isSameSession(s, rep.sessionId)
+        );
+        if (alt) {
+          rec = {
+            session: alt,
+            reason: rec.reason,
+          };
+        }
+      }
 
       if (!active) return;
       clearTimeout(skeletonTimer);

@@ -62,3 +62,43 @@ body {
   color: var(--encre);
   overscroll-behavior-y: none;
 }
+
+/* Custom Audio Sliders */
+input[type="range"].slider-liela {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+  margin: 8px 0;
+}
+input[type="range"].slider-liela::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #433528;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(67, 53, 40, 0.3);
+  border: none;
+  transition: transform 0.1s ease;
+}
+input[type="range"].slider-liela::-webkit-slider-thumb:active {
+  transform: scale(1.12);
+}
+input[type="range"].slider-liela::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #433528;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 1px 3px rgba(67, 53, 40, 0.3);
+  transition: transform 0.1s ease;
+}
+input[type="range"].slider-liela::-moz-range-thumb:active {
+  transform: scale(1.12);
+}

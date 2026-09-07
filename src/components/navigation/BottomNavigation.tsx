@@ -1,16 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { HomeIcon, LibraryIcon, SettingsIcon } from "../ui/Icons";
 
-export function BottomNavigation() {
+function BottomNavigationContent() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   if (pathname?.startsWith("/player")) {
     return null;
   }
+
+  const isSleepCategory = pathname === "/library" && searchParams.get("situation") === "trouver-le-sommeil";
 
   const navItems = [
     { href: "/", icon: HomeIcon, label: "Accueil" },
@@ -19,13 +22,27 @@ export function BottomNavigation() {
   ];
 
   return (
-    <nav className="sticky bottom-0 w-full flex justify-around pt-2 border-t border-filet pb-[max(1rem,env(safe-area-inset-bottom))] bg-creme z-20 mt-auto">
+    <nav
+      className={`sticky bottom-0 w-full flex justify-around pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] z-20 mt-auto transition-colors duration-300 ${
+        isSleepCategory
+          ? "bg-[#3E4753] border-t border-[rgba(253,249,240,0.14)]"
+          : "bg-creme border-t border-filet"
+      }`}
+    >
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive =
           item.href === "/"
             ? pathname === "/"
             : pathname.startsWith(item.href) || (item.href === "/settings" && pathname?.startsWith("/profile"));
+
+        const textColor = isSleepCategory
+          ? isActive
+            ? "text-[#FDF9F0]"
+            : "text-[rgba(253,249,240,0.5)]"
+          : isActive
+          ? "text-encre"
+          : "text-gris-3";
 
         return (
           <Link
@@ -39,9 +56,7 @@ export function BottomNavigation() {
                 window.location.reload();
               }
             }}
-            className={`flex flex-col items-center gap-1 p-2 min-w-[70px] transition-transform duration-120 active:scale-[0.97] ${
-              isActive ? "text-encre" : "text-gris-3"
-            }`}
+            className={`flex flex-col items-center gap-1 p-2 min-w-[70px] transition-transform duration-120 active:scale-[0.97] ${textColor}`}
           >
             <Icon size={24} />
             <span className="text-[11px] font-medium tracking-wide">{item.label}</span>
@@ -51,3 +66,12 @@ export function BottomNavigation() {
     </nav>
   );
 }
+
+export function BottomNavigation() {
+  return (
+    <Suspense fallback={null}>
+      <BottomNavigationContent />
+    </Suspense>
+  );
+}
+

@@ -1,4 +1,5 @@
 import { get, set, del, keys } from 'idb-keyval';
+import { getCatalogSessionById } from '@/config/sessionsCatalog';
 
 export interface AudioPreferences {
   voiceVolume: number;
@@ -58,9 +59,10 @@ export function formatReminderDays(days: DayOfWeek[]): string {
 export interface AppSettings {
   // Lecture
   resumePlayback: boolean;
-  fadeInDuration: number; // in seconds: 0, 2, 3, 5
-  backgroundVolume: "Désactivé" | "Faible" | "Moyen" | "Fort";
-  defaultSleepTimer: "15 min" | "30 min" | "45 min" | "1 heure" | "Jamais";
+
+  // Téléchargements
+  downloadFavorites: boolean;
+  downloadWifiOnly: boolean;
 
   // Rappel
   dailyReminderEnabled: boolean;
@@ -70,6 +72,11 @@ export interface AppSettings {
 
   // Compte
   accountUser?: { email?: string; method?: string } | null;
+
+  // Compatibilité rétroactive (production / lecteur)
+  fadeInDuration?: number;
+  backgroundVolume?: "Désactivé" | "Faible" | "Moyen" | "Fort";
+  defaultSleepTimer?: "15 min" | "30 min" | "45 min" | "1 heure" | "Jamais";
 }
 
 export interface DownloadedSession {
@@ -77,27 +84,30 @@ export interface DownloadedSession {
   title: string;
   duration: number; // in seconds
   sizeMo: number;
+  isFavorite?: boolean;
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   resumePlayback: true,
-  fadeInDuration: 3,
-  backgroundVolume: "Moyen",
-  defaultSleepTimer: "30 min",
+  downloadFavorites: false,
+  downloadWifiOnly: true,
   dailyReminderEnabled: false,
   dailyReminderTime: "21:00",
   dailyReminderDays: "Tous les jours",
   dailyReminderCustomDays: ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"],
   accountUser: null,
+  fadeInDuration: 3,
+  backgroundVolume: "Moyen",
+  defaultSleepTimer: "30 min",
 };
 
 export const DEFAULT_DOWNLOADS: DownloadedSession[] = [
-  { sessionId: "calmer-le-stress-1", title: "Sortir de la boucle", duration: 600, sizeMo: 24 },
-  { sessionId: "trouver-le-sommeil-1", title: "Histoire calme", duration: 1500, sizeMo: 55 },
-  { sessionId: "calmer-les-pensees-1", title: "Descendre d’un cran", duration: 540, sizeMo: 21 },
-  { sessionId: "se-recentrer-1", title: "Respirer 3 minutes", duration: 180, sizeMo: 8 },
-  { sessionId: "relacher-les-tensions-1", title: "Se poser", duration: 900, sizeMo: 30 },
-  { sessionId: "retrouver-sa-concentration-1", title: "Retour au corps", duration: 300, sizeMo: 10 },
+  { sessionId: "sortir-de-la-boucle-10min", title: "Sortir de la boucle", duration: 600, sizeMo: 24, isFavorite: true },
+  { sessionId: "histoire-calme-25min", title: "Histoire calme", duration: 1500, sizeMo: 55, isFavorite: true },
+  { sessionId: "avant-une-reunion-5min", title: "Avant une réunion", duration: 300, sizeMo: 12, isFavorite: true },
+  { sessionId: "respirer-3-minutes-3min", title: "Respirer 3 minutes", duration: 180, sizeMo: 8, isFavorite: true },
+  { sessionId: "le-mental-du-soir-14min", title: "Le mental du soir", duration: 840, sizeMo: 30, isFavorite: false },
+  { sessionId: "descendre-dun-cran-9min", title: "Descendre d’un cran", duration: 540, sizeMo: 19, isFavorite: false },
 ];
 
 const STORAGE_KEYS = {
@@ -222,6 +232,26 @@ export const storage = {
     if (!favs.some(f => f.sessionId === sessionId)) {
       favs.unshift({ sessionId, addedAt: new Date().toISOString(), source });
       await set(STORAGE_KEYS.FAVORITES, favs);
+
+      // Si le téléchargement automatique des favoris est activé
+      const settings = await storage.getSettings();
+      if (settings.downloadFavorites) {
+        const downloads = await storage.getDownloads();
+        if (!downloads.some(d => d.sessionId === sessionId)) {
+          const cat = getCatalogSessionById(sessionId);
+          const duration = cat?.durationSeconds || 600;
+          const title = cat?.title || "Séance";
+          const sizeMo = Math.max(5, Math.round((duration / 60) * 2.4));
+          downloads.unshift({
+            sessionId,
+            title,
+            duration,
+            sizeMo,
+            isFavorite: true,
+          });
+          await set(STORAGE_KEYS.DOWNLOADS, downloads);
+        }
+      }
     }
   },
   removeFavorite: async (sessionId: string): Promise<void> => {
@@ -229,6 +259,42 @@ export const storage = {
     const favs = await storage.getFavorites();
     const newFavs = favs.filter(f => f.sessionId !== sessionId);
     await set(STORAGE_KEYS.FAVORITES, newFavs);
+
+    // Une séance retirée des favoris est effacée de l’appareil si elle y est présente comme favori
+    const settings = await storage.getSettings();
+    if (settings.downloadFavorites) {
+      const downloads = await storage.getDownloads();
+      const updatedDownloads = downloads.filter(d => !(d.sessionId === sessionId && d.isFavorite));
+      await set(STORAGE_KEYS.DOWNLOADS, updatedDownloads);
+    }
+  },
+
+  syncFavoriteDownloads: async (enable: boolean): Promise<void> => {
+    if (typeof window === "undefined") return;
+    if (enable) {
+      const favs = await storage.getFavorites();
+      const downloads = await storage.getDownloads();
+      let changed = false;
+      for (const f of favs) {
+        if (!downloads.some(d => d.sessionId === f.sessionId)) {
+          const cat = getCatalogSessionById(f.sessionId);
+          const duration = cat?.durationSeconds || 600;
+          const title = cat?.title || "Séance";
+          const sizeMo = Math.max(5, Math.round((duration / 60) * 2.4));
+          downloads.unshift({
+            sessionId: f.sessionId,
+            title,
+            duration,
+            sizeMo,
+            isFavorite: true,
+          });
+          changed = true;
+        }
+      }
+      if (changed) {
+        await set(STORAGE_KEYS.DOWNLOADS, downloads);
+      }
+    }
   },
 
   getFavoritesRefusals: async (): Promise<string[]> => {
@@ -311,6 +377,24 @@ export const storage = {
       return DEFAULT_DOWNLOADS;
     }
     return data || [];
+  },
+  addDownload: async (download: DownloadedSession): Promise<void> => {
+    if (typeof window === "undefined") return;
+    const downloads = await storage.getDownloads();
+    if (!downloads.some((d) => d.sessionId === download.sessionId)) {
+      downloads.unshift(download);
+      await set(STORAGE_KEYS.DOWNLOADS, downloads);
+    }
+  },
+  removeDownload: async (sessionId: string): Promise<void> => {
+    if (typeof window === "undefined") return;
+    const downloads = await storage.getDownloads();
+    const updated = downloads.filter((d) => d.sessionId !== sessionId);
+    await set(STORAGE_KEYS.DOWNLOADS, updated);
+  },
+  isSessionDownloaded: async (sessionId: string): Promise<boolean> => {
+    const downloads = await storage.getDownloads();
+    return downloads.some((d) => d.sessionId === sessionId);
   },
   clearDownloads: async (): Promise<void> => {
     if (typeof window === "undefined") return;

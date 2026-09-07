@@ -7,6 +7,7 @@ import {
   AppSettings,
   DEFAULT_SETTINGS,
   DownloadedSession,
+  Favori,
   ALL_DAYS,
   DayOfWeek,
   formatReminderDays,
@@ -14,19 +15,12 @@ import {
 
 type ScreenType = "main" | "compte" | "telechargements" | "aide" | "confidentialite";
 
-interface ChoiceSheetConfig {
-  title: string;
-  key: "fadeIn" | "backgroundVol" | "sleepTimer" | "reminderTime" | "reminderDays";
-  options: { label: string; value: any; subtitle?: string }[];
-  currentValue: any;
-}
-
 export default function SettingsPage() {
   const router = useRouter();
   const [currentScreen, setCurrentScreen] = useState<ScreenType>("main");
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [downloads, setDownloads] = useState<DownloadedSession[]>([]);
-  const [choiceSheet, setChoiceSheet] = useState<ChoiceSheetConfig | null>(null);
+  const [favorites, setFavorites] = useState<Favori[]>([]);
   const [showExportSheet, setShowExportSheet] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [showFullPrivacy, setShowFullPrivacy] = useState(false);
@@ -43,9 +37,11 @@ export default function SettingsPage() {
     const load = async () => {
       const s = await storage.getSettings();
       const d = await storage.getDownloads();
+      const f = await storage.getFavorites();
       if (active) {
         setSettings(s);
         setDownloads(d);
+        setFavorites(f);
       }
     };
     load();
@@ -63,6 +59,24 @@ export default function SettingsPage() {
     const next = { ...settings, [key]: value };
     setSettings(next);
     await storage.setSettings({ [key]: value });
+  };
+
+  const handleToggleDownloadFavorites = async () => {
+    const nextVal = !settings.downloadFavorites;
+    await updateSetting("downloadFavorites", nextVal);
+    if (nextVal) {
+      await storage.syncFavoriteDownloads(true);
+      const d = await storage.getDownloads();
+      setDownloads(d);
+      showToast("Téléchargement des favoris activé");
+    } else {
+      showToast("Téléchargement des favoris désactivé");
+    }
+  };
+
+  const handleToggleWifiOnly = async () => {
+    const nextVal = !settings.downloadWifiOnly;
+    await updateSetting("downloadWifiOnly", nextVal);
   };
 
   const handleToggleDay = async (dayKey: DayOfWeek) => {
@@ -109,22 +123,9 @@ export default function SettingsPage() {
   };
 
   const totalDownloadedMo = downloads.reduce((acc, cur) => acc + (cur.sizeMo || 0), 0);
-
-  // Choice sheets handler
-  const handleSelectChoice = async (cfg: ChoiceSheetConfig, val: any) => {
-    if (cfg.key === "fadeIn") {
-      await updateSetting("fadeInDuration", val);
-    } else if (cfg.key === "backgroundVol") {
-      await updateSetting("backgroundVolume", val);
-    } else if (cfg.key === "sleepTimer") {
-      await updateSetting("defaultSleepTimer", val);
-    } else if (cfg.key === "reminderTime") {
-      await updateSetting("dailyReminderTime", val);
-    } else if (cfg.key === "reminderDays") {
-      await updateSetting("dailyReminderDays", val);
-    }
-    setChoiceSheet(null);
-  };
+  const favoritesCount = favorites.length;
+  const downloadedFavoritesCount = downloads.filter((d) => d.isFavorite).length;
+  const hasPendingFavorites = settings.downloadFavorites && favoritesCount > downloadedFavoritesCount;
 
   // Export JSON file
   const handleExportData = async () => {
@@ -234,17 +235,15 @@ export default function SettingsPage() {
                   <path d="m9 5 7 7-7 7" />
                 </svg>
               </div>
-            </div>
-
-            {/* LECTURE */}
-            <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-4 mb-[7px] ml-[3px]">
+            </div>            {/* LECTURE */}
+            <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-[15px] mb-[6px] ml-[3px]">
               Lecture
             </p>
             <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
               {/* Reprendre où je me suis arrêté */}
               <div
                 onClick={() => updateSetting("resumePlayback", !settings.resumePlayback)}
-                className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                className="flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
@@ -252,113 +251,108 @@ export default function SettingsPage() {
                   </b>
                 </div>
                 <div
-                  className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors ${
+                  className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors cursor-pointer ${
                     settings.resumePlayback ? "bg-[#5F6A52]" : "bg-[#F0E5D6]"
                   }`}
                 >
                   <i
-                    className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all ${
+                    className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all duration-150 ${
                       settings.resumePlayback ? "left-[18.5px]" : "left-[2.5px]"
                     }`}
                   />
                 </div>
               </div>
+            </div>
 
-              {/* Fondu à l'ouverture */}
+            {/* TÉLÉCHARGEMENTS */}
+            <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-[15px] mb-[6px] ml-[3px]">
+              Téléchargements
+            </p>
+            <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
+              {/* Télécharger mes favoris */}
               <div
-                onClick={() =>
-                  setChoiceSheet({
-                    title: "Fondu à l’ouverture",
-                    key: "fadeIn",
-                    options: [
-                      { label: "0 s", value: 0 },
-                      { label: "2 s", value: 2 },
-                      { label: "3 s", value: 3 },
-                      { label: "5 s", value: 5 },
-                    ],
-                    currentValue: settings.fadeInDuration,
-                  })
-                }
-                className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                onClick={handleToggleDownloadFavorites}
+                className="flex items-center gap-[9px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                    Fondu à l’ouverture
+                    Télécharger mes favoris
                   </b>
+                  {!settings.downloadFavorites && (
+                    <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
+                      Désactivé
+                    </i>
+                  )}
                 </div>
-                <span className="text-[12.5px] text-[#7A6E5E]">{settings.fadeInDuration} s</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m9 5 7 7-7 7" />
-                </svg>
+                <div
+                  className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors cursor-pointer ${
+                    settings.downloadFavorites ? "bg-[#5F6A52]" : "bg-[#F0E5D6]"
+                  }`}
+                >
+                  <i
+                    className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all duration-150 ${
+                      settings.downloadFavorites ? "left-[18.5px]" : "left-[2.5px]"
+                    }`}
+                  />
+                </div>
               </div>
 
-              {/* Volume du fond sonore */}
-              <div
-                onClick={() =>
-                  setChoiceSheet({
-                    title: "Volume du fond sonore",
-                    key: "backgroundVol",
-                    options: [
-                      { label: "Désactivé", value: "Désactivé" },
-                      { label: "Faible", value: "Faible" },
-                      { label: "Moyen", value: "Moyen" },
-                      { label: "Fort", value: "Fort" },
-                    ],
-                    currentValue: settings.backgroundVolume,
-                  })
-                }
-                className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                    Volume du fond sonore
-                  </b>
+              {/* Sous-option indentée : En Wi-Fi uniquement */}
+              {settings.downloadFavorites && (
+                <div
+                  onClick={handleToggleWifiOnly}
+                  className="flex items-center gap-[9px] py-[12px] px-[13px] pl-[26px] bg-[#FDFBF7] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
+                      En Wi-Fi uniquement
+                    </b>
+                  </div>
+                  <div
+                    className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors cursor-pointer ${
+                      settings.downloadWifiOnly ? "bg-[#5F6A52]" : "bg-[#F0E5D6]"
+                    }`}
+                  >
+                    <i
+                      className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all duration-150 ${
+                        settings.downloadWifiOnly ? "left-[18.5px]" : "left-[2.5px]"
+                      }`}
+                    />
+                  </div>
                 </div>
-                <span className="text-[12.5px] text-[#7A6E5E]">{settings.backgroundVolume}</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m9 5 7 7-7 7" />
-                </svg>
-              </div>
+              )}
 
-              {/* Minuteur d'arrêt par défaut */}
+              {/* Gérer les téléchargements */}
               <div
-                onClick={() =>
-                  setChoiceSheet({
-                    title: "Minuteur d’arrêt par défaut",
-                    key: "sleepTimer",
-                    options: [
-                      { label: "15 minutes", value: "15 min" },
-                      { label: "30 minutes", value: "30 min" },
-                      { label: "45 minutes", value: "45 min" },
-                      { label: "1 heure", value: "1 heure" },
-                      { label: "Jamais", value: "Jamais", subtitle: "L’audio continue jusqu’à la fin" },
-                    ],
-                    currentValue: settings.defaultSleepTimer,
-                  })
-                }
-                className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                onClick={() => setCurrentScreen("telechargements")}
+                className="flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
               >
                 <div className="flex-1 min-w-0">
                   <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                    Minuteur d’arrêt par défaut
+                    Gérer les téléchargements
                   </b>
                 </div>
-                <span className="text-[12.5px] text-[#7A6E5E]">{settings.defaultSleepTimer}</span>
+                <span className="text-[12.5px] text-[#7A6E5E]">{totalDownloadedMo} Mo</span>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                   <path d="m9 5 7 7-7 7" />
                 </svg>
               </div>
             </div>
+            {settings.downloadFavorites && (
+              <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-[7px] mx-[3px]">
+                Une séance retirée des favoris est effacée de l’appareil.
+              </p>
+            )}
 
             {/* RAPPEL */}
-            <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-4 mb-[7px] ml-[3px]">
+            <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-[15px] mb-[6px] ml-[3px]">
               Rappel
             </p>
             <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
               {/* Rappel quotidien switch */}
               <div
                 onClick={() => updateSetting("dailyReminderEnabled", !settings.dailyReminderEnabled)}
-                className={`flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors ${
+                className={`flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors ${
                   settings.dailyReminderEnabled ? "border-b border-[#F8EFE4]" : ""
                 }`}
               >
@@ -373,12 +367,12 @@ export default function SettingsPage() {
                   )}
                 </div>
                 <div
-                  className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors ${
+                  className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors cursor-pointer ${
                     settings.dailyReminderEnabled ? "bg-[#5F6A52]" : "bg-[#F0E5D6]"
                   }`}
                 >
                   <i
-                    className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all ${
+                    className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all duration-150 ${
                       settings.dailyReminderEnabled ? "left-[18.5px]" : "left-[2.5px]"
                     }`}
                   />
@@ -390,7 +384,7 @@ export default function SettingsPage() {
                 <>
                   <div
                     onClick={() => setShowTimeSheet(true)}
-                    className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                    className="flex items-center gap-[9px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
                       <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
@@ -405,7 +399,7 @@ export default function SettingsPage() {
 
                   <div
                     onClick={() => setShowDaysSheet(true)}
-                    className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                    className="flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
                       <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
@@ -420,33 +414,11 @@ export default function SettingsPage() {
                 </>
               )}
             </div>
-            {/* Note sous rappel */}
             {settings.dailyReminderEnabled && (
               <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-2 mx-[3px]">
                 Un seul rappel par jour, jamais de relance si vous ne l’ouvrez pas.
               </p>
             )}
-
-            {/* TÉLÉCHARGEMENTS */}
-            <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-4 mb-[7px] ml-[3px]">
-              Téléchargements
-            </p>
-            <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
-              <div
-                onClick={() => setCurrentScreen("telechargements")}
-                className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                    Gérer les téléchargements
-                  </b>
-                </div>
-                <span className="text-[12.5px] text-[#7A6E5E]">{totalDownloadedMo} Mo</span>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m9 5 7 7-7 7" />
-                </svg>
-              </div>
-            </div>
 
             {/* MES DONNÉES */}
             <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-4 mb-[7px] ml-[3px]">
@@ -647,8 +619,8 @@ export default function SettingsPage() {
           <div className="bg-white rounded-[15px] p-[14px] mt-[2px] shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
             <div className="flex items-baseline gap-2">
               <b className="font-poppins font-light text-[22px]">{totalDownloadedMo} Mo</b>
-              <span className="text-[11px] text-[#9A8E7C]">
-                {downloads.length} séance{downloads.length > 1 ? "s" : ""}
+              <span className="text-[10.5px] text-[#9A8E7C]">
+                {downloads.length} séance{downloads.length > 1 ? "s" : ""} · {favoritesCount} favori{favoritesCount > 1 ? "s" : ""}
               </span>
             </div>
             <div className="h-1 bg-[#F0E5D6] rounded-full mt-[10px] overflow-hidden">
@@ -661,8 +633,14 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-4 mb-[7px] ml-[3px]">
-            Séances téléchargées
+          {hasPendingFavorites && (
+            <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-[7px] mx-[3px]">
+              Un favori est en cours de téléchargement.
+            </p>
+          )}
+
+          <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-[15px] mb-[6px] ml-[3px]">
+            Sur cet appareil
           </p>
           <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
             {downloads.length === 0 ? (
@@ -673,14 +651,31 @@ export default function SettingsPage() {
               downloads.map((item, idx) => (
                 <div
                   key={`${item.sessionId}-${idx}`}
-                  className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] last:border-b-0"
+                  className="flex items-center gap-[9px] p-[12px_13px] border-b border-[#F8EFE4] last:border-b-0"
                 >
                   <div className="flex-1 min-w-0">
                     <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
                       {item.title}
                     </b>
                   </div>
-                  <span className="text-[12.5px] text-[#7A6E5E]">
+                  {item.isFavorite && (
+                    <span className="flex shrink-0">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="#A26248"
+                        stroke="#A26248"
+                        strokeWidth="1.9"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-label="Téléchargé automatiquement"
+                      >
+                        <path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z" />
+                      </svg>
+                    </span>
+                  )}
+                  <span className="text-[12.5px] text-[#7A6E5E] shrink-0">
                     {Math.max(1, Math.round(item.duration / 60))} min
                   </span>
                 </div>
@@ -703,8 +698,8 @@ export default function SettingsPage() {
             </div>
           )}
 
-          <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-3 mx-[3px]">
-            Les séances téléchargées se lisent sans connexion. Elles ne sont pas effacées par « Effacer mes données ».
+          <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-[7px] mx-[3px]">
+            Le cœur signale une séance téléchargée automatiquement parce qu’elle est en favori. Les téléchargements ne sont pas effacés par « Effacer mes données ».
           </p>
         </div>
       )}
@@ -908,58 +903,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* =========================================================================
-          MODAL 1: FEUILLE DE CHOIX (Generic Choice Sheet)
-      ========================================================================== */}
-      {choiceSheet && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center">
-          <div
-            className="fixed inset-0 bg-[rgba(67,53,40,0.34)] animate-in fade-in"
-            onClick={() => setChoiceSheet(null)}
-          />
-          <div className="relative w-full max-w-[480px] bg-creme rounded-t-[24px] p-[10px_16px_20px] text-center z-51 shadow-2xl animate-in slide-in-from-bottom duration-200">
-            <span className="block w-[32px] h-[3px] bg-[#E5D9C7] rounded-full mx-auto mb-[14px]" />
-            <p className="font-poppins font-light text-[17px]">{choiceSheet.title}</p>
-            <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)] mt-3 text-left">
-              {choiceSheet.options.map((opt, idx) => {
-                const isSelected = opt.value === choiceSheet.currentValue;
-                return (
-                  <div
-                    key={`${opt.value}-${idx}`}
-                    onClick={() => handleSelectChoice(choiceSheet, opt.value)}
-                    className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] last:border-b-0 cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                        {opt.label}
-                      </b>
-                      {opt.subtitle && (
-                        <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
-                          {opt.subtitle}
-                        </i>
-                      )}
-                    </div>
-                    {isSelected && (
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="#5F6A52"
-                        strokeWidth="2.1"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M20 6.5 9.5 17 4 11.5" />
-                      </svg>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* =========================================================================
           MODAL 2: EXPORTER MES DONNÉES

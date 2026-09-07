@@ -25,7 +25,7 @@ export const situations: Record<SituationId, Situation> = {
     slug: "calmer-le-stress",
     phrase: "J'ai besoin de redescendre",
     shortLabel: "Calmer le stress",
-    shortDescription: "J'ai besoin de redescendre",
+    shortDescription: "Pour faire descendre la pression, ralentir le rythme et retrouver son souffle.",
     color: "#A26248", // terre-profonde
     textColor: "#FDF9F0",
     voile: "#F5E4DA", // terre-voile
@@ -37,7 +37,7 @@ export const situations: Record<SituationId, Situation> = {
     slug: "trouver-le-sommeil",
     phrase: "Je veux mieux m'endormir",
     shortLabel: "Trouver le sommeil",
-    shortDescription: "Je veux mieux m'endormir",
+    shortDescription: "L'écran s'éteindra tout seul.",
     color: "#5D6A78", // dormir
     textColor: "#FDF9F0",
     voile: "#E4E8EC",
@@ -49,7 +49,7 @@ export const situations: Record<SituationId, Situation> = {
     slug: "calmer-les-pensees",
     phrase: "Mon mental tourne en boucle",
     shortLabel: "Calmer les pensées",
-    shortDescription: "Mon mental tourne en boucle",
+    shortDescription: "Quand les mêmes pensées reviennent sans arrêt, ou que vous n'arrivez pas à décrocher.",
     color: "#6E6257", // ruminer
     textColor: "#FDF9F0",
     voile: "#EFECE9",
@@ -61,7 +61,7 @@ export const situations: Record<SituationId, Situation> = {
     slug: "retrouver-sa-concentration",
     phrase: "J'ai besoin de me concentrer",
     shortLabel: "Retrouver sa concentration",
-    shortDescription: "J'ai besoin de me concentrer",
+    shortDescription: "Pour rassembler votre attention et vous poser avant une tâche importante.",
     color: "#5F6A52", // concentrer
     textColor: "#FDF9F0",
     voile: "#E7E9DF", // sauge-voile
@@ -73,7 +73,7 @@ export const situations: Record<SituationId, Situation> = {
     slug: "relacher-les-tensions",
     phrase: "J'ai besoin de souffler",
     shortLabel: "Relâcher les tensions",
-    shortDescription: "J'ai besoin de souffler",
+    shortDescription: "Pour dénouer les tensions dans le corps, relâcher les épaules et respirer.",
     color: "#94702B", // energie
     textColor: "#FDF9F0",
     voile: "#F7F0E2",
@@ -85,7 +85,7 @@ export const situations: Record<SituationId, Situation> = {
     slug: "se-recentrer",
     phrase: "J'ai besoin de revenir au présent",
     shortLabel: "Se recentrer",
-    shortDescription: "J'ai besoin de revenir au présent",
+    shortDescription: "Pour revenir au moment présent, habiter son corps et retrouver son axe.",
     color: "#7A5560", // recuperer
     textColor: "#FDF9F0",
     voile: "#F2E9EC",
