@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { storage, SessionHistoryItem, Favori, requestPersistence } from "@/lib/storage";
@@ -11,8 +11,8 @@ import { SESSIONS_CATALOG, CatalogSession } from "@/config/sessionsCatalog";
 import { ProModal } from "@/components/ui/ProModal";
 
 function LielaEmblem({
-  width = 18,
-  height = 18,
+  width = 20,
+  height = 20,
   isMonochrome = false,
 }: {
   width?: number;
@@ -62,6 +62,12 @@ export default function HomePage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [proModalSession, setProModalSession] = useState<CatalogSession | null>(null);
+
+  // Swipe gesture state for opening and closing sheet
+  const cardTouchStartY = useRef<number | null>(null);
+  const [sheetDragY, setSheetDragY] = useState(0);
+  const sheetStartY = useRef<number | null>(null);
+  const [isDraggingSheet, setIsDraggingSheet] = useState(false);
 
   useEffect(() => {
     // Check online status
@@ -116,23 +122,69 @@ export default function HomePage() {
     };
   }, []);
 
+  // Swipe Up from Card to Open Sheet
+  const handleCardTouchStart = (e: React.TouchEvent) => {
+    cardTouchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleCardTouchEnd = (e: React.TouchEvent) => {
+    if (cardTouchStartY.current === null) return;
+    const deltaY = e.changedTouches[0].clientY - cardTouchStartY.current;
+    // Upwards swipe of at least 30px opens the sheet
+    if (deltaY < -30) {
+      setSheetOpen(true);
+    }
+    cardTouchStartY.current = null;
+  };
+
+  // Swipe Down on Sheet to Close
+  const handleSheetTouchStart = (e: React.TouchEvent) => {
+    sheetStartY.current = e.touches[0].clientY;
+    setIsDraggingSheet(true);
+  };
+
+  const handleSheetTouchMove = (e: React.TouchEvent) => {
+    if (sheetStartY.current === null) return;
+    const currentY = e.touches[0].clientY;
+    const deltaY = currentY - sheetStartY.current;
+    if (deltaY > 0) {
+      setSheetDragY(deltaY);
+    } else {
+      // slight resistance if dragged upwards
+      setSheetDragY(deltaY * 0.15);
+    }
+  };
+
+  const handleSheetTouchEnd = (e: React.TouchEvent) => {
+    if (sheetStartY.current === null) return;
+    const deltaY = e.changedTouches[0].clientY - sheetStartY.current;
+    setIsDraggingSheet(false);
+    if (deltaY > 50) {
+      setSheetOpen(false);
+      setSheetDragY(0);
+    } else {
+      setSheetDragY(0);
+    }
+    sheetStartY.current = null;
+  };
+
   if (!isMounted) {
     if (!showSkeleton) return null;
     return (
-      <div className="flex flex-col flex-1 pb-3 px-[14px]">
+      <div className="flex flex-col flex-1 pb-2 px-[14px] h-full max-h-full overflow-hidden select-none">
         <div className="flex items-center gap-[6px] pt-[8px] pb-[12px] px-[4px]">
-          <LielaEmblem width={18} height={18} />
-          <span className="font-poppins font-normal text-[19px] tracking-[-0.01em] text-encre">
+          <LielaEmblem width={20} height={20} />
+          <span className="font-poppins font-normal text-[21px] tracking-[-0.01em] text-encre">
             liela
           </span>
         </div>
-        <div className="flex-1 flex flex-col gap-[9px]">
-          <div className="flex-1 rounded-[24px] relative overflow-hidden bg-sable flex flex-col justify-end p-[18px]">
-            <span className="absolute top-[16px] left-[16px] w-[82px] h-[20px] rounded-full bg-encre/10" />
+        <div className="flex-1 flex flex-col gap-[9px] min-h-0">
+          <div className="flex-1 rounded-[24px] relative overflow-hidden bg-sable flex flex-col justify-end p-[20px]">
+            <span className="absolute top-[16px] left-[16px] w-[90px] h-[22px] rounded-full bg-encre/10" />
             <div className="relative">
-              <span className="block w-[56%] h-[12px] mb-[10px] rounded-[8px] bg-encre/10" />
-              <span className="block w-[78%] h-[22px] mb-[10px] rounded-[8px] bg-encre/10" />
-              <span className="block w-[92px] h-[36px] mt-[8px] rounded-full bg-encre/10" />
+              <span className="block w-[56%] h-[14px] mb-[12px] rounded-[8px] bg-encre/10" />
+              <span className="block w-[78%] h-[26px] mb-[12px] rounded-[8px] bg-encre/10" />
+              <span className="block w-[100px] h-[40px] mt-[10px] rounded-full bg-encre/10" />
             </div>
           </div>
         </div>
@@ -150,14 +202,14 @@ export default function HomePage() {
       <div className="fixed inset-0 z-50 bg-creme flex flex-col justify-between max-w-md mx-auto p-6 pt-[max(2rem,env(safe-area-inset-top))] pb-[max(2rem,env(safe-area-inset-bottom))] h-[100dvh] overflow-hidden">
         <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
           <LielaEmblem width={84} height={84} />
-          <h1 className="font-poppins font-light text-[24px] sm:text-[26px] leading-[1.25] mb-3 mt-6">
+          <h1 className="font-poppins font-light text-[26px] sm:text-[28px] leading-[1.25] mb-3 mt-6">
             La méditation qu&apos;il vous faut, maintenant.
           </h1>
-          <p className="text-gris-2 text-[14px] sm:text-[15px] leading-relaxed max-w-[290px]">
+          <p className="text-gris-2 text-[15px] leading-relaxed max-w-[290px]">
             Choisissez ce dont vous avez besoin, indiquez le temps disponible. Liela propose une séance.
           </p>
         </div>
-        <Button className="w-full shrink-0" onClick={handleCompleteOnboarding}>
+        <Button className="w-full shrink-0 text-[15px] py-3" onClick={handleCompleteOnboarding}>
           Commencer
         </Button>
       </div>
@@ -202,26 +254,26 @@ export default function HomePage() {
   const availableSessionsCount = SESSIONS_CATALOG.filter((s) => s.isAvailable).length;
 
   return (
-    <div className="flex flex-col flex-1 pb-3 px-[14px] relative h-full min-h-0">
+    <div className="flex flex-col flex-1 pb-2 px-[14px] relative h-full max-h-full overflow-hidden select-none">
       {/* Top Header : Logo icon + "liela" wordmark */}
       <div
-        className="flex items-center gap-[6px] pt-[8px] pb-[12px] px-[4px] cursor-pointer"
+        className="flex items-center gap-[6px] pt-[8px] pb-[12px] px-[4px] cursor-pointer shrink-0"
         onClick={() => window.location.reload()}
       >
-        <LielaEmblem width={18} height={18} />
-        <span className="font-poppins font-normal text-[19px] tracking-[-0.01em] text-encre">
+        <LielaEmblem width={20} height={20} />
+        <span className="font-poppins font-normal text-[21px] tracking-[-0.01em] text-encre">
           liela
         </span>
       </div>
 
-      {/* Main Zone : full available height */}
-      <div className="flex-1 flex flex-col gap-[9px] min-h-0">
+      {/* Main Zone : full available height, no scroll */}
+      <div className="flex-1 flex flex-col gap-[9px] min-h-0 overflow-hidden">
         {/* Offline Banner if disconnected */}
         {!isOnline && (
-          <div className="flex items-center gap-[7px] p-[8px_12px] rounded-[11px] bg-[#F6EEDC] text-[#8E6A1C] text-[10.5px] font-medium shrink-0">
+          <div className="flex items-center gap-[7px] p-[8px_12px] rounded-[11px] bg-[#F6EEDC] text-[#8E6A1C] text-[11.5px] font-medium shrink-0">
             <svg
-              width="15"
-              height="15"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="#8E6A1C"
@@ -238,7 +290,9 @@ export default function HomePage() {
 
         {/* Central Suggestion Card */}
         <div
-          className="flex-1 rounded-[24px] relative overflow-hidden flex flex-col justify-end p-[18px] text-[#FDF9F0] transition-colors duration-300 shadow-[0_2px_5px_rgba(67,53,40,.06),0_20px_44px_-20px_rgba(67,53,40,.24)]"
+          onTouchStart={handleCardTouchStart}
+          onTouchEnd={handleCardTouchEnd}
+          className="flex-1 min-h-0 rounded-[24px] relative overflow-hidden flex flex-col justify-end p-[20px] text-[#FDF9F0] transition-colors duration-300 shadow-[0_2px_5px_rgba(67,53,40,.06),0_20px_44px_-20px_rgba(67,53,40,.24)]"
           style={{ background: situation?.color || "#5F6A52" }}
         >
           {/* Filigree Background Pebble 1 */}
@@ -266,20 +320,20 @@ export default function HomePage() {
           </svg>
 
           {/* Badge Suggestion */}
-          <span className="absolute top-[16px] left-[16px] inline-flex items-center gap-[5px] bg-[rgba(253,249,240,.18)] text-[#FDF9F0] text-[10px] font-semibold py-[5px] pr-[10px] pl-[7px] rounded-full select-none">
-            <LielaEmblem width={12} height={12} isMonochrome={true} />
+          <span className="absolute top-[18px] left-[18px] inline-flex items-center gap-[6px] bg-[rgba(253,249,240,.18)] text-[#FDF9F0] text-[11.5px] font-semibold py-[6px] pr-[12px] pl-[8px] rounded-full select-none">
+            <LielaEmblem width={14} height={14} isMonochrome={true} />
             Suggestion
           </span>
 
           {/* Heart Button */}
           <button
             onClick={handleToggleFavorite}
-            className="absolute top-[16px] right-[16px] p-2 -mr-2 -mt-2 active:scale-90 transition-transform"
+            className="absolute top-[18px] right-[18px] p-2 -mr-2 -mt-2 active:scale-90 transition-transform"
             aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
           >
             <svg
-              width="19"
-              height="19"
+              width="21"
+              height="21"
               viewBox="0 0 24 24"
               fill={isFav ? "#FDF9F0" : "none"}
               stroke={isFav ? "#FDF9F0" : "rgba(253,249,240,.75)"}
@@ -293,25 +347,25 @@ export default function HomePage() {
 
           {/* Bottom Card Content */}
           <div className="relative text-[#FDF9F0] mt-auto">
-            <em className="not-italic text-[10.5px] opacity-80 font-semibold block">
+            <em className="not-italic text-[12.5px] opacity-85 font-semibold block tracking-wide">
               {situation?.shortLabel || ""}
             </em>
-            <h4 className="font-poppins font-light text-[25px] leading-[1.12] my-[7px]">
+            <h4 className="font-poppins font-light text-[28px] leading-[1.12] my-[8px]">
               {session.title}
             </h4>
-            <p className="text-[11.5px] opacity-80 leading-[1.45]">
+            <p className="text-[13px] opacity-85 leading-[1.45] max-w-[320px]">
               {recommendation?.reason || "Il est temps de s'accorder un moment."}
             </p>
 
-            <div className="mt-[16px]">
+            <div className="mt-[18px]">
               <button
                 onClick={handleLaunchSession}
-                className="inline-flex items-center gap-[7px] bg-[#FDF9F0] text-[13px] font-semibold py-[11px] px-[20px] rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:scale-95 transition-transform"
+                className="inline-flex items-center gap-[8px] bg-[#FDF9F0] text-[14px] font-semibold py-[12px] px-[22px] rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.08)] active:scale-95 transition-transform"
                 style={{ color: situation?.color || "#5F6A52" }}
               >
                 <svg
-                  width="13"
-                  height="13"
+                  width="14"
+                  height="14"
                   viewBox="0 0 24 24"
                   fill="currentColor"
                   stroke="currentColor"
@@ -324,24 +378,24 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* "Autre chose" Drawer Trigger */}
+          {/* "Autre chose" Drawer Trigger (Tap or Swipe Up) */}
           <div
             onClick={() => setSheetOpen(true)}
-            className="relative flex flex-col items-center mt-[14px] text-[rgba(253,249,240,.72)] text-[10.5px] cursor-pointer hover:text-[#FDF9F0] active:scale-95 transition-all"
+            className="relative flex flex-col items-center mt-[16px] text-[rgba(253,249,240,.75)] text-[12px] font-medium cursor-pointer hover:text-[#FDF9F0] active:scale-95 transition-all"
           >
             <svg
-              width="15"
-              height="15"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="rgba(253,249,240,.7)"
+              stroke="rgba(253,249,240,.75)"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
               <path d="m6 15 6-6 6 6" />
             </svg>
-            <span>Autre chose</span>
+            <span className="mt-[1px]">Autre chose</span>
           </div>
         </div>
 
@@ -349,23 +403,23 @@ export default function HomePage() {
         {inProgress && inProgressReal && (
           <div
             onClick={() => router.push(`/player?id=${inProgress.sessionId}`)}
-            className="flex items-center gap-[10px] p-[11px_12px] rounded-[14px] bg-white shadow-[0_1px_2px_rgba(67,53,40,.05)] shrink-0 cursor-pointer active:scale-[0.98] transition-transform animate-in fade-in"
+            className="flex items-center gap-[11px] p-[12px_14px] rounded-[16px] bg-white shadow-[0_1px_2px_rgba(67,53,40,.05)] shrink-0 cursor-pointer active:scale-[0.98] transition-transform animate-in fade-in"
           >
             <span
-              className="w-[8px] h-[8px] rounded-full shrink-0"
+              className="w-[9px] h-[9px] rounded-full shrink-0"
               style={{ background: inProgressSituation?.color || "var(--bord)" }}
             />
             <div className="flex-1 min-w-0">
-              <b className="block text-[12.5px] font-semibold text-encre whitespace-nowrap overflow-hidden text-ellipsis">
+              <b className="block text-[14px] font-semibold text-encre whitespace-nowrap overflow-hidden text-ellipsis">
                 {inProgressReal.metadata.title}
               </b>
-              <i className="block not-italic text-[10.5px] text-gris-2">
+              <i className="block not-italic text-[12px] text-gris-2 mt-[1px]">
                 Reprendre · {inProgressMinutesRemaining} min restantes
               </i>
             </div>
             <svg
-              width="15"
-              height="15"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="#433528"
               stroke="#433528"
@@ -380,33 +434,57 @@ export default function HomePage() {
       {/* "Autre chose" Bottom Sheet Overlay */}
       {sheetOpen && (
         <div
-          onClick={() => setSheetOpen(false)}
+          onClick={() => {
+            setSheetOpen(false);
+            setSheetDragY(0);
+          }}
           className="fixed inset-0 bg-[#433528]/25 z-30 transition-opacity animate-in fade-in"
         />
       )}
 
-      {/* "Autre chose" Bottom Sheet Content */}
+      {/* "Autre chose" Bottom Sheet with Swipe Down to Close */}
       {sheetOpen && (
-        <div className="absolute left-0 right-0 bottom-0 bg-creme rounded-t-[24px] p-[10px_16px_18px] z-40 shadow-[0_-4px_24px_rgba(67,53,40,0.18)] animate-in slide-in-from-bottom duration-200">
-          <span className="block w-[32px] h-[3px] bg-filet rounded-full mx-auto mb-[12px]" />
-          <p className="font-poppins font-light text-[17px] mb-[10px] text-encre">
+        <div
+          onTouchStart={handleSheetTouchStart}
+          onTouchMove={handleSheetTouchMove}
+          onTouchEnd={handleSheetTouchEnd}
+          style={{
+            transform: `translateY(${Math.max(0, sheetDragY)}px)`,
+            transition: isDraggingSheet ? "none" : "transform 0.22s cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
+          className="absolute left-0 right-0 bottom-0 bg-creme rounded-t-[26px] p-[12px_18px_20px] z-40 shadow-[0_-4px_28px_rgba(67,53,40,0.20)] animate-in slide-in-from-bottom duration-200 select-none"
+        >
+          {/* Draggable Handle */}
+          <div
+            onClick={() => {
+              setSheetOpen(false);
+              setSheetDragY(0);
+            }}
+            className="py-1 cursor-pointer"
+          >
+            <span className="block w-[36px] h-[4px] bg-filet rounded-full mx-auto mb-[14px]" />
+          </div>
+
+          <p className="font-poppins font-light text-[19px] mb-[12px] text-encre">
             De quoi avez-vous besoin&nbsp;?
           </p>
+
           <div className="flex flex-col">
             {availableSituations.map((sit) => (
               <div
                 key={sit.id}
                 onClick={() => {
                   setSheetOpen(false);
+                  setSheetDragY(0);
                   router.push(`/library?situation=${sit.id}`);
                 }}
-                className="flex items-center gap-[11px] py-[11px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/50 transition-colors"
+                className="flex items-center gap-[12px] py-[13px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/60 transition-colors"
               >
                 <span
-                  className="w-[8px] h-[8px] rounded-full shrink-0"
+                  className="w-[9px] h-[9px] rounded-full shrink-0"
                   style={{ background: sit.color }}
                 />
-                <b className="font-poppins font-light text-[14px] text-encre">
+                <b className="font-poppins font-light text-[15.5px] text-encre">
                   {sit.shortLabel}
                 </b>
               </div>
