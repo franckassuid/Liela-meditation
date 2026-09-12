@@ -14,14 +14,14 @@ type LibrarySegment = "situations" | "favoris" | "historique";
 export type DurationOption = 3 | 5 | 10 | 20;
 const DURATION_OPTIONS: DurationOption[] = [3, 5, 10, 20];
 
-// Teinte douce du galet SVG pour chaque situation dans l'Index (depuis la maquette)
+// Teinte distinctive du galet SVG pour chaque situation dans l'Index
 const INDEX_PEBBLE_FILLS: Record<string, string> = {
-  "calmer-le-stress": "#E4CFC1",
-  "trouver-le-sommeil": "#D0D1CE",
-  "calmer-les-pensees": "#D5CFC5",
-  "retrouver-sa-concentration": "#D1D1C4",
-  "relacher-les-tensions": "#E0D3B9",
-  "se-recentrer": "#D8CBC8",
+  "calmer-le-stress": "#A26248",
+  "trouver-le-sommeil": "#5D6A78",
+  "calmer-les-pensees": "#6E6257",
+  "retrouver-sa-concentration": "#5F6A52",
+  "relacher-les-tensions": "#94702B",
+  "se-recentrer": "#7A5560",
 };
 
 // Icône SVG spécifique à chaque situation

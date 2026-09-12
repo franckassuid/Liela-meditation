@@ -26,6 +26,8 @@ function BottomNavigationContent() {
       className={`sticky bottom-0 w-full flex justify-around pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] z-20 mt-auto transition-colors duration-300 ${
         isSleepCategory
           ? "bg-[#3E4753] border-t border-[rgba(253,249,240,0.14)]"
+          : pathname === "/"
+          ? "bg-transparent border-t border-[rgba(67,53,40,0.09)]"
           : "bg-creme border-t border-filet"
       }`}
     >
