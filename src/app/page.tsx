@@ -22,6 +22,13 @@ export default function HomePage() {
   const [isOnline, setIsOnline] = useState(true);
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [proModalSession, setProModalSession] = useState<CatalogSession | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      document.body.classList.remove("transitioning-to-player");
+    };
+  }, []);
 
   useEffect(() => {
     if (typeof navigator !== "undefined") {
@@ -112,9 +119,23 @@ export default function HomePage() {
     setFavorites(newFavs);
   };
 
+  const isDark = situation?.id === "trouver-le-sommeil";
+  const targetBgColor = isDark ? "#3E4753" : (situation?.color || "#A26248");
+
   const handleLaunchSession = () => {
     if (session.isAvailable) {
-      router.push(`/player?id=${session.realSessionId || session.id}`);
+      if (isTransitioning) return;
+      setIsTransitioning(true);
+      const targetUrl = `/player?id=${session.realSessionId || session.id}&from=home`;
+      router.prefetch(targetUrl);
+      if (typeof document !== "undefined") {
+        document.body.classList.add("transitioning-to-player");
+        document.documentElement.style.setProperty("--home-bg", targetBgColor);
+      }
+
+      setTimeout(() => {
+        router.push(targetUrl);
+      }, 380);
     } else {
       setProModalSession(session);
     }
@@ -186,11 +207,15 @@ export default function HomePage() {
 
   return (
     <div
-      className="flex flex-col flex-1 pb-3 px-5 relative h-full max-h-full overflow-hidden select-none transition-colors duration-500"
-      style={{ backgroundColor: situationVoile }}
+      className="flex flex-col flex-1 pb-3 px-5 relative h-full max-h-full overflow-hidden select-none transition-colors duration-500 ease-out"
+      style={{ backgroundColor: isTransitioning ? targetBgColor : situationVoile }}
     >
       {/* En-tête : "liela" et contrôle de favori */}
-      <div className="flex items-center justify-between pt-[14px] pb-[6px] px-[2px] shrink-0">
+      <div
+        className={`flex items-center justify-between pt-[14px] pb-[6px] px-[2px] shrink-0 transition-all duration-300 ease-out ${
+          isTransitioning ? "opacity-0 -translate-y-3 pointer-events-none" : "opacity-100"
+        }`}
+      >
         <span
           onClick={() => window.location.reload()}
           className="font-poppins font-light text-[26px] tracking-[-0.015em] text-encre cursor-pointer select-none"
@@ -218,27 +243,53 @@ export default function HomePage() {
       </div>
 
       {/* Corps principal centré aux proportions généreuses */}
-      <div className="flex-1 flex flex-col items-center justify-center text-center px-1 pb-2 min-h-0">
+      <div className="flex-1 flex flex-col items-center justify-center text-center px-1 pb-2 min-h-0 relative">
         <div className="flex-1 flex flex-col items-center justify-center gap-[16px] sm:gap-[20px] text-center min-h-0 w-full">
           {/* Badge Suggestion de Liela */}
-          <span className="inline-flex items-center gap-[6px] text-[11.5px] font-semibold py-[6px] pr-[14px] pl-[10px] rounded-full bg-[rgba(253,249,240,0.85)] text-gris-2 select-none shadow-[0_1px_3px_rgba(67,53,40,.06)]">
+          <span
+            className={`inline-flex items-center gap-[6px] text-[11.5px] font-semibold py-[6px] pr-[14px] pl-[10px] rounded-full bg-[rgba(253,249,240,0.85)] text-gris-2 select-none shadow-[0_1px_3px_rgba(67,53,40,.06)] transition-all duration-300 ease-out ${
+              isTransitioning ? "opacity-0 -translate-y-2 pointer-events-none" : "opacity-100"
+            }`}
+          >
             <LielaEmblem width={13} height={13} />
             Suggestion de Liela
           </span>
 
-          {/* Galet respirant : exactement le même composant et la même animation que la page de lecture */}
+          {/* Galet respirant avec continuité animée vers le lecteur */}
           <div
-            className="w-[220px] h-[220px] sm:w-[250px] sm:h-[250px] max-w-[78vw] max-h-[35vh] relative flex items-center justify-center cursor-pointer my-1 shrink-0"
+            className={`w-[220px] h-[220px] sm:w-[250px] sm:h-[250px] max-w-[78vw] max-h-[35vh] relative flex items-center justify-center cursor-pointer my-1 shrink-0 transition-transform duration-500 ease-out ${
+              isTransitioning ? "scale-[1.27] z-30" : "scale-100"
+            }`}
             onClick={handleLaunchSession}
           >
-            <BreathingVisualizer
-              color={situation?.color || "#A26248"}
-              onClick={handleLaunchSession}
-            />
+            {/* Galet teinté pour l'accueil */}
+            <div
+              className={`w-full h-full absolute inset-0 transition-opacity duration-350 ease-out ${
+                isTransitioning ? "opacity-0" : "opacity-100"
+              }`}
+            >
+              <BreathingVisualizer
+                color={situation?.color || "#A26248"}
+                onClick={handleLaunchSession}
+              />
+            </div>
+
+            {/* Galet crème lumineux pour la continuité vers le lecteur */}
+            <div
+              className={`w-full h-full absolute inset-0 transition-opacity duration-350 ease-out ${
+                isTransitioning ? "opacity-100" : "opacity-0 pointer-events-none"
+              }`}
+            >
+              <BreathingVisualizer />
+            </div>
           </div>
 
           {/* Situation & Titre */}
-          <div className="px-2">
+          <div
+            className={`px-2 transition-all duration-300 ease-out ${
+              isTransitioning ? "opacity-0 translate-y-3 pointer-events-none" : "opacity-100"
+            }`}
+          >
             <p
               className="text-[12.5px] font-semibold tracking-wide"
               style={{ color: situation?.color || "#A26248" }}
@@ -251,12 +302,20 @@ export default function HomePage() {
           </div>
 
           {/* Ligne de raison */}
-          <p className="text-[13px] sm:text-[14px] text-gris-2 max-w-[28ch] sm:max-w-[32ch] text-center leading-relaxed px-2">
+          <p
+            className={`text-[13px] sm:text-[14px] text-gris-2 max-w-[28ch] sm:max-w-[32ch] text-center leading-relaxed px-2 transition-all duration-300 ease-out ${
+              isTransitioning ? "opacity-0 translate-y-3 pointer-events-none" : "opacity-100"
+            }`}
+          >
             {recommendation?.reason || "Il est temps de s'accorder un moment."}
           </p>
 
           {/* Bouton de lecture circulaire plus grand */}
-          <div className="flex flex-col items-center pt-1">
+          <div
+            className={`flex flex-col items-center pt-1 transition-all duration-300 ease-out ${
+              isTransitioning ? "opacity-0 scale-75 pointer-events-none" : "opacity-100"
+            }`}
+          >
             <button
               onClick={handleLaunchSession}
               className="w-[72px] h-[72px] sm:w-[78px] sm:h-[78px] rounded-full flex items-center justify-center shadow-[0_12px_28px_-8px_rgba(67,53,40,.40)] cursor-pointer active:scale-95 transition-transform shrink-0"
@@ -289,7 +348,9 @@ export default function HomePage() {
         {inProgress && inProgressReal && (
           <div
             onClick={() => router.push(`/player?id=${inProgress.sessionId}`)}
-            className="w-full max-w-[320px] flex items-center gap-[11px] p-[11px_14px] rounded-[15px] bg-[rgba(253,249,240,.9)] shadow-[0_1px_3px_rgba(67,53,40,.06)] shrink-0 cursor-pointer active:scale-[0.98] transition-transform animate-in fade-in mt-2 mb-1"
+            className={`w-full max-w-[320px] flex items-center gap-[11px] p-[11px_14px] rounded-[15px] bg-[rgba(253,249,240,.9)] shadow-[0_1px_3px_rgba(67,53,40,.06)] shrink-0 cursor-pointer active:scale-[0.98] transition-all duration-300 ease-out mt-2 mb-1 ${
+              isTransitioning ? "opacity-0 translate-y-2 pointer-events-none" : "opacity-100 animate-in fade-in"
+            }`}
           >
             <span
               className="w-[9px] h-[9px] rounded-full shrink-0"
@@ -321,7 +382,11 @@ export default function HomePage() {
 
         {/* Bandeau Hors ligne */}
         {!isOnline && (
-          <div className="flex items-center gap-[7px] py-[8px] px-[12px] rounded-[12px] bg-[#F6EEDC] text-[10.5px] text-[#8E6A1C] font-medium shrink-0 mt-2 mb-1">
+          <div
+            className={`flex items-center gap-[7px] py-[8px] px-[12px] rounded-[12px] bg-[#F6EEDC] text-[10.5px] text-[#8E6A1C] font-medium shrink-0 mt-2 mb-1 transition-all duration-300 ease-out ${
+              isTransitioning ? "opacity-0 translate-y-2 pointer-events-none" : "opacity-100"
+            }`}
+          >
             <svg
               width="15"
               height="15"

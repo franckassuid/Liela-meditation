@@ -116,3 +116,11 @@ input[type="range"].slider-liela::-moz-range-thumb {
 input[type="range"].slider-liela::-moz-range-thumb:active {
   transform: scale(1.12);
 }
+
+/* Transition fluide Accueil -> Lecteur de séance */
+body.transitioning-to-player nav {
+  opacity: 0 !important;
+  transform: translateY(100%) !important;
+  transition: opacity 0.35s ease, transform 0.35s ease !important;
+  pointer-events: none !important;
+}

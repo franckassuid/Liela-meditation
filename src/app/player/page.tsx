@@ -24,6 +24,7 @@ function PlayerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("id");
+  const fromHome = searchParams.get("from") === "home";
   
   const [session] = useState<Session | null>(() => (sessionId ? getSessionById(sessionId) ?? null : null));
   const catalogSession = sessionId ? getCatalogSessionById(sessionId) : undefined;
@@ -605,7 +606,7 @@ function PlayerContent() {
       <div 
         className={`h-14 px-5 flex justify-between items-center z-10 w-full shrink-0 transition-opacity duration-700 ${
           showControls || showSettings || state !== "playing" ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        } ${fromHome ? "animate-in fade-in duration-500 fill-mode-both ease-out" : ""}`}
       >
         <button 
           onClick={handleClose} 
@@ -659,7 +660,9 @@ function PlayerContent() {
           />
         </div>
 
-        <h2 className="font-poppins font-light text-[20px] sm:text-[24px] leading-[1.25] mt-5 text-center max-w-[280px] sm:max-w-[340px]">
+        <h2 className={`font-poppins font-light text-[20px] sm:text-[24px] leading-[1.25] mt-5 text-center max-w-[280px] sm:max-w-[340px] ${
+          fromHome ? "animate-in fade-in duration-500 delay-100 fill-mode-both ease-out" : ""
+        }`}>
           {session.metadata.title}
         </h2>
       </div>
@@ -668,7 +671,7 @@ function PlayerContent() {
       <div 
         className={`w-full px-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] shrink-0 transition-opacity duration-700 ${
           showControls || showSettings || state !== "playing" ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        } ${fromHome ? "animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both ease-out" : ""}`}
       >
         <div className="flex justify-between text-[12px] opacity-80 mb-2 font-mono">
           <span>{formatTime(currentTime)}</span>
