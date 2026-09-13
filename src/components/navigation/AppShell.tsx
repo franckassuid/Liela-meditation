@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { BottomNavigation } from "./BottomNavigation";
 import { PwaProvider, InstallPwaBanner, InstallPwaModal } from "@/components/pwa";
 import { ReminderScheduler } from "@/components/notifications/ReminderScheduler";
+import { SplashScreen } from "@/components/ui/SplashScreen";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -24,14 +25,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <PwaProvider>
+      <SplashScreen />
       <div
         id="app-shell"
-        className={`mx-auto max-w-md ${
-          isHome ? "h-[100dvh] max-h-[100dvh] overflow-hidden" : "min-h-screen min-h-[100dvh] bg-creme"
+        className={`mx-auto ${
+          isPlayer
+            ? "w-full max-w-none h-[100dvh] max-h-[100dvh] overflow-hidden"
+            : isHome
+            ? "max-w-md h-[100dvh] max-h-[100dvh] overflow-hidden"
+            : "max-w-md min-h-screen min-h-[100dvh] bg-creme"
         } relative shadow-p1 flex flex-col transition-colors duration-500`}
         style={isHome ? { backgroundColor: "var(--home-bg, #F5E4DA)" } : undefined}
       >
-        <div className={`flex-1 flex flex-col min-h-0 ${isHome ? "overflow-hidden" : ""}`}>
+        <div className={`flex-1 flex flex-col min-h-0 ${isHome || isPlayer ? "overflow-hidden" : ""}`}>
           {children}
         </div>
         {!isPlayer && <BottomNavigation />}

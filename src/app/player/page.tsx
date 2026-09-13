@@ -7,7 +7,16 @@ import { getCatalogSessionById } from "@/config/sessionsCatalog";
 import { getSituation } from "@/config/situations";
 import { AudioState, AudioTrackManager } from "@/lib/audio/AudioTrackManager";
 import { storage, SessionHistoryItem, AudioPreferences } from "@/lib/storage";
-import { PlayIcon, PauseIcon, RewindIcon, ForwardIcon, HeartIcon } from "@/components/ui/Icons";
+import {
+  PlayIcon,
+  PauseIcon,
+  RewindIcon,
+  ForwardIcon,
+  HeartIcon,
+  MaximizeIcon,
+  MinimizeIcon,
+  WhatsAppIcon,
+} from "@/components/ui/Icons";
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { BreathingVisualizer } from "@/components/ui/BreathingVisualizer";
 
@@ -33,6 +42,8 @@ function PlayerContent() {
   const sessionStartedAt = useRef<string>(new Date().toISOString());
   const [rmsData, setRmsData] = useState<number[] | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showShareFallback, setShowShareFallback] = useState(false);
   
   const [prefs, setPrefs] = useState<AudioPreferences>({
     voiceVolume: 1,
@@ -50,6 +61,70 @@ function PlayerContent() {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3200);
   };
+
+  // Gestion du mode Plein écran (Fullscreen API)
+  const enterFullscreen = useCallback(async () => {
+    try {
+      const doc = document as unknown as { fullscreenElement?: Element; webkitFullscreenElement?: Element };
+      const docEl = document.documentElement as unknown as {
+        requestFullscreen?: () => Promise<void>;
+        webkitRequestFullscreen?: () => Promise<void>;
+      };
+      if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
+        if (docEl.requestFullscreen) {
+          await docEl.requestFullscreen();
+        } else if (docEl.webkitRequestFullscreen) {
+          await docEl.webkitRequestFullscreen();
+        }
+      }
+    } catch (_) {}
+  }, []);
+
+  const exitFullscreen = useCallback(async () => {
+    try {
+      const doc = document as unknown as {
+        fullscreenElement?: Element;
+        webkitFullscreenElement?: Element;
+        exitFullscreen?: () => Promise<void>;
+        webkitExitFullscreen?: () => Promise<void>;
+      };
+      if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+        if (doc.exitFullscreen) {
+          await doc.exitFullscreen();
+        } else if (doc.webkitExitFullscreen) {
+          await doc.webkitExitFullscreen();
+        }
+      }
+    } catch (_) {}
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    const doc = document as unknown as { fullscreenElement?: Element; webkitFullscreenElement?: Element };
+    if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+      await exitFullscreen();
+    } else {
+      await enterFullscreen();
+    }
+  }, [enterFullscreen, exitFullscreen]);
+
+  // Passage automatique en plein écran sur la séance & écoute des changements
+  useEffect(() => {
+    enterFullscreen();
+
+    const handleFsChange = () => {
+      const doc = document as unknown as { fullscreenElement?: Element; webkitFullscreenElement?: Element };
+      setIsFullscreen(Boolean(doc.fullscreenElement || doc.webkitFullscreenElement));
+    };
+
+    document.addEventListener("fullscreenchange", handleFsChange);
+    document.addEventListener("webkitfullscreenchange", handleFsChange);
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFsChange);
+      document.removeEventListener("webkitfullscreenchange", handleFsChange);
+      exitFullscreen();
+    };
+  }, [enterFullscreen, exitFullscreen]);
 
   // Initialize
   useEffect(() => {
@@ -388,6 +463,7 @@ function PlayerContent() {
     if (state === "playing") {
       managerRef.current?.pause();
     } else {
+      enterFullscreen();
       managerRef.current?.play();
     }
   };
@@ -423,6 +499,7 @@ function PlayerContent() {
 
   const handleClose = (e: React.MouseEvent) => {
     e.stopPropagation();
+    exitFullscreen();
     router.push("/");
   };
 
@@ -475,8 +552,37 @@ function PlayerContent() {
     }
   };
 
-  const handleShare = () => {
-    // Option de partage (ne fait rien pour l'instant comme demandé)
+  const handleShare = async () => {
+    if (!session) return;
+    setShowSettings(false);
+
+    const durationMin = Math.round(session.metadata.durationSeconds / 60);
+    const shareTitle = `${session.metadata.title} · Liela`;
+    const shareText = `Je te partage cette séance de méditation "${session.metadata.title}" (${durationMin} min) sur Liela :`;
+    const shareUrl = typeof window !== "undefined"
+      ? `${window.location.origin}/player?id=${session.id}`
+      : `https://liela.app/player?id=${session.id}`;
+
+    // 1. Partage natif via Web Share API (WhatsApp, Messages, etc.)
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: shareTitle,
+          text: shareText,
+          url: shareUrl,
+        });
+        showToast("Séance partagée !");
+        return;
+      } catch (err: unknown) {
+        if (err && typeof err === "object" && "name" in err && (err as { name: string }).name === "AbortError") {
+          return;
+        }
+        console.warn("Erreur partage natif:", err);
+      }
+    }
+
+    // 2. Fallback direct (WhatsApp, copier lien) si Web Share non supporté
+    setShowShareFallback(true);
   };
 
   const musicVal = prefs.musicEnabled ? Math.round(prefs.musicVolume * 100) : 0;
@@ -503,7 +609,7 @@ function PlayerContent() {
       >
         <button 
           onClick={handleClose} 
-          className="p-2 -ml-2 rounded-full active:scale-95 transition-transform" 
+          className="p-2 -ml-2 rounded-full active:scale-95 transition-transform cursor-pointer" 
           aria-label="Fermer"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -511,21 +617,37 @@ function PlayerContent() {
           </svg>
         </button>
         <span className="font-poppins font-light text-[15px] opacity-90">{situation?.shortLabel}</span>
-        <button 
-          onClick={(e) => {
-            e.stopPropagation();
-            setSettingsView("main");
-            setShowSettings(true);
-          }} 
-          className="p-2 -mr-2 rounded-full active:scale-95 transition-transform cursor-pointer" 
-          aria-label="Options et réglages"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="5" cy="12" r="2" />
-            <circle cx="12" cy="12" r="2" />
-            <circle cx="19" cy="12" r="2" />
-          </svg>
-        </button>
+        <div className="flex items-center gap-1.5 -mr-2">
+          {/* Bouton Plein Écran */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFullscreen();
+            }}
+            className="p-2 rounded-full active:scale-95 transition-transform opacity-90 hover:opacity-100 cursor-pointer"
+            aria-label={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
+            title={isFullscreen ? "Quitter le plein écran" : "Plein écran"}
+          >
+            {isFullscreen ? <MinimizeIcon size={21} /> : <MaximizeIcon size={21} />}
+          </button>
+
+          {/* Menu Réglages / Options */}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              setSettingsView("main");
+              setShowSettings(true);
+            }} 
+            className="p-2 rounded-full active:scale-95 transition-transform cursor-pointer" 
+            aria-label="Options et réglages"
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="19" cy="12" r="2" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Central visualizer and title: Perfectly centered */}
@@ -588,7 +710,22 @@ function PlayerContent() {
             <ForwardIcon size={26} />
           </button>
 
-          <div className="w-[50px] shrink-0" /> {/* Spacer to balance the heart button */}
+          {/* Bouton Partager rapide */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleShare();
+            }}
+            className="p-3 active:scale-90 transition-transform opacity-90 hover:opacity-100 shrink-0"
+            aria-label="Partager cette séance"
+            title="Partager"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" className="text-white/80">
+              <path d="M4 12v6a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-6" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -668,6 +805,19 @@ function PlayerContent() {
                 </div>
               </div>
             )}
+
+            {/* Partager en fin de séance */}
+            <button
+              onClick={handleShare}
+              className="w-full flex items-center justify-center gap-2.5 bg-white border border-filet text-encre rounded-[14px] py-3 text-[13.5px] font-medium active:scale-[0.98] transition-transform shadow-sm cursor-pointer hover:bg-coquille"
+            >
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 12v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+              <span>Partager la séance avec un proche</span>
+            </button>
 
             <button
               className="mt-2 text-[13px] font-medium text-gris-2 active:opacity-60 transition-opacity"
@@ -784,6 +934,29 @@ function PlayerContent() {
                       Partager
                     </p>
                   </div>
+                </button>
+
+                <div className="h-[1px] bg-[#EDE4D6] w-full" />
+
+                {/* 5. Plein écran */}
+                <button
+                  onClick={() => {
+                    setShowSettings(false);
+                    toggleFullscreen();
+                  }}
+                  className="w-full flex items-center gap-4 py-3.5 text-left active:opacity-70 transition-opacity cursor-pointer"
+                >
+                  <div className="w-7 flex items-center justify-start text-[#433528]">
+                    {isFullscreen ? <MinimizeIcon size={22} /> : <MaximizeIcon size={22} />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-poppins text-[17px] text-[#433528] font-normal leading-snug">
+                      {isFullscreen ? "Quitter le plein écran" : "Plein écran"}
+                    </p>
+                  </div>
+                  <span className="text-[12px] text-[#7A6E5E] font-medium">
+                    {isFullscreen ? "Activé" : "Désactivé"}
+                  </span>
                 </button>
               </div>
             )}
@@ -906,6 +1079,72 @@ function PlayerContent() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de partage fallback (si Web Share non supporté) */}
+      {showShareFallback && session && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-200"
+          onClick={() => setShowShareFallback(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-[#FDF9F0] text-encre rounded-t-[24px] sm:rounded-[24px] p-6 shadow-p2 animate-in slide-in-from-bottom duration-250 flex flex-col gap-3.5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between pb-2 border-b border-filet">
+              <b className="font-poppins text-[17px] font-normal text-encre">Partager la séance</b>
+              <button
+                onClick={() => setShowShareFallback(false)}
+                className="text-gris-2 hover:text-encre text-[18px] p-1 cursor-pointer active:scale-90"
+                aria-label="Fermer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <p className="text-[12.5px] text-gris-2 leading-relaxed">
+              Partagez <strong>{session.metadata.title}</strong> avec vos contacts via WhatsApp ou copiez le lien d&apos;accès direct.
+            </p>
+
+            <div className="flex flex-col gap-2 pt-1">
+              {/* WhatsApp */}
+              <a
+                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
+                  `Je te partage cette séance de méditation "${session.metadata.title}" sur Liela :\n${
+                    typeof window !== "undefined" ? `${window.location.origin}/player?id=${session.id}` : ""
+                  }`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setShowShareFallback(false)}
+                className="flex items-center gap-3 p-3 rounded-[14px] bg-[#25D366]/15 text-[#128C7E] font-medium text-[13.5px] hover:bg-[#25D366]/25 transition-colors cursor-pointer active:scale-[0.98]"
+              >
+                <WhatsAppIcon size={20} />
+                <span>Partager sur WhatsApp</span>
+              </a>
+
+              {/* Copier le lien */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    const url = `${window.location.origin}/player?id=${session.id}`;
+                    navigator.clipboard.writeText(url);
+                    showToast("Lien copié dans le presse-papiers !");
+                    setShowShareFallback(false);
+                  }
+                }}
+                className="flex items-center gap-3 p-3 rounded-[14px] bg-coquille border border-filet text-encre font-medium text-[13.5px] hover:bg-[#EDE1D1] transition-colors cursor-pointer active:scale-[0.98]"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                <span>Copier le lien</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
