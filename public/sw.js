@@ -69,3 +69,44 @@ self.addEventListener("notificationclick", (event) => {
     })
   );
 });
+
+// Gestion des rappels programmés en tâche de fond
+let swReminderTimer = null;
+
+self.addEventListener("message", (event) => {
+  if (!event.data) return;
+
+  if (event.data.type === "SCHEDULE_REMINDER") {
+    if (swReminderTimer) {
+      clearTimeout(swReminderTimer);
+      swReminderTimer = null;
+    }
+
+    const { delayMs, title, options } = event.data;
+    if (typeof delayMs === "number" && delayMs > 0) {
+      // Déclenchement automatique par le Service Worker
+      swReminderTimer = setTimeout(async () => {
+        try {
+          await self.registration.showNotification(
+            title || "Liela · Moment de respiration",
+            options || {
+              body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
+              icon: "/icon-192.png",
+              badge: "/icon-192.png",
+              tag: "liela-daily-reminder",
+            }
+          );
+        } catch (e) {
+          console.error("Erreur d'affichage notif SW:", e);
+        }
+      }, delayMs);
+    }
+  }
+
+  if (event.data.type === "CANCEL_REMINDER") {
+    if (swReminderTimer) {
+      clearTimeout(swReminderTimer);
+      swReminderTimer = null;
+    }
+  }
+});

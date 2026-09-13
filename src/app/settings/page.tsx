@@ -17,6 +17,8 @@ import {
   getNotificationPermission,
   requestNotificationPermission,
   sendTestReminderNotification,
+  syncScheduledReminder,
+  formatNextReminderDescription,
 } from "@/lib/notifications";
 import { NotificationPermissionModal } from "@/components/notifications/NotificationPermissionModal";
 
@@ -68,6 +70,14 @@ export default function SettingsPage() {
     const next = { ...settings, [key]: value };
     setSettings(next);
     await storage.setSettings({ [key]: value });
+
+    if (
+      key === "dailyReminderEnabled" ||
+      key === "dailyReminderTime" ||
+      key === "dailyReminderCustomDays"
+    ) {
+      await syncScheduledReminder(next);
+    }
   };
 
   const handleToggleDownloadFavorites = async () => {
@@ -114,8 +124,8 @@ export default function SettingsPage() {
       const requested = await requestNotificationPermission();
       if (requested === "granted") {
         await updateSetting("dailyReminderEnabled", true);
-        showToast("Rappels quotidiens activés ✓");
-        await sendTestReminderNotification(settings.dailyReminderTime);
+        const desc = formatNextReminderDescription(settings.dailyReminderTime, settings.dailyReminderCustomDays);
+        showToast(desc ? `Rappel activé (${desc})` : "Rappels quotidiens activés ✓");
       } else if (requested === "denied") {
         setShowNotificationModal(true);
       } else {
@@ -126,8 +136,8 @@ export default function SettingsPage() {
 
     // Permission déjà accordée ("granted")
     await updateSetting("dailyReminderEnabled", true);
-    showToast("Rappels quotidiens activés ✓");
-    await sendTestReminderNotification(settings.dailyReminderTime);
+    const desc = formatNextReminderDescription(settings.dailyReminderTime, settings.dailyReminderCustomDays);
+    showToast(desc ? `Rappel activé (${desc})` : "Rappels quotidiens activés ✓");
   };
 
   const handleTestNotification = async () => {
@@ -1301,6 +1311,11 @@ export default function SettingsPage() {
                 onChange={(e) => updateSetting("dailyReminderTime", e.target.value)}
                 className="font-poppins font-light text-[32px] text-encre bg-[#F8EFE4] px-4 py-1 rounded-xl outline-none border border-[#E5D9C7] text-center"
               />
+              {settings.dailyReminderTime && (
+                <p className="text-[11.5px] text-[#5F6A52] font-medium mt-2.5">
+                  Prochain rappel : {formatNextReminderDescription(settings.dailyReminderTime, settings.dailyReminderCustomDays)}
+                </p>
+              )}
             </div>
 
             {/* Raccourcis fréquents */}

@@ -115,17 +115,103 @@ export function getMillisecondsUntilNextReminder(
     candidate.setDate(candidate.getDate() + offset);
     candidate.setHours(targetHours, targetMinutes, 0, 0);
 
-    // Si c'est aujourd'hui mais que l'heure est déjà passée, on passe au jour suivant
-    if (candidate.getTime() <= now.getTime()) {
+    // Si c'est aujourd'hui et que l'heure est passée depuis plus de 30 secondes, on passe au jour suivant
+    if (offset === 0 && candidate.getTime() <= now.getTime() - 30000) {
       continue;
     }
 
     const dayKey = DAY_MAP[candidate.getDay()];
     if (customDays.includes(dayKey)) {
-      const delayMs = candidate.getTime() - now.getTime();
+      const delayMs = Math.max(1000, candidate.getTime() - now.getTime());
       return { delayMs, nextDate: candidate };
     }
   }
 
   return null;
+}
+
+/**
+ * Formate un texte lisible pour l'utilisateur sur le prochain rappel
+ */
+export function formatNextReminderDescription(
+  timeStr: string,
+  customDays: DayOfWeek[] = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"]
+): string {
+  const next = getMillisecondsUntilNextReminder(timeStr, customDays);
+  if (!next) return "";
+
+  const now = new Date();
+  const isToday = next.nextDate.getDate() === now.getDate() && next.nextDate.getMonth() === now.getMonth();
+  const diffMinutes = Math.round(next.delayMs / 60000);
+
+  if (diffMinutes < 1) {
+    return "Imminent (dans quelques secondes)";
+  }
+  if (diffMinutes < 60) {
+    return `${isToday ? "Aujourd'hui" : "Demain"} à ${timeStr} (dans ${diffMinutes} min)`;
+  }
+  const diffHours = Math.floor(diffMinutes / 60);
+  const remainingMin = diffMinutes % 60;
+  return `${isToday ? "Aujourd'hui" : "Demain"} à ${timeStr} (dans ${diffHours}h${remainingMin > 0 ? remainingMin : ""})`;
+}
+
+/**
+ * Synchronise la programmation du rappel avec le Service Worker et l'API Notification Triggers
+ */
+export async function syncScheduledReminder(settings: AppSettings): Promise<void> {
+  if (typeof window === "undefined") return;
+
+  // Notifier l'application côté client
+  window.dispatchEvent(new CustomEvent("liela:reminder-updated", { detail: settings }));
+
+  if (!settings.dailyReminderEnabled || !settings.dailyReminderTime) {
+    // Annuler auprès du Service Worker
+    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: "CANCEL_REMINDER" });
+    }
+    return;
+  }
+
+  const days = settings.dailyReminderCustomDays || ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
+  const next = getMillisecondsUntilNextReminder(settings.dailyReminderTime, days);
+  if (!next) return;
+
+  const notifTitle = "Liela · Moment de respiration";
+  const notifOptions: NotificationOptions = {
+    body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    tag: "liela-daily-reminder",
+  };
+
+  // 1. Essai avec Notification Triggers API (Chromium / Android natif pour alarmes hors-ligne)
+  if ("serviceWorker" in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+
+      // Si support de TimestampTrigger dans le navigateur
+      if (
+        "showTrigger" in Notification.prototype &&
+        typeof (window as unknown as { TimestampTrigger?: new (ts: number) => unknown }).TimestampTrigger !== "undefined"
+      ) {
+        const TimestampTriggerClass = (window as unknown as { TimestampTrigger: new (ts: number) => unknown }).TimestampTrigger;
+        (notifOptions as unknown as { showTrigger: unknown }).showTrigger = new TimestampTriggerClass(next.nextDate.getTime());
+        await reg.showNotification(notifTitle, notifOptions);
+        console.log("Rappel programmé avec TimestampTrigger natif pour:", next.nextDate);
+      }
+
+      // 2. Envoi du message au Service Worker actif pour minuterie d'arrière-plan
+      if (navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({
+          type: "SCHEDULE_REMINDER",
+          delayMs: next.delayMs,
+          targetTimestamp: next.nextDate.getTime(),
+          title: notifTitle,
+          options: notifOptions,
+        });
+      }
+    } catch (err) {
+      console.log("Note sur la planification SW:", err);
+    }
+  }
 }
