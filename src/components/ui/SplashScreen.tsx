@@ -10,6 +10,7 @@ const FADE_DURATION_MS = 500;
 
 export function SplashScreen() {
   const [mounted, setMounted] = useState(true);
+  const [hasStartedTransition, setHasStartedTransition] = useState(false);
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   useEffect(() => {
@@ -26,7 +27,12 @@ export function SplashScreen() {
       sessionStorage.setItem(SPLASH_STORAGE_KEY, "true");
     } catch (_) {}
 
-    // Affiche le logo, le slogan et le galet de l'accueil pendant 3 secondes
+    // Déclenche la transition fluide : le logo reste au centre puis s'anime avec apparition du slogan et du galet
+    const transitionTimer = setTimeout(() => {
+      setHasStartedTransition(true);
+    }, 80);
+
+    // Affiche l'écran pendant 3 secondes avant le fondu de sortie vers l'accueil
     const timer = setTimeout(() => {
       setIsFadingOut(true);
       const unmountTimer = setTimeout(() => {
@@ -35,7 +41,10 @@ export function SplashScreen() {
       return () => clearTimeout(unmountTimer);
     }, DISPLAY_DURATION_MS);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(transitionTimer);
+      clearTimeout(timer);
+    };
   }, []);
 
   if (!mounted) return null;
@@ -48,24 +57,51 @@ export function SplashScreen() {
       }`}
       aria-hidden="true"
     >
-      <div className="flex flex-col items-center text-center max-w-sm w-full">
-        {/* Logo Liela */}
-        <div className="w-[88px] h-[88px] sm:w-[96px] sm:h-[96px] flex items-center justify-center drop-shadow-sm">
+      <div className="flex flex-col items-center text-center max-w-sm w-full relative">
+        {/* Logo Liela : positionné au centre exact pour assurer la continuité avec le démarrage Android, puis glisse en douceur */}
+        <div
+          className={`w-[88px] h-[88px] sm:w-[96px] sm:h-[96px] flex items-center justify-center drop-shadow-sm transition-transform duration-800 ease-out ${
+            hasStartedTransition ? "translate-y-0" : "translate-y-[135px]"
+          }`}
+          style={{
+            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
+        >
           <LielaEmblem width={88} height={88} />
         </div>
 
-        {/* Typographie de marque */}
-        <h1 className="font-poppins font-light text-[32px] sm:text-[36px] tracking-[-0.02em] text-[#433528] mt-2.5 leading-none">
-          liela
-        </h1>
+        {/* Typographie de marque & Slogan : émergence fluide autour du logo */}
+        <div
+          className={`flex flex-col items-center text-center transition-all duration-700 ease-out ${
+            hasStartedTransition
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-3 pointer-events-none"
+          }`}
+          style={{
+            transitionDelay: hasStartedTransition ? "160ms" : "0ms",
+          }}
+        >
+          <h1 className="font-poppins font-light text-[32px] sm:text-[36px] tracking-[-0.02em] text-[#433528] mt-2.5 leading-none">
+            liela
+          </h1>
 
-        {/* Slogan */}
-        <p className="font-poppins font-light text-[15px] sm:text-[16px] text-[#7A6E5E] text-center mt-2.5 max-w-[280px] leading-snug">
-          La méditation qu&apos;il vous faut, maintenant.
-        </p>
+          <p className="font-poppins font-light text-[15px] sm:text-[16px] text-[#7A6E5E] text-center mt-2.5 max-w-[280px] leading-snug">
+            La méditation qu&apos;il vous faut, maintenant.
+          </p>
+        </div>
 
-        {/* Galet authentique identique à l'écran d'accueil avec rotation douce pour le chargement */}
-        <div className="relative w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] my-6 flex items-center justify-center">
+        {/* Galet authentique identique à l'accueil avec éclosion douce et rotation zen pour le chargement */}
+        <div
+          className={`relative w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] my-6 flex items-center justify-center transition-all duration-800 ease-out ${
+            hasStartedTransition
+              ? "opacity-100 scale-100"
+              : "opacity-0 scale-90 pointer-events-none"
+          }`}
+          style={{
+            transitionDelay: hasStartedTransition ? "260ms" : "0ms",
+            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
+          }}
+        >
           <div className="w-full h-full relative flex items-center justify-center animate-[spin_8s_linear_infinite]">
             <BreathingVisualizer color="#A26248" />
           </div>
