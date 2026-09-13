@@ -277,16 +277,16 @@ function LibraryContent() {
       {/* CASE A: No situation selected -> Title + 3 Segments */}
       {!currentSituation && (
         <>
-          <div className="flex items-center pt-[10px] px-[16px] pb-[10px]">
-            <h1 className="font-poppins font-light text-[24px] text-encre flex-1 tracking-[-0.01em]">
+          <div className="flex items-center pt-[12px] px-[16px] pb-[10px]">
+            <h1 className="font-poppins font-light text-[26px] text-encre flex-1 tracking-[-0.01em]">
               Bibliothèque
             </h1>
           </div>
 
-          <div className="flex gap-[6px] px-[16px] pb-[10px]">
+          <div className="flex gap-[8px] px-[16px] pb-[12px]">
             <button
               onClick={() => setActiveSegment("situations")}
-              className={`text-[11px] font-medium px-[11px] py-[6px] rounded-full transition-colors ${
+              className={`text-[13px] font-medium px-[14px] py-[8px] rounded-full transition-colors ${
                 activeSegment === "situations"
                   ? "bg-encre text-creme"
                   : "bg-coquille text-gris-2 active:bg-sable"
@@ -296,7 +296,7 @@ function LibraryContent() {
             </button>
             <button
               onClick={() => setActiveSegment("favoris")}
-              className={`text-[11px] font-medium px-[11px] py-[6px] rounded-full transition-colors ${
+              className={`text-[13px] font-medium px-[14px] py-[8px] rounded-full transition-colors ${
                 activeSegment === "favoris"
                   ? "bg-encre text-creme"
                   : "bg-coquille text-gris-2 active:bg-sable"
@@ -306,7 +306,7 @@ function LibraryContent() {
             </button>
             <button
               onClick={() => setActiveSegment("historique")}
-              className={`text-[11px] font-medium px-[11px] py-[6px] rounded-full transition-colors ${
+              className={`text-[13px] font-medium px-[14px] py-[8px] rounded-full transition-colors ${
                 activeSegment === "historique"
                   ? "bg-encre text-creme"
                   : "bg-coquille text-gris-2 active:bg-sable"
@@ -344,12 +344,12 @@ function LibraryContent() {
               aria-label="Retour à la bibliothèque"
             >
               <svg
-                width="19"
-                height="19"
+                width="22"
+                height="22"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="rgba(253,249,240,.9)"
-                strokeWidth="1.75"
+                strokeWidth="1.8"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
@@ -360,11 +360,11 @@ function LibraryContent() {
 
           {/* Category info */}
           <div className="relative">
-            <SituationIcon situationId={currentSituation.id} size={22} color="rgba(253,249,240,.9)" />
-            <h4 className="font-poppins font-light text-[22px] my-[6px] tracking-[-0.01em]">
+            <SituationIcon situationId={currentSituation.id} size={24} color="rgba(253,249,240,.9)" />
+            <h4 className="font-poppins font-light text-[25px] my-[6px] tracking-[-0.01em]">
               {currentSituation.shortLabel}
             </h4>
-            <p className="text-[11.5px] opacity-85 leading-[1.45]">
+            <p className="text-[13.5px] opacity-90 leading-[1.45]">
               {isSleep
                 ? "L'écran s'éteindra tout seul."
                 : currentSituation.shortDescription || currentSituation.phrase}
@@ -387,10 +387,10 @@ function LibraryContent() {
               <div
                 key={sit.id}
                 onClick={() => handleSelectSituation(sit.id)}
-                className="flex items-center gap-[12px] py-[13px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/40 transition-colors"
+                className="flex items-center gap-[14px] py-[15px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/40 transition-colors"
               >
                 {/* Petit galet teinté */}
-                <svg viewBox="0 0 120 90" width="34" height="25" className="shrink-0" aria-hidden="true">
+                <svg viewBox="0 0 120 90" width="38" height="28" className="shrink-0" aria-hidden="true">
                   <path
                     fill={INDEX_PEBBLE_FILLS[sit.id] || sit.voile}
                     d="M14 62C14 34 32 18 60 18c26 0 46 12 50 28 4 14-8 24-24 24-22 0-32-8-46-8-14 0-26 4-26 0z"
@@ -398,21 +398,21 @@ function LibraryContent() {
                 </svg>
 
                 <div className="flex-1 min-w-0">
-                  <b className="block font-poppins font-light text-[15px] leading-[1.2] text-encre">
+                  <b className="block font-poppins font-light text-[17px] leading-[1.25] text-encre">
                     {sit.shortLabel}
                   </b>
-                  <i className="block not-italic text-[10.5px] text-gris-3 mt-[2px]">
+                  <i className="block not-italic text-[12.5px] text-gris-3 mt-[3px]">
                     {sessionCounts[sit.id] || 0} séances
                   </i>
                 </div>
 
                 <svg
-                  width="15"
-                  height="15"
+                  width="18"
+                  height="18"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="#C6BBA9"
-                  strokeWidth="1.75"
+                  strokeWidth="1.8"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   className="shrink-0"
@@ -431,10 +431,10 @@ function LibraryContent() {
           <div className="flex flex-col">
             {/* Offline Alert Banner if network is down */}
             {!isOnline && (
-              <div className="flex items-center gap-[7px] p-[8px_12px] rounded-[11px] bg-[#F6EEDC] text-[#8E6A1C] text-[10.5px] font-medium mt-[14px]">
+              <div className="flex items-center gap-[8px] p-[9px_14px] rounded-[12px] bg-[#F6EEDC] text-[#8E6A1C] text-[12px] font-medium mt-[14px]">
                 <svg
-                  width="15"
-                  height="15"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="#8E6A1C"
@@ -451,11 +451,11 @@ function LibraryContent() {
 
             {/* Duration Filter Chips — non présent sur le sommeil */}
             {!isSleep && (
-              <div className="flex gap-[6px] flex-wrap mt-[14px] mb-[8px]">
+              <div className="flex gap-[8px] flex-wrap mt-[16px] mb-[10px]">
                 {/* 1. Pastille de comptage : active par défaut, réinitialise quand au moins un filtre est actif */}
                 <button
                   onClick={resetDurations}
-                  className={`inline-flex items-center gap-[5px] text-[10.5px] px-[11px] py-[6px] rounded-full transition-colors cursor-pointer ${
+                  className={`inline-flex items-center gap-[6px] text-[12.5px] px-[13px] py-[7px] rounded-full transition-colors cursor-pointer ${
                     selectedDurations.length === 0
                       ? "bg-encre text-creme shadow-none font-medium"
                       : "bg-white text-gris-2 shadow-[inset_0_0_0_1px_var(--bord)] active:bg-coquille font-normal"
@@ -472,7 +472,7 @@ function LibraryContent() {
                     <button
                       key={dur}
                       onClick={() => toggleDuration(dur)}
-                      className={`inline-flex items-center gap-[5px] text-[10.5px] px-[11px] py-[6px] rounded-full transition-colors cursor-pointer ${
+                      className={`inline-flex items-center gap-[6px] text-[12.5px] px-[13px] py-[7px] rounded-full transition-colors cursor-pointer ${
                         isSelected
                           ? "bg-encre text-creme shadow-none font-medium"
                           : "bg-white text-gris-2 shadow-[inset_0_0_0_1px_var(--bord)] active:bg-coquille font-normal"
@@ -481,8 +481,8 @@ function LibraryContent() {
                       <span>{dur} mn</span>
                       {isSelected && (
                         <svg
-                          width="11"
-                          height="11"
+                          width="12"
+                          height="12"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="#FDF9F0"
@@ -504,7 +504,7 @@ function LibraryContent() {
             {/* Pile de séances de la catégorie */}
             <div className={`flex flex-col ${isSleep ? "mt-[14px]" : ""}`}>
               {categorySessions.length === 0 ? (
-                <p className="text-[12px] opacity-70 py-4">Aucune séance pour ce filtre.</p>
+                <p className="text-[13px] opacity-70 py-4">Aucune séance pour ce filtre.</p>
               ) : (
                 categorySessions.map((session) => {
                   const isFav = favorites.some((f) => f.sessionId === session.id);
@@ -516,17 +516,17 @@ function LibraryContent() {
                       <div
                         key={session.id}
                         onClick={() => setProModalSession(session)}
-                        className="flex items-center gap-[10px] py-[11px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer opacity-75"
+                        className="flex items-center gap-[12px] py-[13px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer opacity-75"
                       >
                         <div className="flex-1 min-w-0">
-                          <b className="block font-normal text-[13.5px] leading-[1.25] text-gris-3">
+                          <b className="block font-normal text-[15.5px] leading-[1.25] text-gris-3">
                             {session.title}
                           </b>
-                          <span className="inline-block text-[9px] font-semibold text-[#8E6A1C] mt-[1px]">
+                          <span className="inline-block text-[11px] font-semibold text-[#8E6A1C] mt-[2px]">
                             Nécessite une connexion
                           </span>
                         </div>
-                        <span className="text-[11.5px] text-gris-3 shrink-0">
+                        <span className="text-[13px] text-gris-3 shrink-0">
                           {Math.round(session.durationSeconds / 60)} min
                         </span>
                         <button
@@ -537,7 +537,7 @@ function LibraryContent() {
                           className="p-1 -mr-1"
                           aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
                         >
-                          <HeartIcon size={16} filled={isFav} className={isFav ? "text-[#A26248]" : "text-[#C6BBA9]"} />
+                          <HeartIcon size={20} filled={isFav} className={isFav ? "text-[#A26248]" : "text-[#C6BBA9]"} />
                         </button>
                       </div>
                     );
@@ -547,7 +547,7 @@ function LibraryContent() {
                     <div
                       key={session.id}
                       onClick={() => handleSessionClick(session)}
-                      className={`flex items-center gap-[10px] py-[11px] px-[2px] border-b last:border-b-0 cursor-pointer transition-colors ${
+                      className={`flex items-center gap-[12px] py-[13px] px-[2px] border-b last:border-b-0 cursor-pointer transition-colors ${
                         isSleep
                           ? "border-[rgba(253,249,240,.14)] active:bg-white/5"
                           : "border-filet active:bg-coquille/40"
@@ -555,7 +555,7 @@ function LibraryContent() {
                     >
                       <div className="flex-1 min-w-0">
                         <b
-                          className={`block font-normal text-[13.5px] leading-[1.25] ${
+                          className={`block font-normal text-[15.5px] leading-[1.25] ${
                             isSleep ? "text-[#FDF9F0]" : "text-encre"
                           }`}
                         >
@@ -563,7 +563,7 @@ function LibraryContent() {
                         </b>
                         {session.estPorteEntree && (
                           <span
-                            className={`inline-block text-[9px] font-semibold mt-[1px] ${
+                            className={`inline-block text-[11px] font-semibold mt-[2px] ${
                               isSleep ? "text-[rgba(253,249,240,.6)]" : "text-gris-3"
                             }`}
                           >
@@ -573,7 +573,7 @@ function LibraryContent() {
                       </div>
 
                       <span
-                        className={`text-[11.5px] shrink-0 ${
+                        className={`text-[13px] shrink-0 ${
                           isSleep ? "text-[rgba(253,249,240,.6)]" : "text-gris-2"
                         }`}
                       >
@@ -589,12 +589,12 @@ function LibraryContent() {
                         aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
                       >
                         <HeartIcon
-                          size={16}
+                          size={20}
                           filled={isFav}
                           className={
                             isSleep
                               ? isFav
-                                ? "text-[#D09B83]" // Terre rosée sur fond sombre
+                                ? "text-[#D09B83]"
                                 : "text-[rgba(253,249,240,.45)]"
                               : isFav
                               ? "text-[#A26248]"
@@ -618,10 +618,10 @@ function LibraryContent() {
             {favorites.length === 0 ? (
               /* Écran 6 : Favoris vide */
               <div className="flex-1 flex flex-col items-center justify-center text-center py-12 px-2">
-                <span className="inline-flex w-[54px] h-[54px] rounded-full bg-coquille items-center justify-center mb-[12px]">
+                <span className="inline-flex w-[58px] h-[58px] rounded-full bg-coquille items-center justify-center mb-[14px]">
                   <svg
-                    width="28"
-                    height="28"
+                    width="30"
+                    height="30"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="#D8CAB4"
@@ -632,15 +632,15 @@ function LibraryContent() {
                     <path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z" />
                   </svg>
                 </span>
-                <p className="font-poppins font-light text-[17px] text-encre">
+                <p className="font-poppins font-light text-[19px] text-encre">
                   Rien ici pour l'instant
                 </p>
-                <p className="text-[11px] text-gris-2 leading-[1.5] mt-[6px] max-w-[270px]">
+                <p className="text-[13px] text-gris-2 leading-[1.5] mt-[8px] max-w-[280px]">
                   À la fin d'une séance, on vous demandera si vous voulez la retrouver. Celles que vous gardez apparaîtront ici.
                 </p>
                 <button
                   onClick={() => setActiveSegment("situations")}
-                  className="inline-block mt-[14px] text-[12px] font-semibold px-[17px] py-[10px] rounded-[11px] shadow-[inset_0_0_0_1px_var(--bord)] transition-colors active:bg-coquille"
+                  className="inline-block mt-[16px] text-[13.5px] font-medium px-[18px] py-[11px] rounded-[12px] shadow-[inset_0_0_0_1px_var(--bord)] transition-colors active:bg-coquille"
                 >
                   Voir les situations
                 </button>
@@ -648,7 +648,7 @@ function LibraryContent() {
             ) : (
               /* Écran 5 : Liste des favoris */
               <div className="flex flex-col">
-                <p className="text-[10.5px] text-gris-3 m-[4px_0_4px_2px]">
+                <p className="text-[12.5px] font-medium text-gris-3 m-[6px_0_6px_2px]">
                   {favorites.length} {favorites.length > 1 ? "séances" : "séance"}
                 </p>
                 <div className="flex flex-col">
@@ -661,18 +661,18 @@ function LibraryContent() {
                       <div
                         key={session.id}
                         onClick={() => handleSessionClick(session)}
-                        className="flex items-center gap-[11px] py-[11px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/40 transition-colors"
+                        className="flex items-center gap-[12px] py-[13px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/40 transition-colors"
                       >
-                        {/* Pastille de situation 8px */}
+                        {/* Pastille de situation */}
                         <span
-                          className="w-[8px] h-[8px] rounded-full shrink-0"
+                          className="w-[9px] h-[9px] rounded-full shrink-0"
                           style={{ background: catInfo.color }}
                         />
                         <div className="flex-1 min-w-0">
-                          <b className="block font-poppins font-light text-[14px] leading-[1.2] text-encre">
+                          <b className="block font-normal text-[15.5px] leading-[1.25] text-encre">
                             {session.title}
                           </b>
-                          <i className="block not-italic text-[10.5px] text-gris-3 mt-[1px]">
+                          <i className="block not-italic text-[12.5px] text-gris-3 mt-[2px]">
                             {Math.round(session.durationSeconds / 60)} min · {catInfo.label}
                           </i>
                         </div>
@@ -681,10 +681,10 @@ function LibraryContent() {
                             e.stopPropagation();
                             handleToggleFavorite(session, true);
                           }}
-                          className="p-1 -mr-1 transition-transform active:scale-90"
+                          className="p-1.5 -mr-1.5 transition-transform active:scale-90"
                           aria-label="Retirer des favoris"
                         >
-                          <HeartIcon size={16} filled={true} className="text-[#A26248]" />
+                          <HeartIcon size={20} filled={true} className="text-[#A26248]" />
                         </button>
                       </div>
                     );
@@ -702,10 +702,10 @@ function LibraryContent() {
           <div className="flex flex-col flex-1">
             {history.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-center py-12 px-2">
-                <span className="inline-flex w-[54px] h-[54px] rounded-full bg-coquille items-center justify-center mb-[12px]">
+                <span className="inline-flex w-[58px] h-[58px] rounded-full bg-coquille items-center justify-center mb-[14px]">
                   <svg
-                    width="28"
-                    height="28"
+                    width="30"
+                    height="30"
                     viewBox="0 0 24 24"
                     fill="none"
                     stroke="#D8CAB4"
@@ -717,15 +717,15 @@ function LibraryContent() {
                     <polyline points="12 6 12 12 16 14" />
                   </svg>
                 </span>
-                <p className="font-poppins font-light text-[17px] text-encre">
+                <p className="font-poppins font-light text-[19px] text-encre">
                   Aucune séance pour le moment
                 </p>
-                <p className="text-[11px] text-gris-2 leading-[1.5] mt-[6px] max-w-[270px]">
+                <p className="text-[13px] text-gris-2 leading-[1.5] mt-[8px] max-w-[280px]">
                   Vos séances terminées apparaîtront ici.
                 </p>
                 <button
                   onClick={() => setActiveSegment("situations")}
-                  className="inline-block mt-[14px] text-[12px] font-semibold px-[17px] py-[10px] rounded-[11px] shadow-[inset_0_0_0_1px_var(--bord)] transition-colors active:bg-coquille"
+                  className="inline-block mt-[16px] text-[13.5px] font-medium px-[18px] py-[11px] rounded-[12px] shadow-[inset_0_0_0_1px_var(--bord)] transition-colors active:bg-coquille"
                 >
                   Découvrir les séances
                 </button>
@@ -735,7 +735,7 @@ function LibraryContent() {
                 {/* Cette semaine */}
                 {historyThisWeek.length > 0 && (
                   <div className="flex flex-col">
-                    <p className="text-[10.5px] font-semibold text-gris-3 m-[14px_0_4px_2px]">
+                    <p className="text-[13px] font-semibold text-gris-3 m-[16px_0_6px_2px]">
                       Cette semaine
                     </p>
                     <div className="flex flex-col">
@@ -755,17 +755,17 @@ function LibraryContent() {
                           <div
                             key={`week-${item.sessionId}-${item.startedAt}-${idx}`}
                             onClick={() => router.push(`/player?id=${playId}`)}
-                            className="flex items-center gap-[11px] py-[11px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/40 transition-colors"
+                            className="flex items-center gap-[12px] py-[13px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/40 transition-colors"
                           >
                             <span
-                              className="w-[8px] h-[8px] rounded-full shrink-0"
+                              className="w-[9px] h-[9px] rounded-full shrink-0"
                               style={{ background: sit?.color || "var(--bord)" }}
                             />
                             <div className="flex-1 min-w-0">
-                              <b className="block font-poppins font-light text-[14px] leading-[1.2] text-encre whitespace-nowrap overflow-hidden text-ellipsis">
+                              <b className="block font-normal text-[15.5px] leading-[1.25] text-encre whitespace-nowrap overflow-hidden text-ellipsis">
                                 {title}
                               </b>
-                              <i className="block not-italic text-[10.5px] text-gris-3 mt-[1px]">
+                              <i className="block not-italic text-[12.5px] text-gris-3 mt-[2px]">
                                 {formatHistoryDate(item.startedAt)} ·{" "}
                                 {Math.max(1, Math.round(durationSec / 60))} min
                               </i>
@@ -775,11 +775,11 @@ function LibraryContent() {
                                 e.stopPropagation();
                                 handleToggleHistoryFavorite(item.sessionId);
                               }}
-                              className="p-1 -mr-1 transition-transform active:scale-90"
+                              className="p-1.5 -mr-1.5 transition-transform active:scale-90"
                               aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
                             >
                               <HeartIcon
-                                size={16}
+                                size={20}
                                 filled={isFav}
                                 className={isFav ? "text-[#A26248]" : "text-[#C6BBA9]"}
                               />
@@ -794,7 +794,7 @@ function LibraryContent() {
                 {/* Plus tôt */}
                 {historyEarlier.length > 0 && (
                   <div className="flex flex-col">
-                    <p className="text-[10.5px] font-semibold text-gris-3 m-[14px_0_4px_2px]">
+                    <p className="text-[13px] font-semibold text-gris-3 m-[16px_0_6px_2px]">
                       Plus tôt
                     </p>
                     <div className="flex flex-col">
@@ -814,17 +814,17 @@ function LibraryContent() {
                           <div
                             key={`earlier-${item.sessionId}-${item.startedAt}-${idx}`}
                             onClick={() => router.push(`/player?id=${playId}`)}
-                            className="flex items-center gap-[11px] py-[11px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/40 transition-colors"
+                            className="flex items-center gap-[12px] py-[13px] px-[2px] border-b border-filet last:border-b-0 cursor-pointer active:bg-coquille/40 transition-colors"
                           >
                             <span
-                              className="w-[8px] h-[8px] rounded-full shrink-0"
+                              className="w-[9px] h-[9px] rounded-full shrink-0"
                               style={{ background: sit?.color || "var(--bord)" }}
                             />
                             <div className="flex-1 min-w-0">
-                              <b className="block font-poppins font-light text-[14px] leading-[1.2] text-encre whitespace-nowrap overflow-hidden text-ellipsis">
+                              <b className="block font-normal text-[15.5px] leading-[1.25] text-encre whitespace-nowrap overflow-hidden text-ellipsis">
                                 {title}
                               </b>
-                              <i className="block not-italic text-[10.5px] text-gris-3 mt-[1px]">
+                              <i className="block not-italic text-[12.5px] text-gris-3 mt-[2px]">
                                 {formatHistoryDate(item.startedAt)} ·{" "}
                                 {Math.max(1, Math.round(durationSec / 60))} min
                               </i>
@@ -834,11 +834,11 @@ function LibraryContent() {
                                 e.stopPropagation();
                                 handleToggleHistoryFavorite(item.sessionId);
                               }}
-                              className="p-1 -mr-1 transition-transform active:scale-90"
+                              className="p-1.5 -mr-1.5 transition-transform active:scale-90"
                               aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
                             >
                               <HeartIcon
-                                size={16}
+                                size={20}
                                 filled={isFav}
                                 className={isFav ? "text-[#A26248]" : "text-[#C6BBA9]"}
                               />

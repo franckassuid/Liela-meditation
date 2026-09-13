@@ -57,9 +57,23 @@
   --marge: 20px;
 }
 
+html {
+  height: 100%;
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+}
+
 body {
+  min-height: 100%;
   background-color: var(--creme);
   color: var(--encre);
+  overscroll-behavior: none;
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app-shell {
+  overscroll-behavior: none;
   overscroll-behavior-y: none;
 }
 

@@ -1,8 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { BottomNavigation } from "./BottomNavigation";
+import { PwaProvider, InstallPwaBanner, InstallPwaModal } from "@/components/pwa";
+import { ReminderScheduler } from "@/components/notifications/ReminderScheduler";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -10,18 +12,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const isHome = pathname === "/";
 
+  // Empêcher tout décalage de défilement résiduel après rechargement ou survol
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      if ("scrollRestoration" in window.history) {
+        window.history.scrollRestoration = "manual";
+      }
+      window.scrollTo(0, 0);
+    }
+  }, [pathname]);
+
   return (
-    <div
-      id="app-shell"
-      className={`mx-auto max-w-md ${
-        isHome ? "h-[100dvh] max-h-[100dvh] overflow-hidden" : "min-h-screen min-h-[100dvh] bg-creme"
-      } relative shadow-p1 flex flex-col transition-colors duration-500`}
-      style={isHome ? { backgroundColor: "var(--home-bg, #F5E4DA)" } : undefined}
-    >
-      <div className={`flex-1 flex flex-col min-h-0 ${isHome ? "overflow-hidden" : ""}`}>
-        {children}
+    <PwaProvider>
+      <div
+        id="app-shell"
+        className={`mx-auto max-w-md ${
+          isHome ? "h-[100dvh] max-h-[100dvh] overflow-hidden" : "min-h-screen min-h-[100dvh] bg-creme"
+        } relative shadow-p1 flex flex-col transition-colors duration-500`}
+        style={isHome ? { backgroundColor: "var(--home-bg, #F5E4DA)" } : undefined}
+      >
+        <div className={`flex-1 flex flex-col min-h-0 ${isHome ? "overflow-hidden" : ""}`}>
+          {children}
+        </div>
+        {!isPlayer && <BottomNavigation />}
+        <InstallPwaBanner />
+        <InstallPwaModal />
+        <ReminderScheduler />
       </div>
-      {!isPlayer && <BottomNavigation />}
-    </div>
+    </PwaProvider>
   );
 }

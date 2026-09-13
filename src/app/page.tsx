@@ -221,16 +221,16 @@ export default function HomePage() {
         </span>
         <button
           onClick={handleToggleFavorite}
-          className="p-1 -mr-1 cursor-pointer active:scale-90 transition-transform"
+          className="p-2 -mr-2 cursor-pointer active:scale-90 transition-transform"
           aria-label={isFav ? "Retirer des favoris" : "Ajouter aux favoris"}
         >
           <svg
-            width="21"
-            height="21"
+            width="26"
+            height="26"
             viewBox="0 0 24 24"
             fill={isFav ? (situation?.color || "#A26248") : "none"}
             stroke={isFav ? (situation?.color || "#A26248") : "#C6BBA9"}
-            strokeWidth={isFav ? "1.8" : "1.75"}
+            strokeWidth={isFav ? "1.8" : "1.8"}
             strokeLinecap="round"
             strokeLinejoin="round"
           >

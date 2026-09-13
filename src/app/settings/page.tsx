@@ -12,11 +12,19 @@ import {
   DayOfWeek,
   formatReminderDays,
 } from "@/lib/storage";
+import { usePwa } from "@/components/pwa";
+import {
+  getNotificationPermission,
+  requestNotificationPermission,
+  sendTestReminderNotification,
+} from "@/lib/notifications";
+import { NotificationPermissionModal } from "@/components/notifications/NotificationPermissionModal";
 
 type ScreenType = "main" | "compte" | "telechargements" | "aide" | "confidentialite";
 
 export default function SettingsPage() {
   const router = useRouter();
+  const { isStandalone, openModal: openInstallModal } = usePwa();
   const [currentScreen, setCurrentScreen] = useState<ScreenType>("main");
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [downloads, setDownloads] = useState<DownloadedSession[]>([]);
@@ -30,6 +38,7 @@ export default function SettingsPage() {
   const [accountEmailModal, setAccountEmailModal] = useState<"email" | "apple" | null>(null);
   const [emailInput, setEmailInput] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [showNotificationModal, setShowNotificationModal] = useState(false);
 
   // Load data on mount
   useEffect(() => {
@@ -77,6 +86,63 @@ export default function SettingsPage() {
   const handleToggleWifiOnly = async () => {
     const nextVal = !settings.downloadWifiOnly;
     await updateSetting("downloadWifiOnly", nextVal);
+  };
+
+  const handleToggleDailyReminder = async () => {
+    // Si on désactive
+    if (settings.dailyReminderEnabled) {
+      await updateSetting("dailyReminderEnabled", false);
+      showToast("Rappel quotidien désactivé");
+      return;
+    }
+
+    // Si on souhaite activer, on vérifie impérativement les permissions système
+    const perm = getNotificationPermission();
+
+    if (perm === "unsupported") {
+      showToast("Les notifications ne sont pas supportées sur ce navigateur.");
+      return;
+    }
+
+    if (perm === "denied") {
+      setShowNotificationModal(true);
+      return;
+    }
+
+    if (perm === "default") {
+      // Déclenche la demande d'autorisation native du système (Android / iOS / Navigateur)
+      const requested = await requestNotificationPermission();
+      if (requested === "granted") {
+        await updateSetting("dailyReminderEnabled", true);
+        showToast("Rappels quotidiens activés ✓");
+        await sendTestReminderNotification(settings.dailyReminderTime);
+      } else if (requested === "denied") {
+        setShowNotificationModal(true);
+      } else {
+        showToast("Autorisation non accordée");
+      }
+      return;
+    }
+
+    // Permission déjà accordée ("granted")
+    await updateSetting("dailyReminderEnabled", true);
+    showToast("Rappels quotidiens activés ✓");
+    await sendTestReminderNotification(settings.dailyReminderTime);
+  };
+
+  const handleTestNotification = async () => {
+    const perm = getNotificationPermission();
+    if (perm !== "granted") {
+      setShowNotificationModal(true);
+      return;
+    }
+    const ok = await sendTestReminderNotification(settings.dailyReminderTime);
+    if (ok) {
+      showToast("Notification de test envoyée !");
+    } else {
+      showToast("Impossible d'envoyer la notification.");
+      setShowNotificationModal(true);
+    }
   };
 
   const handleToggleDay = async (dayKey: DayOfWeek) => {
@@ -351,7 +417,7 @@ export default function SettingsPage() {
             <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
               {/* Rappel quotidien switch */}
               <div
-                onClick={() => updateSetting("dailyReminderEnabled", !settings.dailyReminderEnabled)}
+                onClick={handleToggleDailyReminder}
                 className={`flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors ${
                   settings.dailyReminderEnabled ? "border-b border-[#F8EFE4]" : ""
                 }`}
@@ -360,9 +426,13 @@ export default function SettingsPage() {
                   <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
                     Rappel quotidien
                   </b>
-                  {!settings.dailyReminderEnabled && (
+                  {!settings.dailyReminderEnabled ? (
                     <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
                       Désactivé
+                    </i>
+                  ) : (
+                    <i className="block not-italic text-[10.5px] text-[#5F6A52] mt-[2px] leading-[1.35]">
+                      Actif à {settings.dailyReminderTime}
                     </i>
                   )}
                 </div>
@@ -379,7 +449,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              {/* Si activé: Heure et Jours */}
+              {/* Si activé: Heure, Jours et Tester */}
               {settings.dailyReminderEnabled && (
                 <>
                   <div
@@ -399,7 +469,7 @@ export default function SettingsPage() {
 
                   <div
                     onClick={() => setShowDaysSheet(true)}
-                    className="flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                    className="flex items-center gap-[9px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
                       <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
@@ -410,6 +480,24 @@ export default function SettingsPage() {
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
                       <path d="m9 5 7 7-7 7" />
                     </svg>
+                  </div>
+
+                  {/* Bouton Tester la notification */}
+                  <div
+                    onClick={handleTestNotification}
+                    className="flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
+                        Tester la notification
+                      </b>
+                      <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
+                        Vérifier la réception sur cet appareil
+                      </i>
+                    </div>
+                    <span className="text-[11.5px] font-medium text-terre-p px-2.5 py-1 rounded-[8px] bg-coquille border border-filet">
+                      Envoyer
+                    </span>
                   </div>
                 </>
               )}
@@ -451,6 +539,43 @@ export default function SettingsPage() {
                   <path d="m9 5 7 7-7 7" />
                 </svg>
               </div>
+            </div>
+
+            {/* APPLICATION LIELA */}
+            <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-4 mb-[7px] ml-[3px]">
+              Application
+            </p>
+            <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
+              {isStandalone ? (
+                <div className="flex items-center gap-[10px] p-[12px_13px]">
+                  <div className="flex-1 min-w-0">
+                    <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
+                      Application installée
+                    </b>
+                    <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
+                      Vous profitez de la version native
+                    </i>
+                  </div>
+                  <span className="text-[#5F6A52] text-[14px] font-semibold">✓</span>
+                </div>
+              ) : (
+                <div
+                  onClick={openInstallModal}
+                  className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
+                      Installer l'application
+                    </b>
+                    <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
+                      Plein écran, mode hors-ligne & accès direct
+                    </i>
+                  </div>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m9 5 7 7-7 7" />
+                  </svg>
+                </div>
+              )}
             </div>
 
             {/* À PROPOS */}
@@ -1224,6 +1349,17 @@ export default function SettingsPage() {
           </div>
         </div>
       )}
+
+      {/* MODAL AUTORISATION NOTIFICATIONS */}
+      <NotificationPermissionModal
+        isOpen={showNotificationModal}
+        onClose={() => setShowNotificationModal(false)}
+        onPermissionGranted={async () => {
+          await updateSetting("dailyReminderEnabled", true);
+          showToast("Rappels quotidiens activés ✓");
+          await sendTestReminderNotification(settings.dailyReminderTime);
+        }}
+      />
     </div>
   );
 }
