@@ -38,12 +38,19 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   }
 }
 
+export type EnhancedNotificationOptions = NotificationOptions & {
+  image?: string;
+  vibrate?: number[];
+  renotify?: boolean;
+  actions?: Array<{ action: string; title: string; icon?: string }>;
+};
+
 /**
  * Envoie une notification locale via le Service Worker (ou l'API Notification native).
  */
 export async function sendLocalNotification(
   title: string,
-  options?: NotificationOptions
+  options?: EnhancedNotificationOptions
 ): Promise<boolean> {
   if (typeof window === "undefined" || !("Notification" in window)) {
     return false;
@@ -53,13 +60,17 @@ export async function sendLocalNotification(
     return false;
   }
 
-  const defaultOptions: NotificationOptions = {
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
+  const defaultOptions: EnhancedNotificationOptions = {
+    icon: "/notification-icon.png",
+    badge: "/badge-monochrome.png",
+    image: "/artwork-se-recentrer.png",
     tag: "liela-daily-reminder",
-    // @ts-expect-error - vibrate is supported by Notification API
-    vibrate: [200, 100, 200],
+    vibrate: [120, 80, 120],
     renotify: true,
+    actions: [
+      { action: "start-session", title: "🌿 Commencer (5 min)" },
+      { action: "later", title: "Plus tard" },
+    ],
     ...options,
   };
 
@@ -86,14 +97,18 @@ export async function sendLocalNotification(
  * Envoie une notification de confirmation ou de test pour valider que le système fonctionne sur l'appareil.
  */
 export async function sendTestReminderNotification(time: string = "21:00"): Promise<boolean> {
-  return sendLocalNotification("Liela · Rappel quotidien", {
-    body: `Vos rappels sont bien activés pour ${time}. Prenez un instant pour respirer chaque jour.`,
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
+  return sendLocalNotification("Liela · Moment de respiration", {
+    body: `Vos rappels sont configurés pour ${time}. Prenez 5 minutes chaque jour pour vous recentrer.`,
+    icon: "/notification-icon.png",
+    badge: "/badge-monochrome.png",
+    image: "/artwork-se-recentrer.png",
     tag: "liela-test-reminder",
-    // @ts-expect-error - vibrate
-    vibrate: [200, 100, 200],
+    vibrate: [120, 80, 120],
     renotify: true,
+    actions: [
+      { action: "start-session", title: "🌿 Découvrir" },
+      { action: "later", title: "Compris" },
+    ],
   });
 }
 
@@ -106,15 +121,19 @@ export async function scheduleTestNotificationInSeconds(seconds: number = 10): P
   }
 
   const delayMs = seconds * 1000;
-  const notifTitle = "Liela · Rappel d'essai";
-  const notifOptions: NotificationOptions = {
-    body: `Bravo ! Ce rappel programmé fonctionne parfaitement sur votre appareil.`,
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
+  const notifTitle = "Liela · Moment de respiration";
+  const notifOptions: EnhancedNotificationOptions = {
+    body: "Bravo ! Vos rappels fonctionnent parfaitement. Prenez un instant pour respirer.",
+    icon: "/notification-icon.png",
+    badge: "/badge-monochrome.png",
+    image: "/artwork-se-recentrer.png",
     tag: "liela-test-countdown",
-    // @ts-expect-error - vibrate
-    vibrate: [200, 100, 200],
+    vibrate: [120, 80, 120],
     renotify: true,
+    actions: [
+      { action: "start-session", title: "🌿 Commencer (5 min)" },
+      { action: "later", title: "Plus tard" },
+    ],
   };
 
   // 1. Envoi au Service Worker pour qu'il le gère en arrière-plan
@@ -283,14 +302,18 @@ export async function syncScheduledReminder(settings: AppSettings): Promise<void
   if (!next) return;
 
   const notifTitle = "Liela · Moment de respiration";
-  const notifOptions: NotificationOptions = {
+  const notifOptions: EnhancedNotificationOptions = {
     body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
+    icon: "/notification-icon.png",
+    badge: "/badge-monochrome.png",
+    image: "/artwork-se-recentrer.png",
     tag: "liela-daily-reminder",
-    // @ts-expect-error - vibrate
-    vibrate: [200, 100, 200],
+    vibrate: [120, 80, 120],
     renotify: true,
+    actions: [
+      { action: "start-session", title: "🌿 Commencer (5 min)" },
+      { action: "later", title: "Plus tard" },
+    ],
   };
 
   // 1. Essai avec Notification Triggers API (Chromium / Android natif pour alarmes hors-ligne)

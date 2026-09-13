@@ -1,4 +1,4 @@
-const CACHE_NAME = "liela-v7";
+const CACHE_NAME = "liela-v8";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -56,6 +56,12 @@ self.addEventListener("fetch", (event) => {
 // Gestion du clic sur une notification (ouverture ou focus de l'application)
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
+
+  // Si l'utilisateur clique sur "Plus tard", ne rien ouvrir
+  if (event.action === "later") {
+    return;
+  }
+
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
@@ -91,11 +97,16 @@ self.addEventListener("message", (event) => {
               title || "Liela · Moment de respiration",
               {
                 body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
-                icon: "/icon-192.png",
-                badge: "/icon-192.png",
+                icon: "/notification-icon.png",
+                badge: "/badge-monochrome.png",
+                image: "/artwork-se-recentrer.png",
                 tag: "liela-daily-reminder",
-                vibrate: [200, 100, 200],
+                vibrate: [120, 80, 120],
                 renotify: true,
+                actions: [
+                  { action: "start-session", title: "🌿 Commencer (5 min)" },
+                  { action: "later", title: "Plus tard" },
+                ],
                 ...options,
               }
             );

@@ -54,8 +54,9 @@ export function ReminderScheduler() {
           localStorage.setItem(LAST_SENT_SLOT_KEY, slotKey);
           await sendLocalNotification("Liela · Moment de respiration", {
             body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
-            icon: "/icon-192.png",
-            badge: "/icon-192.png",
+            icon: "/notification-icon.png",
+            badge: "/badge-monochrome.png",
+            image: "/artwork-se-recentrer.png",
             tag: "liela-daily-reminder",
           });
         }
@@ -110,8 +111,9 @@ export function ReminderScheduler() {
             localStorage.setItem(LAST_SENT_SLOT_KEY, slotKey);
             await sendLocalNotification("Liela · Moment de respiration", {
               body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
-              icon: "/icon-192.png",
-              badge: "/icon-192.png",
+              icon: "/notification-icon.png",
+              badge: "/badge-monochrome.png",
+              image: "/artwork-se-recentrer.png",
               tag: "liela-daily-reminder",
             });
           }
