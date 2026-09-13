@@ -45,6 +45,15 @@ function PlayerContent() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showShareFallback, setShowShareFallback] = useState(false);
+  const [liftForToast, setLiftForToast] = useState(true);
+
+  // Laisse la barre remontée au lancement pendant 3.5s pour que la bulle système Android n'obstrue pas le bouton play
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setLiftForToast(false);
+    }, 3500);
+    return () => clearTimeout(timer);
+  }, []);
   
   const [prefs, setPrefs] = useState<AudioPreferences>({
     voiceVolume: 1,
@@ -65,6 +74,10 @@ function PlayerContent() {
 
   // Gestion du mode Plein écran (Fullscreen API)
   const enterFullscreen = useCallback(async () => {
+    setLiftForToast(true);
+    setTimeout(() => {
+      setLiftForToast(false);
+    }, 3500);
     try {
       const doc = document as unknown as { fullscreenElement?: Element; webkitFullscreenElement?: Element };
       const docEl = document.documentElement as unknown as {
@@ -689,9 +702,11 @@ function PlayerContent() {
 
       {/* Bottom controls */}
       <div 
-        className={`w-full px-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] shrink-0 transition-opacity duration-700 ${
+        className={`w-full px-6 pb-[max(2.25rem,calc(env(safe-area-inset-bottom)+1.5rem))] shrink-0 transition-all duration-700 ease-out ${
+          liftForToast ? "-translate-y-12 sm:-translate-y-8" : "translate-y-0"
+        } ${
           showControls || showSettings || state !== "playing" ? "opacity-100" : "opacity-0 pointer-events-none"
-        } ${fromHome ? "animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both ease-out" : ""}`}
+        } ${fromHome ? "animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150 fill-mode-both" : ""}`}
       >
         <div className="flex justify-between text-[12px] opacity-80 mb-2 font-mono">
           <span>{formatTime(currentTime)}</span>
