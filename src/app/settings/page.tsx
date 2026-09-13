@@ -17,6 +17,7 @@ import {
   getNotificationPermission,
   requestNotificationPermission,
   sendTestReminderNotification,
+  scheduleTestNotificationInSeconds,
   syncScheduledReminder,
   formatNextReminderDescription,
 } from "@/lib/notifications";
@@ -41,6 +42,8 @@ export default function SettingsPage() {
   const [emailInput, setEmailInput] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
+  const [testCountdown, setTestCountdown] = useState<number | null>(null);
+  const [nextReminderDesc, setNextReminderDesc] = useState("");
 
   // Load data on mount
   useEffect(() => {
@@ -60,6 +63,26 @@ export default function SettingsPage() {
       active = false;
     };
   }, []);
+
+  // Mise à jour périodique du texte descriptif du prochain rappel
+  useEffect(() => {
+    if (!settings.dailyReminderEnabled || !settings.dailyReminderTime) {
+      setNextReminderDesc("");
+      return;
+    }
+
+    const updateDesc = () => {
+      const desc = formatNextReminderDescription(
+        settings.dailyReminderTime,
+        settings.dailyReminderCustomDays
+      );
+      setNextReminderDesc(desc);
+    };
+
+    updateDesc();
+    const interval = setInterval(updateDesc, 5000);
+    return () => clearInterval(interval);
+  }, [settings.dailyReminderEnabled, settings.dailyReminderTime, settings.dailyReminderCustomDays]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -155,6 +178,35 @@ export default function SettingsPage() {
     }
   };
 
+  const handleTestCountdown = async () => {
+    const perm = getNotificationPermission();
+    if (perm !== "granted") {
+      setShowNotificationModal(true);
+      return;
+    }
+
+    if (testCountdown !== null) return;
+
+    const ok = await scheduleTestNotificationInSeconds(10);
+    if (!ok) {
+      showToast("Impossible de programmer le test.");
+      return;
+    }
+
+    setTestCountdown(10);
+    showToast("Test lancé dans 10s ! Vous pouvez verrouiller votre téléphone.");
+
+    const interval = setInterval(() => {
+      setTestCountdown((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
   const handleToggleDay = async (dayKey: DayOfWeek) => {
     const currentDays = settings.dailyReminderCustomDays || ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
     let updatedDays: DayOfWeek[];
@@ -174,6 +226,7 @@ export default function SettingsPage() {
       dailyReminderCustomDays: updatedDays,
       dailyReminderDays: formatted,
     });
+    await syncScheduledReminder(nextSettings);
   };
 
   const handleSetPresetDays = async (type: "all" | "weekdays" | "weekend") => {
@@ -196,6 +249,7 @@ export default function SettingsPage() {
       dailyReminderCustomDays: updatedDays,
       dailyReminderDays: formatted,
     });
+    await syncScheduledReminder(nextSettings);
   };
 
   const totalDownloadedMo = downloads.reduce((acc, cur) => acc + (cur.sizeMo || 0), 0);
@@ -442,7 +496,7 @@ export default function SettingsPage() {
                     </i>
                   ) : (
                     <i className="block not-italic text-[10.5px] text-[#5F6A52] mt-[2px] leading-[1.35]">
-                      Actif à {settings.dailyReminderTime}
+                      {nextReminderDesc || `Actif à ${settings.dailyReminderTime}`}
                     </i>
                   )}
                 </div>
@@ -492,22 +546,40 @@ export default function SettingsPage() {
                     </svg>
                   </div>
 
-                  {/* Bouton Tester la notification */}
-                  <div
-                    onClick={handleTestNotification}
-                    className="flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                        Tester la notification
-                      </b>
-                      <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
-                        Vérifier la réception sur cet appareil
-                      </i>
+                  {/* Boutons de test */}
+                  <div className="p-[12px_13px] flex flex-col gap-2.5 bg-[#FAF6F0]/60">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <b className="block font-normal text-[13px] leading-[1.3] text-encre">
+                          Tester les notifications
+                        </b>
+                        <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
+                          Vérifiez la réception sur votre appareil
+                        </i>
+                      </div>
                     </div>
-                    <span className="text-[11.5px] font-medium text-terre-p px-2.5 py-1 rounded-[8px] bg-coquille border border-filet">
-                      Envoyer
-                    </span>
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={handleTestNotification}
+                        className="flex-1 py-2 px-2.5 text-[11.5px] font-medium text-terre-p bg-coquille hover:bg-[#EDE1D1] active:scale-[0.98] border border-filet rounded-[10px] transition-all text-center"
+                      >
+                        Envoyer maintenant
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleTestCountdown}
+                        disabled={testCountdown !== null}
+                        className="flex-1 py-2 px-2.5 text-[11.5px] font-medium text-creme bg-[#5F6A52] hover:bg-[#525C46] active:scale-[0.98] disabled:opacity-75 rounded-[10px] transition-all text-center"
+                      >
+                        {testCountdown !== null ? `Dans ${testCountdown}s...` : "Tester dans 10s"}
+                      </button>
+                    </div>
+                    {testCountdown !== null && (
+                      <p className="text-[10.5px] text-[#5F6A52] font-medium text-center animate-pulse pt-0.5">
+                        💡 Verrouillez l'écran de votre téléphone pour tester la réception en veille !
+                      </p>
+                    )}
                   </div>
                 </>
               )}

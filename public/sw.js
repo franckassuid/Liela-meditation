@@ -1,4 +1,4 @@
-const CACHE_NAME = "liela-v4";
+const CACHE_NAME = "liela-v5";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -84,22 +84,33 @@ self.addEventListener("message", (event) => {
 
     const { delayMs, title, options } = event.data;
     if (typeof delayMs === "number" && delayMs > 0) {
-      // Déclenchement automatique par le Service Worker
-      swReminderTimer = setTimeout(async () => {
-        try {
-          await self.registration.showNotification(
-            title || "Liela · Moment de respiration",
-            options || {
-              body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
-              icon: "/icon-192.png",
-              badge: "/icon-192.png",
-              tag: "liela-daily-reminder",
-            }
-          );
-        } catch (e) {
-          console.error("Erreur d'affichage notif SW:", e);
-        }
-      }, delayMs);
+      const showNotifPromise = new Promise((resolve) => {
+        swReminderTimer = setTimeout(async () => {
+          try {
+            await self.registration.showNotification(
+              title || "Liela · Moment de respiration",
+              {
+                body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
+                icon: "/icon-192.png",
+                badge: "/icon-192.png",
+                tag: "liela-daily-reminder",
+                vibrate: [200, 100, 200],
+                renotify: true,
+                ...options,
+              }
+            );
+          } catch (e) {
+            console.error("Erreur d'affichage notif SW:", e);
+          } finally {
+            resolve();
+          }
+        }, delayMs);
+      });
+
+      // Si le délai est court (ex: test <= 60s), prolonger l'activité du Service Worker
+      if (delayMs <= 60000 && event.waitUntil) {
+        event.waitUntil(showNotifPromise);
+      }
     }
   }
 
