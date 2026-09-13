@@ -14,6 +14,7 @@ export function getNotificationPermission(): NotificationPermissionState {
 
 /**
  * Demande la permission d'afficher des notifications au système (Android / iOS / Navigateur).
+ * Déclenche immédiatement la popin native du navigateur/système.
  */
 export async function requestNotificationPermission(): Promise<NotificationPermissionState> {
   if (typeof window === "undefined" || !("Notification" in window)) {
@@ -23,9 +24,17 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   try {
     const perm = await Notification.requestPermission();
     return perm as NotificationPermissionState;
-  } catch (err) {
-    console.error("Erreur lors de la demande de notification:", err);
-    return Notification.permission as NotificationPermissionState;
+  } catch {
+    // Repli pour les navigateurs plus anciens attendant un callback
+    return new Promise((resolve) => {
+      try {
+        Notification.requestPermission((p) => {
+          resolve(p as NotificationPermissionState);
+        });
+      } catch {
+        resolve(Notification.permission as NotificationPermissionState);
+      }
+    });
   }
 }
 
