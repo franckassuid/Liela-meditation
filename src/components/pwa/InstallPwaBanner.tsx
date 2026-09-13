@@ -6,11 +6,11 @@ import { usePathname } from "next/navigation";
 import { usePwa } from "./PwaContext";
 
 export function InstallPwaBanner() {
-  const { isBannerVisible, isStandalone, platform, promptInstall, dismissBanner } = usePwa();
+  const { isBannerVisible, isStandalone, isAppInstalled, platform, promptInstall, dismissBanner } = usePwa();
   const pathname = usePathname();
 
-  // Ne pas afficher si déjà installé, si masqué, ou dans le lecteur audio
-  if (!isBannerVisible || isStandalone || pathname?.startsWith("/player")) {
+  // Ne pas afficher si déjà installé (standalone ou sur l'appareil), si masqué, ou dans le lecteur audio
+  if (!isBannerVisible || isStandalone || isAppInstalled || pathname?.startsWith("/player")) {
     return null;
   }
 

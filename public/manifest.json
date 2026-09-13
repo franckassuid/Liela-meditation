@@ -3,6 +3,8 @@
   "short_name": "Liela",
   "description": "La méditation qu'il vous faut, maintenant.",
   "start_url": "/",
+  "scope": "/",
+  "id": "/",
   "display": "standalone",
   "background_color": "#FDF9F0",
   "theme_color": "#FDF9F0",

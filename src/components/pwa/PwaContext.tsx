@@ -11,12 +11,14 @@ interface BeforeInstallPromptEvent extends Event {
 
 interface PwaContextType {
   isStandalone: boolean;
+  isAppInstalled: boolean;
   platform: PwaPlatform;
   isSafari: boolean;
   canNativePrompt: boolean;
   isBannerVisible: boolean;
   isModalOpen: boolean;
   promptInstall: () => Promise<void>;
+  openPwaApp: (path?: string) => void;
   openModal: () => void;
   closeModal: () => void;
   dismissBanner: () => void;
@@ -26,9 +28,11 @@ const PwaContext = createContext<PwaContextType | null>(null);
 
 const SNOOZE_KEY = "liela_pwa_dismissed_until";
 const SNOOZE_DAYS = 7;
+const INSTALLED_STORAGE_KEY = "liela_pwa_installed";
 
 export function PwaProvider({ children }: { children: React.ReactNode }) {
   const [isStandalone, setIsStandalone] = useState(false);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
   const [platform, setPlatform] = useState<PwaPlatform>("desktop");
   const [isSafari, setIsSafari] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -46,7 +50,7 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
         .catch((err) => console.log("SW register notice:", err));
     }
 
-    // 2. Détection Standalone (Déjà installé)
+    // 2. Détection Standalone (Déjà lancé comme PWA native)
     const checkStandalone = () => {
       const isStandaloneMedia = window.matchMedia("(display-mode: standalone)").matches;
       const isIosStandalone = (window.navigator as unknown as { standalone?: boolean }).standalone === true;
@@ -57,11 +61,48 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
     const standalone = checkStandalone();
     setIsStandalone(standalone);
 
+    // Vérification si déjà installée sur l'appareil (via localStorage)
+    const storedInstalled = localStorage.getItem(INSTALLED_STORAGE_KEY) === "true";
+    if (standalone || storedInstalled) {
+      setIsAppInstalled(true);
+      if (standalone) {
+        try {
+          localStorage.setItem(INSTALLED_STORAGE_KEY, "true");
+        } catch (_) {}
+      }
+    }
+
+    // Vérification native Chromium getInstalledRelatedApps (Android Chrome 80+)
+    if ("getInstalledRelatedApps" in navigator) {
+      (navigator as unknown as { getInstalledRelatedApps?: () => Promise<unknown[]> })
+        .getInstalledRelatedApps?.()
+        .then((apps) => {
+          if (Array.isArray(apps) && apps.length > 0) {
+            setIsAppInstalled(true);
+            try {
+              localStorage.setItem(INSTALLED_STORAGE_KEY, "true");
+            } catch (_) {}
+            setIsBannerVisible(false);
+          } else if (Array.isArray(apps) && apps.length === 0 && !standalone) {
+            // L'OS confirme qu'aucune app PWA liée n'est installée
+            setIsAppInstalled(false);
+            try {
+              localStorage.removeItem(INSTALLED_STORAGE_KEY);
+            } catch (_) {}
+          }
+        })
+        .catch(() => {});
+    }
+
     const mql = window.matchMedia("(display-mode: standalone)");
     const handleMediaChange = (e: MediaQueryListEvent) => {
       if (e.matches) {
         setIsStandalone(true);
+        setIsAppInstalled(true);
         setIsBannerVisible(false);
+        try {
+          localStorage.setItem(INSTALLED_STORAGE_KEY, "true");
+        } catch (_) {}
       }
     };
     mql.addEventListener("change", handleMediaChange);
@@ -93,22 +134,28 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
 
     const handleAppInstalled = () => {
       setIsStandalone(true);
+      setIsAppInstalled(true);
       setIsBannerVisible(false);
       setDeferredPrompt(null);
+      try {
+        localStorage.setItem(INSTALLED_STORAGE_KEY, "true");
+      } catch (_) {}
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
     window.addEventListener("appinstalled", handleAppInstalled);
 
-    // 5. Affichage progressif du bandeau (si non installé et non masqué)
-    if (!standalone) {
+    // 5. Affichage progressif du bandeau (uniquement si NON installé)
+    if (!standalone && !storedInstalled) {
       const dismissedUntil = localStorage.getItem(SNOOZE_KEY);
       const isSnoozed = dismissedUntil && Number(dismissedUntil) > Date.now();
 
       if (!isSnoozed) {
         // Apparition douce après 2.5 secondes
         const timer = setTimeout(() => {
-          setIsBannerVisible(true);
+          if (localStorage.getItem(INSTALLED_STORAGE_KEY) !== "true") {
+            setIsBannerVisible(true);
+          }
         }, 2500);
         return () => clearTimeout(timer);
       }
@@ -121,26 +168,82 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Déclenchement de l'installation
+  // Déclenchement de l'installation en 1 clic sur Android / Chromium
   const promptInstall = useCallback(async () => {
-    if (deferredPrompt) {
+    // Si une modal explicative était ouverte, la fermer pour laisser place au prompt natif
+    setIsModalOpen(false);
+
+    let promptToUse = deferredPrompt;
+
+    // Si sur Android et que le prompt natif est en train d'arriver, attendre brièvement (max 400ms)
+    if (!promptToUse && platform === "android") {
+      await new Promise<void>((resolve) => {
+        let resolved = false;
+        const onPrompt = (e: Event) => {
+          if (!resolved) {
+            resolved = true;
+            e.preventDefault();
+            promptToUse = e as BeforeInstallPromptEvent;
+            window.removeEventListener("beforeinstallprompt", onPrompt);
+            resolve();
+          }
+        };
+        window.addEventListener("beforeinstallprompt", onPrompt);
+        setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            window.removeEventListener("beforeinstallprompt", onPrompt);
+            resolve();
+          }
+        }, 400);
+      });
+    }
+
+    if (promptToUse) {
       try {
-        await deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
+        await promptToUse.prompt();
+        const choice = await promptToUse.userChoice;
         if (choice.outcome === "accepted") {
           setIsStandalone(true);
+          setIsAppInstalled(true);
           setIsBannerVisible(false);
           setDeferredPrompt(null);
+          try {
+            localStorage.setItem(INSTALLED_STORAGE_KEY, "true");
+          } catch (_) {}
         }
       } catch (err) {
         console.error("Install prompt error:", err);
         setIsModalOpen(true);
       }
     } else {
-      // Sur iOS ou si le prompt natif n'est pas prêt, ouvrir le guide illustré
+      // Sur iOS ou si le prompt natif n'est pas disponible, ouvrir le guide illustré
       setIsModalOpen(true);
     }
-  }, [deferredPrompt]);
+  }, [deferredPrompt, platform]);
+
+  // Ouverture directe de l'application PWA installée depuis le navigateur
+  const openPwaApp = useCallback((path: string = "/settings") => {
+    if (typeof window === "undefined") return;
+    const targetUrl = window.location.origin + path;
+    const isAndroid = /android/i.test(navigator.userAgent);
+
+    if (isAndroid) {
+      const hostAndPath = window.location.host + path;
+      const intentUrl = `intent://${hostAndPath}#Intent;scheme=https;action=android.intent.action.VIEW;end;`;
+
+      // Déclenche l'intent Android (ouvre le WebAPK)
+      window.location.href = intentUrl;
+
+      // Fallback après délai si l'intent n'a pas été intercepté
+      setTimeout(() => {
+        window.location.href = targetUrl;
+      }, 1200);
+      return;
+    }
+
+    window.location.href = targetUrl;
+  }, []);
 
   const openModal = useCallback(() => {
     setIsModalOpen(true);
@@ -162,12 +265,14 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
     <PwaContext.Provider
       value={{
         isStandalone,
+        isAppInstalled,
         platform,
         isSafari,
         canNativePrompt: !!deferredPrompt,
         isBannerVisible,
         isModalOpen,
         promptInstall,
+        openPwaApp,
         openModal,
         closeModal,
         dismissBanner,

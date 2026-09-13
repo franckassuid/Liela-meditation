@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   storage,
   AppSettings,
@@ -27,8 +26,12 @@ import { NotificationPermissionModal } from "@/components/notifications/Notifica
 type ScreenType = "main" | "compte" | "telechargements" | "aide" | "confidentialite";
 
 export default function SettingsPage() {
-  const router = useRouter();
-  const { isStandalone, openModal: openInstallModal } = usePwa();
+  const {
+    isStandalone,
+    isAppInstalled,
+    promptInstall,
+    openPwaApp,
+  } = usePwa();
   const [currentScreen, setCurrentScreen] = useState<ScreenType>("main");
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
   const [downloads, setDownloads] = useState<DownloadedSession[]>([]);
@@ -159,9 +162,13 @@ export default function SettingsPage() {
   };
 
   const handleToggleDailyReminder = async () => {
-    // Si l'application n'est pas installée
+    // Si l'application n'est pas ouverte en standalone
     if (!isStandalone) {
-      openInstallModal();
+      if (isAppInstalled) {
+        openPwaApp("/settings");
+      } else {
+        await promptInstall();
+      }
       return;
     }
 
@@ -508,8 +515,42 @@ export default function SettingsPage() {
               )}
             </div>
 
-            {/* MESSAGE INCITATIF 1 : Application NON installée */}
-            {!isStandalone && (
+            {/* MESSAGE INCITATIF 1A : Application installée sur l'appareil mais ouverte dans le navigateur */}
+            {!isStandalone && isAppInstalled && (
+              <div className="bg-white rounded-[15px] p-[14px_16px] shadow-[0_1px_2px_rgba(67,53,40,0.04)] mb-2.5 border border-[#E5D9C7]/70">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-full bg-[#FAF6F0] text-[#5F6A52] flex items-center justify-center shrink-0 mt-0.5">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                    </svg>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <b className="block font-normal text-[13px] leading-[1.3] text-encre">
+                      Ouvrir dans l'application pour les rappels
+                    </b>
+                    <p className="text-[11px] text-[#7A6E5E] leading-[1.4] mt-1">
+                      L'application Liela est installée sur cet appareil. Ouvrez-la pour paramétrer vos rappels avec notifications en arrière-plan.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openPwaApp("/settings")}
+                  className="w-full mt-3 py-2.5 px-3 bg-[#5F6A52] text-creme rounded-[10px] text-[12px] font-medium transition-transform active:scale-[0.98] shadow-sm flex items-center justify-center gap-2"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                    <polyline points="15 3 21 3 21 9" />
+                    <line x1="10" y1="14" x2="21" y2="3" />
+                  </svg>
+                  <span>Ouvrir dans l'application</span>
+                </button>
+              </div>
+            )}
+
+            {/* MESSAGE INCITATIF 1B : Application NON installée sur l'appareil */}
+            {!isStandalone && !isAppInstalled && (
               <div className="bg-white rounded-[15px] p-[14px_16px] shadow-[0_1px_2px_rgba(67,53,40,0.04)] mb-2.5 border border-[#E5D9C7]/70">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#F5E4DA] text-terre-p flex items-center justify-center shrink-0 mt-0.5">
@@ -529,7 +570,7 @@ export default function SettingsPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={openInstallModal}
+                  onClick={promptInstall}
                   className="w-full mt-3 py-2.5 px-3 bg-terre-p text-creme rounded-[10px] text-[12px] font-medium transition-transform active:scale-[0.98] shadow-sm flex items-center justify-center gap-2"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -598,7 +639,11 @@ export default function SettingsPage() {
               }`}
               onClick={() => {
                 if (!isStandalone) {
-                  openInstallModal();
+                  if (isAppInstalled) {
+                    openPwaApp("/settings");
+                  } else {
+                    promptInstall();
+                  }
                 } else if (notificationPermission !== "granted") {
                   handleRequestPermission();
                 }
@@ -609,7 +654,11 @@ export default function SettingsPage() {
                 onClick={(e) => {
                   if (!isStandalone) {
                     e.stopPropagation();
-                    openInstallModal();
+                    if (isAppInstalled) {
+                      openPwaApp("/settings");
+                    } else {
+                      promptInstall();
+                    }
                   } else if (notificationPermission !== "granted") {
                     e.stopPropagation();
                     handleRequestPermission();
@@ -629,7 +678,9 @@ export default function SettingsPage() {
                   </b>
                   {!isStandalone ? (
                     <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
-                      Nécessite l'application installée
+                      {isAppInstalled
+                        ? "Ouvrez l'application pour paramétrer ce rappel"
+                        : "Nécessite l'application installée"}
                     </i>
                   ) : notificationPermission !== "granted" ? (
                     <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
@@ -789,9 +840,31 @@ export default function SettingsPage() {
                   </div>
                   <span className="text-[#5F6A52] text-[14px] font-semibold">✓</span>
                 </div>
+              ) : isAppInstalled ? (
+                <div
+                  onClick={() => openPwaApp("/settings")}
+                  className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
+                      Application déjà installée
+                    </b>
+                    <i className="block not-italic text-[10.5px] text-[#5F6A52] mt-[2px] leading-[1.35]">
+                      Touchez pour ouvrir dans l'application
+                    </i>
+                  </div>
+                  <span className="shrink-0 px-2.5 py-1 bg-[#5F6A52] text-creme rounded-[8px] text-[11.5px] font-medium flex items-center gap-1">
+                    <span>Ouvrir</span>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </span>
+                </div>
               ) : (
                 <div
-                  onClick={openInstallModal}
+                  onClick={promptInstall}
                   className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
                 >
                   <div className="flex-1 min-w-0">
