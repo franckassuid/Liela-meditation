@@ -160,3 +160,19 @@ html.splash-already-shown #liela-splash-screen {
   will-change: transform;
 }
 
+@keyframes pebble-breathe {
+  0%, 100% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.animate-pebble-breathe {
+  animation: pebble-breathe 2.4s ease-in-out infinite;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+
