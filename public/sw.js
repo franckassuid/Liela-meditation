@@ -1,4 +1,4 @@
-const CACHE_NAME = "liela-v8";
+const CACHE_NAME = "liela-v9";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
@@ -57,8 +57,8 @@ self.addEventListener("fetch", (event) => {
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
 
-  // Si l'utilisateur clique sur "Plus tard", ne rien ouvrir
-  if (event.action === "later") {
+  // Si l'utilisateur clique sur "Reporter" ou "Plus tard", ne rien ouvrir
+  if (event.action === "later" || event.action === "snooze") {
     return;
   }
 
@@ -99,13 +99,12 @@ self.addEventListener("message", (event) => {
                 body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
                 icon: "/notification-icon.png",
                 badge: "/badge-monochrome.png",
-                image: "/artwork-se-recentrer.png",
                 tag: "liela-daily-reminder",
                 vibrate: [120, 80, 120],
                 renotify: true,
                 actions: [
-                  { action: "start-session", title: "🌿 Commencer (5 min)" },
-                  { action: "later", title: "Plus tard" },
+                  { action: "start-session", title: "Commencer ma séance" },
+                  { action: "snooze", title: "Reporter" },
                 ],
                 ...options,
               }

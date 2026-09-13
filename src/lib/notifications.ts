@@ -63,13 +63,12 @@ export async function sendLocalNotification(
   const defaultOptions: EnhancedNotificationOptions = {
     icon: "/notification-icon.png",
     badge: "/badge-monochrome.png",
-    image: "/artwork-se-recentrer.png",
     tag: "liela-daily-reminder",
     vibrate: [120, 80, 120],
     renotify: true,
     actions: [
-      { action: "start-session", title: "🌿 Commencer (5 min)" },
-      { action: "later", title: "Plus tard" },
+      { action: "start-session", title: "Commencer ma séance" },
+      { action: "snooze", title: "Reporter" },
     ],
     ...options,
   };
@@ -101,13 +100,12 @@ export async function sendTestReminderNotification(time: string = "21:00"): Prom
     body: `Vos rappels sont configurés pour ${time}. Prenez 5 minutes chaque jour pour vous recentrer.`,
     icon: "/notification-icon.png",
     badge: "/badge-monochrome.png",
-    image: "/artwork-se-recentrer.png",
     tag: "liela-test-reminder",
     vibrate: [120, 80, 120],
     renotify: true,
     actions: [
-      { action: "start-session", title: "🌿 Découvrir" },
-      { action: "later", title: "Compris" },
+      { action: "start-session", title: "Commencer ma séance" },
+      { action: "snooze", title: "Reporter" },
     ],
   });
 }
@@ -126,13 +124,12 @@ export async function scheduleTestNotificationInSeconds(seconds: number = 10): P
     body: "Bravo ! Vos rappels fonctionnent parfaitement. Prenez un instant pour respirer.",
     icon: "/notification-icon.png",
     badge: "/badge-monochrome.png",
-    image: "/artwork-se-recentrer.png",
     tag: "liela-test-countdown",
     vibrate: [120, 80, 120],
     renotify: true,
     actions: [
-      { action: "start-session", title: "🌿 Commencer (5 min)" },
-      { action: "later", title: "Plus tard" },
+      { action: "start-session", title: "Commencer ma séance" },
+      { action: "snooze", title: "Reporter" },
     ],
   };
 
@@ -306,13 +303,12 @@ export async function syncScheduledReminder(settings: AppSettings): Promise<void
     body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
     icon: "/notification-icon.png",
     badge: "/badge-monochrome.png",
-    image: "/artwork-se-recentrer.png",
     tag: "liela-daily-reminder",
     vibrate: [120, 80, 120],
     renotify: true,
     actions: [
-      { action: "start-session", title: "🌿 Commencer (5 min)" },
-      { action: "later", title: "Plus tard" },
+      { action: "start-session", title: "Commencer ma séance" },
+      { action: "snooze", title: "Reporter" },
     ],
   };
 

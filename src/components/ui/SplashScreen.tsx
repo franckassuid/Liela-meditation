@@ -5,7 +5,7 @@ import { LielaEmblem } from "./Icons";
 import { BreathingVisualizer } from "./BreathingVisualizer";
 
 const SPLASH_STORAGE_KEY = "liela_splash_shown";
-const DISPLAY_DURATION_MS = 3000;
+const DISPLAY_DURATION_MS = 2000;
 const FADE_DURATION_MS = 500;
 
 export function SplashScreen() {
@@ -27,12 +27,12 @@ export function SplashScreen() {
       sessionStorage.setItem(SPLASH_STORAGE_KEY, "true");
     } catch (_) {}
 
-    // Déclenche la transition fluide : le logo reste au centre puis s'anime avec apparition du slogan et du galet
+    // Déclenche la transition douce : apparition soyeuse du slogan et du galet autour du logo
     const transitionTimer = setTimeout(() => {
       setHasStartedTransition(true);
-    }, 80);
+    }, 60);
 
-    // Affiche l'écran pendant 3 secondes avant le fondu de sortie vers l'accueil
+    // Affiche l'écran pendant 2 secondes avant le fondu de sortie vers l'accueil
     const timer = setTimeout(() => {
       setIsFadingOut(true);
       const unmountTimer = setTimeout(() => {
@@ -58,27 +58,20 @@ export function SplashScreen() {
       aria-hidden="true"
     >
       <div className="flex flex-col items-center text-center max-w-sm w-full relative">
-        {/* Logo Liela : positionné au centre exact pour assurer la continuité avec le démarrage Android, puis glisse en douceur */}
-        <div
-          className={`w-[88px] h-[88px] sm:w-[96px] sm:h-[96px] flex items-center justify-center drop-shadow-sm transition-transform duration-800 ease-out ${
-            hasStartedTransition ? "translate-y-0" : "translate-y-[135px]"
-          }`}
-          style={{
-            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-          }}
-        >
+        {/* Logo Liela : ancré au centre, naturel et serein */}
+        <div className="w-[88px] h-[88px] sm:w-[96px] sm:h-[96px] flex items-center justify-center drop-shadow-sm">
           <LielaEmblem width={88} height={88} />
         </div>
 
-        {/* Typographie de marque & Slogan : émergence fluide autour du logo */}
+        {/* Typographie de marque & Slogan : fondu velouté et émergence naturelle */}
         <div
           className={`flex flex-col items-center text-center transition-all duration-700 ease-out ${
             hasStartedTransition
               ? "opacity-100 translate-y-0"
-              : "opacity-0 translate-y-3 pointer-events-none"
+              : "opacity-0 translate-y-2 pointer-events-none"
           }`}
           style={{
-            transitionDelay: hasStartedTransition ? "160ms" : "0ms",
+            transitionDelay: hasStartedTransition ? "120ms" : "0ms",
           }}
         >
           <h1 className="font-poppins font-light text-[32px] sm:text-[36px] tracking-[-0.02em] text-[#433528] mt-2.5 leading-none">
@@ -92,13 +85,13 @@ export function SplashScreen() {
 
         {/* Galet authentique identique à l'accueil avec éclosion douce et rotation zen pour le chargement */}
         <div
-          className={`relative w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] my-6 flex items-center justify-center transition-all duration-800 ease-out ${
+          className={`relative w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] my-6 flex items-center justify-center transition-all duration-700 ease-out ${
             hasStartedTransition
               ? "opacity-100 scale-100"
-              : "opacity-0 scale-90 pointer-events-none"
+              : "opacity-0 scale-95 pointer-events-none"
           }`}
           style={{
-            transitionDelay: hasStartedTransition ? "260ms" : "0ms",
+            transitionDelay: hasStartedTransition ? "200ms" : "0ms",
             transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
           }}
         >

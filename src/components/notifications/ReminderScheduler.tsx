@@ -56,7 +56,6 @@ export function ReminderScheduler() {
             body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
             icon: "/notification-icon.png",
             badge: "/badge-monochrome.png",
-            image: "/artwork-se-recentrer.png",
             tag: "liela-daily-reminder",
           });
         }
@@ -113,7 +112,6 @@ export function ReminderScheduler() {
               body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
               icon: "/notification-icon.png",
               badge: "/badge-monochrome.png",
-              image: "/artwork-se-recentrer.png",
               tag: "liela-daily-reminder",
             });
           }
