@@ -140,3 +140,23 @@ body:-webkit-full-screen {
   height: 100dvh;
 }
 
+/* Écran de démarrage Splash Screen & Galet qui tourne */
+html.splash-already-shown #liela-splash-screen {
+  display: none !important;
+}
+
+@keyframes pebble-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-pebble-spin {
+  animation: pebble-spin 2.2s linear infinite;
+  transform-origin: center center;
+  will-change: transform;
+}
+

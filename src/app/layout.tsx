@@ -55,6 +55,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${poppins.variable} ${hankenGrotesk.variable}`} suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(sessionStorage.getItem('liela_splash_shown')){document.documentElement.classList.add('splash-already-shown');}}catch(e){}`,
+          }}
+        />
+      </head>
       <body className="font-sans text-encre bg-creme antialiased" suppressHydrationWarning>
         <AppShell>{children}</AppShell>
       </body>
