@@ -35,7 +35,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             ? "max-w-md h-[100dvh] max-h-[100dvh] overflow-hidden"
             : "max-w-md min-h-screen min-h-[100dvh] bg-creme"
         } relative shadow-p1 flex flex-col transition-colors duration-500`}
-        style={isHome ? { backgroundColor: "var(--home-bg, #F5E4DA)" } : undefined}
+        style={
+          isHome
+            ? { backgroundColor: "var(--home-bg, #F5E4DA)" }
+            : isPlayer
+            ? { backgroundColor: "var(--player-bg, transparent)" }
+            : undefined
+        }
       >
         <div className={`flex-1 flex flex-col min-h-0 ${isHome || isPlayer ? "overflow-hidden" : ""}`}>
           {children}

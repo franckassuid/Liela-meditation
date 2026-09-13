@@ -124,3 +124,19 @@ body.transitioning-to-player nav {
   transition: opacity 0.35s ease, transform 0.35s ease !important;
   pointer-events: none !important;
 }
+
+/* Neutralisation du fond noir natif du mode plein écran sur mobile */
+:fullscreen,
+::backdrop {
+  background-color: transparent !important;
+}
+
+html:fullscreen,
+html:-webkit-full-screen,
+body:fullscreen,
+body:-webkit-full-screen {
+  background-color: inherit !important;
+  width: 100vw;
+  height: 100dvh;
+}
+

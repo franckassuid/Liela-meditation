@@ -68,12 +68,12 @@ function PlayerContent() {
     try {
       const doc = document as unknown as { fullscreenElement?: Element; webkitFullscreenElement?: Element };
       const docEl = document.documentElement as unknown as {
-        requestFullscreen?: () => Promise<void>;
+        requestFullscreen?: (options?: { navigationUI?: string }) => Promise<void>;
         webkitRequestFullscreen?: () => Promise<void>;
       };
       if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
         if (docEl.requestFullscreen) {
-          await docEl.requestFullscreen();
+          await docEl.requestFullscreen({ navigationUI: "hide" });
         } else if (docEl.webkitRequestFullscreen) {
           await docEl.webkitRequestFullscreen();
         }
@@ -450,6 +450,26 @@ function PlayerContent() {
   const bgColor = isDark ? "var(--sommeil-fond)" : (situation?.color || "var(--encre)");
   const textColor = isDark ? "var(--sommeil-texte)" : (situation?.textColor || "var(--creme)");
 
+  // Met à jour dynamiquement la barre d'état Android (theme-color) et le fond AppShell
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const resolvedColor = isDark ? "#3E4753" : (situation?.color || "#433528");
+    document.documentElement.style.setProperty("--player-bg", resolvedColor);
+
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const prevColor = meta?.getAttribute("content") || "#FDF9F0";
+    if (meta) {
+      meta.setAttribute("content", resolvedColor);
+    }
+
+    return () => {
+      document.documentElement.style.removeProperty("--player-bg");
+      if (meta) {
+        meta.setAttribute("content", prevColor);
+      }
+    };
+  }, [bgColor, isDark, situation]);
+
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = Math.floor(secs % 60);
@@ -604,7 +624,7 @@ function PlayerContent() {
 
       {/* Top bar */}
       <div 
-        className={`h-14 px-5 flex justify-between items-center z-10 w-full shrink-0 transition-opacity duration-700 ${
+        className={`min-h-14 pt-[max(0.6rem,env(safe-area-inset-top))] pb-1 px-5 flex justify-between items-center z-10 w-full shrink-0 transition-opacity duration-700 ${
           showControls || showSettings || state !== "playing" ? "opacity-100" : "opacity-0 pointer-events-none"
         } ${fromHome ? "animate-in fade-in duration-500 fill-mode-both ease-out" : ""}`}
       >
