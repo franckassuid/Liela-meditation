@@ -4,7 +4,6 @@ import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SESSIONS_CATALOG, getCategoryInfo, CatalogSession, getCatalogSessionById } from "@/config/sessionsCatalog";
 import { getAvailableSituations, getSituation } from "@/lib/sessions";
-import { SituationId } from "@/config/situations";
 import { storage, Favori, SessionHistoryItem } from "@/lib/storage";
 import { ProModal } from "@/components/ui/ProModal";
 import { HeartIcon } from "@/components/ui/Icons";
@@ -74,12 +73,14 @@ function LibraryContent() {
   const [proModalSession, setProModalSession] = useState<CatalogSession | null>(null);
   const [favorites, setFavorites] = useState<Favori[]>([]);
   const [history, setHistory] = useState<SessionHistoryItem[]>([]);
+  const [downloadedIds, setDownloadedIds] = useState<Set<string>>(new Set());
   const [toastMessage, setToastMessage] = useState<{ id: string; timer: NodeJS.Timeout } | null>(null);
   const [isOnline, setIsOnline] = useState(true);
 
   // Network online listener
   useEffect(() => {
     if (typeof navigator !== "undefined") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsOnline(navigator.onLine !== false);
       const on = () => setIsOnline(true);
       const off = () => setIsOnline(false);
@@ -96,6 +97,7 @@ function LibraryContent() {
   useEffect(() => {
     const sitParam = searchParams.get("situation");
     if (sitParam && getSituation(sitParam)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedSituationId(sitParam);
       setActiveSegment("situations");
     } else {
@@ -107,13 +109,15 @@ function LibraryContent() {
   useEffect(() => {
     let active = true;
     const loadData = async () => {
-      const [favs, hist] = await Promise.all([
+      const [favs, hist, dls] = await Promise.all([
         storage.getFavorites(),
         storage.getHistory(),
+        storage.getDownloads(),
       ]);
       if (active) {
         setFavorites(favs);
         setHistory(hist.filter((h) => h.completed || h.duration > 0));
+        setDownloadedIds(new Set(dls.filter(d => d.status === "available").map(d => d.sessionId)));
       }
     };
     loadData();
@@ -250,6 +254,7 @@ function LibraryContent() {
   const { historyThisWeek, historyEarlier } = useMemo(() => {
     const week: SessionHistoryItem[] = [];
     const earlier: SessionHistoryItem[] = [];
+    // eslint-disable-next-line react-hooks/purity
     const now = Date.now();
 
     history.forEach((item) => {
@@ -508,7 +513,8 @@ function LibraryContent() {
               ) : (
                 categorySessions.map((session) => {
                   const isFav = favorites.some((f) => f.sessionId === session.id);
-                  const isUnavailableOffline = !isOnline && !session.isAvailable;
+                  const isDownloaded = downloadedIds.has(session.realSessionId || session.id);
+                  const isUnavailableOffline = !isOnline && !isDownloaded;
 
                   // Ligne grisée hors-ligne
                   if (isUnavailableOffline) {
@@ -554,13 +560,30 @@ function LibraryContent() {
                       }`}
                     >
                       <div className="flex-1 min-w-0">
-                        <b
-                          className={`block font-normal text-[15.5px] leading-[1.25] ${
-                            isSleep ? "text-[#FDF9F0]" : "text-encre"
-                          }`}
-                        >
-                          {session.title}
-                        </b>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <b
+                            className={`font-normal text-[15.5px] leading-[1.25] ${
+                              isSleep ? "text-[#FDF9F0]" : "text-encre"
+                            }`}
+                          >
+                            {session.title}
+                          </b>
+                          {isDownloaded && (
+                            <span
+                              className={`inline-flex items-center gap-1 text-[11px] font-medium px-1.5 py-0.5 rounded-full shrink-0 ${
+                                isSleep
+                                  ? "text-[#A8BFA0] bg-[#A8BFA0]/20"
+                                  : "text-[#5F6A52] bg-[#5F6A52]/10"
+                              }`}
+                              title="Disponible hors ligne"
+                            >
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                              Hors ligne
+                            </span>
+                          )}
+                        </div>
                         {session.estPorteEntree && (
                           <span
                             className={`inline-block text-[11px] font-semibold mt-[2px] ${
@@ -633,10 +656,10 @@ function LibraryContent() {
                   </svg>
                 </span>
                 <p className="font-poppins font-light text-[19px] text-encre">
-                  Rien ici pour l'instant
+                  Rien ici pour l&apos;instant
                 </p>
                 <p className="text-[13px] text-gris-2 leading-[1.5] mt-[8px] max-w-[280px]">
-                  À la fin d'une séance, on vous demandera si vous voulez la retrouver. Celles que vous gardez apparaîtront ici.
+                  À la fin d&apos;une séance, on vous demandera si vous voulez la retrouver. Celles que vous gardez apparaîtront ici.
                 </p>
                 <button
                   onClick={() => setActiveSegment("situations")}
@@ -656,6 +679,7 @@ function LibraryContent() {
                     const session = getCatalogSessionById(fav.sessionId);
                     if (!session) return null;
                     const catInfo = getCategoryInfo(session.situationId);
+                    const isDownloaded = downloadedIds.has(session.realSessionId || session.id);
 
                     return (
                       <div
@@ -669,9 +693,22 @@ function LibraryContent() {
                           style={{ background: catInfo.color }}
                         />
                         <div className="flex-1 min-w-0">
-                          <b className="block font-normal text-[15.5px] leading-[1.25] text-encre">
-                            {session.title}
-                          </b>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <b className="font-normal text-[15.5px] leading-[1.25] text-encre">
+                              {session.title}
+                            </b>
+                            {isDownloaded && (
+                              <span
+                                className="inline-flex items-center gap-1 text-[11px] font-medium text-[#5F6A52] bg-[#5F6A52]/10 px-1.5 py-0.5 rounded-full shrink-0"
+                                title="Disponible hors ligne"
+                              >
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                  <polyline points="20 6 9 17 4 12" />
+                                </svg>
+                                Hors ligne
+                              </span>
+                            )}
+                          </div>
                           <i className="block not-italic text-[12.5px] text-gris-3 mt-[2px]">
                             {Math.round(session.durationSeconds / 60)} min · {catInfo.label}
                           </i>
@@ -750,6 +787,7 @@ function LibraryContent() {
                         const durationSec = item.duration || rawSession?.metadata?.durationSeconds || catSession?.durationSeconds || 600;
                         const isFav = favorites.some((f) => f.sessionId === item.sessionId);
                         const playId = rawSession?.id || catSession?.realSessionId || item.sessionId;
+                        const isDownloaded = downloadedIds.has(playId);
 
                         return (
                           <div
@@ -762,9 +800,22 @@ function LibraryContent() {
                               style={{ background: sit?.color || "var(--bord)" }}
                             />
                             <div className="flex-1 min-w-0">
-                              <b className="block font-normal text-[15.5px] leading-[1.25] text-encre whitespace-nowrap overflow-hidden text-ellipsis">
-                                {title}
-                              </b>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <b className="font-normal text-[15.5px] leading-[1.25] text-encre whitespace-nowrap overflow-hidden text-ellipsis">
+                                  {title}
+                                </b>
+                                {isDownloaded && (
+                                  <span
+                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-[#5F6A52] bg-[#5F6A52]/10 px-1.5 py-0.5 rounded-full shrink-0"
+                                    title="Disponible hors ligne"
+                                  >
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    Hors ligne
+                                  </span>
+                                )}
+                              </div>
                               <i className="block not-italic text-[12.5px] text-gris-3 mt-[2px]">
                                 {formatHistoryDate(item.startedAt)} ·{" "}
                                 {Math.max(1, Math.round(durationSec / 60))} min
@@ -809,6 +860,7 @@ function LibraryContent() {
                         const durationSec = item.duration || rawSession?.metadata?.durationSeconds || catSession?.durationSeconds || 600;
                         const isFav = favorites.some((f) => f.sessionId === item.sessionId);
                         const playId = rawSession?.id || catSession?.realSessionId || item.sessionId;
+                        const isDownloaded = downloadedIds.has(playId);
 
                         return (
                           <div
@@ -821,9 +873,22 @@ function LibraryContent() {
                               style={{ background: sit?.color || "var(--bord)" }}
                             />
                             <div className="flex-1 min-w-0">
-                              <b className="block font-normal text-[15.5px] leading-[1.25] text-encre whitespace-nowrap overflow-hidden text-ellipsis">
-                                {title}
-                              </b>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <b className="font-normal text-[15.5px] leading-[1.25] text-encre whitespace-nowrap overflow-hidden text-ellipsis">
+                                  {title}
+                                </b>
+                                {isDownloaded && (
+                                  <span
+                                    className="inline-flex items-center gap-1 text-[11px] font-medium text-[#5F6A52] bg-[#5F6A52]/10 px-1.5 py-0.5 rounded-full shrink-0"
+                                    title="Disponible hors ligne"
+                                  >
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                      <polyline points="20 6 9 17 4 12" />
+                                    </svg>
+                                    Hors ligne
+                                  </span>
+                                )}
+                              </div>
                               <i className="block not-italic text-[12.5px] text-gris-3 mt-[2px]">
                                 {formatHistoryDate(item.startedAt)} ·{" "}
                                 {Math.max(1, Math.round(durationSec / 60))} min

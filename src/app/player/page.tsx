@@ -7,6 +7,7 @@ import { getCatalogSessionById } from "@/config/sessionsCatalog";
 import { getSituation } from "@/config/situations";
 import { AudioState, AudioTrackManager } from "@/lib/audio/AudioTrackManager";
 import { storage, SessionHistoryItem, AudioPreferences } from "@/lib/storage";
+import { downloadSession, abortDownload, isDownloadInProgress, DownloadProgress } from "@/lib/download/SessionDownloader";
 import {
   PlayIcon,
   PauseIcon,
@@ -36,6 +37,8 @@ function PlayerContent() {
   const [showSettings, setShowSettings] = useState(false);
   const [settingsView, setSettingsView] = useState<"main" | "son" | "about">("main");
   const [isDownloaded, setIsDownloaded] = useState<boolean>(false);
+  const [downloadStatus, setDownloadStatus] = useState<"idle" | "downloading" | "available" | "error">("idle");
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress | null>(null);
   const [isFavorite, setIsFavorite] = useState(false);
   const [showCompletion, setShowCompletion] = useState(false);
   const [showFavPrompt, setShowFavPrompt] = useState(false);
@@ -123,6 +126,7 @@ function PlayerContent() {
 
   // Passage automatique en plein écran sur la séance & écoute des changements
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- enterFullscreen() does not call setState directly; state change is event-driven via fullscreenchange
     enterFullscreen();
 
     const handleFsChange = () => {
@@ -146,6 +150,10 @@ function PlayerContent() {
       router.push("/");
       return;
     }
+
+    // Capture startedAt once when the effect runs so cleanup gets a stable value
+    // (react-hooks/exhaustive-deps warns that .current may change by cleanup time)
+    const effectStartedAt = sessionStartedAt.current;
 
     const init = async () => {
       // Fetch RMS data for the visualization
@@ -185,35 +193,40 @@ function PlayerContent() {
       const isFav = await storage.hasFavorite(session.id);
       setIsFavorite(isFav);
 
-      const downloaded = await storage.isSessionDownloaded(session.id);
-      setIsDownloaded(downloaded);
+      if (isDownloadInProgress(session.id)) {
+        setDownloadStatus("downloading");
+      } else {
+        const downloaded = await storage.verifyDownload(session.id);
+        setIsDownloaded(downloaded);
+        setDownloadStatus(downloaded ? "available" : "idle");
+      }
     };
 
     init();
 
     return () => {
+      // FIX A3: Capture position BEFORE cleanup() nullifies all tracks
+      const savedTime = managerRef.current?.getCurrentTime() ?? 0;
+      const savedDur = session?.metadata.durationSeconds ?? 0;
+
       managerRef.current?.cleanup();
       if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
       if (saveProgressInterval.current) clearInterval(saveProgressInterval.current);
-      
-      // Save stats on close if it didn't naturally end
-      if (managerRef.current && session) {
-        const time = managerRef.current.getCurrentTime();
-        const dur = session.metadata.durationSeconds;
-        if (time > 0 && time < dur - 1) { // If playing stopped in the middle
-          const completed = time >= dur * 0.8;
-          const abandoned = time < 90;
-          const item: SessionHistoryItem = {
-            sessionId: session.id,
-            startedAt: new Date().toISOString(), // roughly
-            lastPosition: time,
-            duration: dur,
-            completed,
-            abandoned,
-          };
-          storage.addHistoryItem(item);
-          storage.setInProgressSession(completed ? null : item);
-        }
+
+      // Save stats on close if session didn't naturally end
+      if (session && savedTime > 0 && savedTime < savedDur - 1) {
+        const completed = savedTime >= savedDur * 0.8;
+        const abandoned = savedTime < 90;
+        const item: SessionHistoryItem = {
+          sessionId: session.id,
+          startedAt: effectStartedAt,
+          lastPosition: savedTime,
+          duration: savedDur,
+          completed,
+          abandoned,
+        };
+        storage.addHistoryItem(item);
+        storage.setInProgressSession(completed ? null : item);
       }
     };
   }, [session, router]);
@@ -383,7 +396,8 @@ function PlayerContent() {
       saveProgressInterval.current = setInterval(() => {
         const item: SessionHistoryItem = {
           sessionId: session.id,
-          startedAt: new Date().toISOString(),
+          // FIX A4: use the stable startedAt captured at session start, not a new Date() every 5s
+          startedAt: sessionStartedAt.current,
           lastPosition: currentTimeRef.current,
           duration: session.metadata.durationSeconds,
           completed: false,
@@ -455,9 +469,7 @@ function PlayerContent() {
     }
   }, [state, showSettings]);
 
-  if (!session) return <div className="min-h-screen bg-creme" />;
-
-  const situation = getSituation(session.metadata.situation);
+  const situation = session ? getSituation(session.metadata.situation) : null;
   const isDark = situation?.id === "trouver-le-sommeil";
   
   const bgColor = isDark ? "var(--sommeil-fond)" : (situation?.color || "var(--encre)");
@@ -465,7 +477,7 @@ function PlayerContent() {
 
   // Met à jour dynamiquement la barre d'état Android (theme-color) et le fond AppShell
   useEffect(() => {
-    if (typeof document === "undefined") return;
+    if (typeof document === "undefined" || !session) return;
     const resolvedColor = isDark ? "#3E4753" : (situation?.color || "#433528");
     document.documentElement.style.setProperty("--player-bg", resolvedColor);
 
@@ -481,7 +493,9 @@ function PlayerContent() {
         meta.setAttribute("content", prevColor);
       }
     };
-  }, [bgColor, isDark, situation]);
+  }, [bgColor, isDark, situation, session]);
+
+  if (!session) return <div className="min-h-screen bg-creme" />;
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);
@@ -566,23 +580,79 @@ function PlayerContent() {
     }
   };
 
+  const downloadProgressPercent = downloadProgress && downloadProgress.bytesTotal > 0
+    ? Math.min(100, Math.round((downloadProgress.bytesLoaded / downloadProgress.bytesTotal) * 100))
+    : downloadProgress && downloadProgress.filesTotal > 0
+    ? Math.min(100, Math.round((downloadProgress.filesDone / downloadProgress.filesTotal) * 100))
+    : 0;
+
   const handleToggleDownload = async () => {
     if (!session) return;
-    if (isDownloaded) {
-      await storage.removeDownload(session.id);
+
+    if (downloadStatus === "downloading") {
+      abortDownload(session.id);
+      setDownloadStatus("idle");
+      setDownloadProgress(null);
+      showToast("Téléchargement annulé");
+      return;
+    }
+
+    if (isDownloaded || downloadStatus === "available") {
+      await storage.removeDownloadFiles(session.id);
       setIsDownloaded(false);
+      setDownloadStatus("idle");
+      setDownloadProgress(null);
       showToast("Séance retirée des téléchargements");
-    } else {
-      const sizeMo = Math.max(5, Math.round((session.metadata.durationSeconds / 60) * 2.4));
+      return;
+    }
+
+    // Start real download
+    setDownloadStatus("downloading");
+    setDownloadProgress({
+      sessionId: session.id,
+      bytesLoaded: 0,
+      bytesTotal: 0,
+      filesDone: 0,
+      filesTotal: 0,
+    });
+
+    try {
+      const result = await downloadSession(session.id, (progress) => {
+        setDownloadProgress(progress);
+      });
+
+      const fav = await storage.hasFavorite(session.id);
       await storage.addDownload({
         sessionId: session.id,
         title: session.metadata.title,
         duration: session.metadata.durationSeconds,
-        sizeMo,
-        isFavorite,
+        sizeBytes: result.sizeBytes,
+        status: "available",
+        downloadedAt: new Date().toISOString(),
+        manifestVersion: result.manifestVersion,
+        cachedUrls: result.cachedUrls,
+        isFavorite: fav,
       });
+
       setIsDownloaded(true);
+      setDownloadStatus("available");
+      setDownloadProgress(null);
       showToast("Disponible hors ligne");
+    } catch (err: unknown) {
+      const error = err as Error;
+      if (error?.name === "AbortError") {
+        setDownloadStatus("idle");
+        setDownloadProgress(null);
+        showToast("Téléchargement annulé");
+      } else if (error?.name === "QuotaExceededError") {
+        setDownloadStatus("error");
+        setDownloadProgress(null);
+        showToast("Espace de stockage insuffisant");
+      } else {
+        setDownloadStatus("error");
+        setDownloadProgress(null);
+        showToast("Échec du téléchargement");
+      }
     }
   };
 
@@ -777,7 +847,7 @@ function PlayerContent() {
                 <path d="M20 6.5 9.5 17 4 11.5"/>
               </svg>
             </span>
-            <p className="font-poppins font-light text-[24px] leading-[1.1]">C'est fini.</p>
+            <p className="font-poppins font-light text-[24px] leading-[1.1]">C&apos;est fini.</p>
             <p className="text-[12px] text-gris-2 mt-1">
               {Math.round(session.metadata.durationSeconds / 60)} min · {situation?.shortLabel}
             </p>
@@ -861,7 +931,7 @@ function PlayerContent() {
               className="mt-2 text-[13px] font-medium text-gris-2 active:opacity-60 transition-opacity"
               onClick={() => router.push("/")}
             >
-              Retour à l'accueil
+              Retour à l&apos;accueil
             </button>
           </div>
         </div>
@@ -910,10 +980,19 @@ function PlayerContent() {
                   className="w-full flex items-center gap-4 py-3.5 text-left active:opacity-70 transition-opacity cursor-pointer"
                 >
                   <div className="w-7 flex items-center justify-start">
-                    {isDownloaded ? (
+                    {downloadStatus === "downloading" ? (
+                      <div className="w-[22px] h-[22px] rounded-full border-[2px] border-[#8E8478]/30 border-t-[#433528] animate-spin flex items-center justify-center" />
+                    ) : downloadStatus === "available" || isDownloaded ? (
                       <div className="w-[22px] h-[22px] rounded-full border-[1.8px] border-[#5F6A52] flex items-center justify-center text-[#5F6A52]">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                           <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                    ) : downloadStatus === "error" ? (
+                      <div className="w-[22px] h-[22px] rounded-full border-[1.8px] border-red-500 flex items-center justify-center text-red-500">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="12" y1="8" x2="12" y2="12" />
+                          <line x1="12" y1="16" x2="12.01" y2="16" />
                         </svg>
                       </div>
                     ) : (
@@ -926,9 +1005,31 @@ function PlayerContent() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-poppins text-[17px] text-[#433528] font-normal leading-snug">
-                      {isDownloaded ? "Téléchargée" : "Télécharger"}
+                      {downloadStatus === "downloading"
+                        ? `Téléchargement... ${downloadProgressPercent > 0 ? `${downloadProgressPercent}%` : ""}`
+                        : downloadStatus === "available" || isDownloaded
+                        ? "Téléchargée"
+                        : downloadStatus === "error"
+                        ? "Réessayer le téléchargement"
+                        : "Télécharger"}
                     </p>
-                    <p className="text-[13px] text-[#8E8478] font-light leading-tight mt-0.5">Disponible hors ligne</p>
+                    <p className="text-[13px] text-[#8E8478] font-light leading-tight mt-0.5">
+                      {downloadStatus === "downloading"
+                        ? "Toucher pour annuler"
+                        : downloadStatus === "available" || isDownloaded
+                        ? "Disponible hors ligne · Toucher pour retirer"
+                        : downloadStatus === "error"
+                        ? "Une erreur est survenue"
+                        : "Disponible hors ligne"}
+                    </p>
+                    {downloadStatus === "downloading" && (
+                      <div className="w-full bg-[#EDE4D6] h-1.5 rounded-full overflow-hidden mt-2">
+                        <div
+                          className="bg-[#5F6A52] h-full transition-all duration-200"
+                          style={{ width: `${Math.max(5, downloadProgressPercent)}%` }}
+                        />
+                      </div>
+                    )}
                   </div>
                 </button>
 

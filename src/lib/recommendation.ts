@@ -41,6 +41,11 @@ let cachedRecommendation: RecommendationResult | null = null;
 let lastCalculationTime = 0;
 const CACHE_DURATION_MS = 30 * 60 * 1000;
 
+export function invalidateRecommendationCache(): void {
+  cachedRecommendation = null;
+  lastCalculationTime = 0;
+}
+
 export function isSameSession(session: CatalogSession, targetId?: string | null): boolean {
   if (!targetId) return false;
   if (session.id === targetId) return true;
@@ -80,7 +85,7 @@ export async function getRecommendedSession(
 ): Promise<RecommendationResult | null> {
   const options: RecommendationOptions =
     typeof optionsOrForce === "boolean" ? { forceRecalculate: optionsOrForce } : optionsOrForce;
-  const now = Date.now();
+  const now = currentDate.getTime();
 
   // Always check inProgress session so a session in progress is never recommended
   const inProgress = await getRepriseSession();
@@ -102,6 +107,12 @@ export async function getRecommendedSession(
 
   const history = await storage.getHistory();
   const completedHistory = history.filter((h) => h.completed);
+  const downloads = options.isOffline ? await storage.getDownloads() : [];
+  const downloadedIds = new Set(
+    downloads.filter((d) => d.status === "available").map((d) => d.sessionId)
+  );
+  const isDownloaded = (s: CatalogSession) =>
+    downloadedIds.has(s.id) || Boolean(s.realSessionId && downloadedIds.has(s.realSessionId));
   const hour = currentDate.getHours();
   const minutes = currentDate.getMinutes();
   const timeDecimal = hour + minutes / 60;
@@ -121,7 +132,8 @@ export async function getRecommendedSession(
         s.isAvailable &&
         s.estPorteEntree &&
         currentSituations.includes(s.situationId) &&
-        (!excludeId || !isSameSession(s, excludeId))
+        (!excludeId || !isSameSession(s, excludeId)) &&
+        (!options.isOffline || isDownloaded(s))
     );
     let target =
       initiations.length > 0
@@ -130,12 +142,13 @@ export async function getRecommendedSession(
             (s) =>
               s.isAvailable &&
               s.estPorteEntree &&
-              (!excludeId || !isSameSession(s, excludeId))
+              (!excludeId || !isSameSession(s, excludeId)) &&
+              (!options.isOffline || isDownloaded(s))
           );
 
     if (target.length === 0) {
       target = SESSIONS_CATALOG.filter(
-        (s) => s.isAvailable && (!excludeId || !isSameSession(s, excludeId))
+        (s) => s.isAvailable && (!excludeId || !isSameSession(s, excludeId)) && (!options.isOffline || isDownloaded(s))
       );
     }
 
@@ -178,9 +191,12 @@ export async function getRecommendedSession(
     medianDuration = durations[Math.floor(durations.length / 2)];
   }
 
-  let candidates = SESSIONS_CATALOG.map(session => {
+  const candidates = SESSIONS_CATALOG.map(session => {
     if (!session.isAvailable) return null;
     if (excludeId && isSameSession(session, excludeId)) {
+      return null;
+    }
+    if (options.isOffline && !isDownloaded(session)) {
       return null;
     }
 
@@ -266,7 +282,7 @@ export async function getRecommendedSession(
     return { session, score, ruleName, appliedPenalties };
   }).filter(c => c !== null);
 
-  // Fallback if empty (all filtered by hard rules)
+  // Fallback if empty (all filtered by hard rules or offline)
   if (candidates.length === 0) {
     const fallback =
       SESSIONS_CATALOG.find(
@@ -274,10 +290,11 @@ export async function getRecommendedSession(
           s.isAvailable &&
           s.estPorteEntree &&
           currentSituations.includes(s.situationId) &&
-          (!excludeId || !isSameSession(s, excludeId))
+          (!excludeId || !isSameSession(s, excludeId)) &&
+          (!options.isOffline || isDownloaded(s))
       ) ||
       SESSIONS_CATALOG.find(
-        (s) => s.isAvailable && (!excludeId || !isSameSession(s, excludeId))
+        (s) => s.isAvailable && (!excludeId || !isSameSession(s, excludeId)) && (!options.isOffline || isDownloaded(s))
       );
 
     if (fallback) {

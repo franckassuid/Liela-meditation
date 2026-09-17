@@ -3,7 +3,7 @@
 import React, { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { BottomNavigation } from "./BottomNavigation";
-import { PwaProvider, InstallPwaBanner, InstallPwaModal } from "@/components/pwa";
+import { PwaProvider, InstallPwaBanner } from "@/components/pwa";
 import { ReminderScheduler } from "@/components/notifications/ReminderScheduler";
 import { SplashScreen } from "@/components/ui/SplashScreen";
 
@@ -48,7 +48,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
         {!isPlayer && <BottomNavigation />}
         <InstallPwaBanner />
-        <InstallPwaModal />
         <ReminderScheduler />
       </div>
     </PwaProvider>

@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Build-time tooling — not app source code
+    "scripts/**",
+    // Service worker — manually authored, not TypeScript
+    "public/sw.js",
   ]),
 ]);
 

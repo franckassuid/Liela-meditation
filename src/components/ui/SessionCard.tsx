@@ -1,18 +1,15 @@
 import React from "react";
 import { ProgressBar } from "./ProgressBar";
-import { LockIcon, HeartIcon } from "./Icons";
 
 interface SessionCardProps {
   title: string;
   duration: number; // in seconds
   situationName?: string;
   situationColor?: string;
-  situationVoile?: string;
   textColor?: string;
   isFavorite?: boolean;
   onToggleFavorite?: (e: React.MouseEvent) => void;
   progress?: number; // 0 to 1
-  isLocked?: boolean;
   onClick?: () => void;
   className?: string;
 }
@@ -22,12 +19,10 @@ export function SessionCard({
   duration,
   situationName,
   situationColor,
-  situationVoile,
   textColor,
   isFavorite,
   onToggleFavorite,
   progress,
-  isLocked = false,
   onClick,
   className = "",
 }: SessionCardProps) {

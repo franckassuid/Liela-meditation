@@ -45,15 +45,19 @@ export default function HistoryPage() {
 
   const handleAcceptFav = async () => {
     if (promptFavSessionId) {
-      await storage.addFavorite(promptFavSessionId, "post-session");
+      const saved = promptFavSessionId;
       setPromptFavSessionId(null);
+      const success = await storage.addFavorite(saved, "post-session");
+      if (!success) setPromptFavSessionId(saved);
     }
   };
 
   const handleDeclineFav = async () => {
     if (promptFavSessionId) {
-      await storage.addFavoriteRefusal(promptFavSessionId);
+      const saved = promptFavSessionId;
       setPromptFavSessionId(null);
+      const success = await storage.addFavoriteRefusal(saved);
+      if (!success) setPromptFavSessionId(saved);
     }
   };
 
@@ -102,7 +106,7 @@ export default function HistoryPage() {
           <div className="absolute top-0 left-0 w-1 h-full" style={{ backgroundColor: promptSituation?.color || "var(--bord)" }} />
           <h3 className="font-poppins font-medium text-[16px] mb-2">Vous voulez la retrouver ?</h3>
           <p className="text-[14px] text-gris-2 mb-4">
-            Vous venez de terminer « {promptSession.metadata.title} ». L'ajouter à vos favoris ?
+            Vous venez de terminer « {promptSession.metadata.title} ». L&apos;ajouter à vos favoris ?
           </p>
           <div className="flex gap-3">
             <button 
@@ -144,11 +148,11 @@ export default function HistoryPage() {
                     <div key={`${historyItem.sessionId}-${idx}`} className="relative">
                       <SessionCard
                         title={session.metadata.title}
-                        duration={session.metadata.durationSeconds}
+                        duration={Math.round(session.metadata.durationSeconds / 60)}
                         situationName={situation?.shortLabel}
                         situationColor={situation?.color}
-                        situationVoile={situation?.voile}
                         onClick={() => router.push(`/player?id=${session.id}`)}
+                        className="opacity-60 cursor-pointer"
                       />
                       {/* Badge indicateur d'état */}
                       <div className="absolute top-4 right-4 flex gap-1">

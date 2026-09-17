@@ -10,21 +10,27 @@ export class AudioTrackManager {
   private ambience: HTMLAudioElement | null = null;
   private cues: HTMLAudioElement | null = null;
   private fallback: HTMLAudioElement | null = null;
-  
+
   private tracks: HTMLAudioElement[] = [];
   private isUsingFallback: boolean = false;
-  
+
+  // Track which secondary tracks are enabled by the user (distinct from whether they loaded)
+  private musicEnabled: boolean;
+  private ambienceEnabled: boolean;
+
   public state: AudioState = "idle";
   private duration: number = 0;
-  
+
   private onStateChange: (state: AudioState) => void = () => {};
   private onTimeUpdate: (currentTime: number, duration: number) => void = () => {};
 
   constructor(
-    private session: Session, 
+    private session: Session,
     private preferences: { musicEnabled: boolean; ambienceEnabled: boolean; voiceVolume: number; musicVolume: number; ambienceVolume: number }
   ) {
     this.duration = session.metadata.durationSeconds;
+    this.musicEnabled = preferences.musicEnabled;
+    this.ambienceEnabled = preferences.ambienceEnabled;
   }
 
   public setCallbacks(
@@ -46,7 +52,7 @@ export class AudioTrackManager {
 
   public async load() {
     this.setState("loading");
-    
+
     const { audio, mix } = this.session;
 
     try {
@@ -61,7 +67,7 @@ export class AudioTrackManager {
 
         // Fallback handler if voice fails to load or decode
         this.voice.addEventListener("error", () => {
-          console.warn("Voice track failed to load, attempting fallback to final.m4a / final audio");
+          console.warn("Voice track failed to load, attempting fallback to final audio");
           this.activateFallback();
         });
       } else if (audio.final) {
@@ -69,8 +75,8 @@ export class AudioTrackManager {
         this.activateFallback();
       }
 
-      // 2. Music Track (Secondary)
-      if (audio.music?.file && this.preferences.musicEnabled) {
+      // 2. Music Track (Secondary) — only load if enabled
+      if (audio.music?.file && this.musicEnabled) {
         try {
           this.music = new Audio(resolveSessionAsset(this.session.id, audio.music.file));
           this.music.preload = "auto";
@@ -87,9 +93,9 @@ export class AudioTrackManager {
           console.warn("Could not initialize music track:", e);
         }
       }
-      
-      // 3. Ambience Track (Secondary)
-      if (audio.ambience?.file && this.preferences.ambienceEnabled) {
+
+      // 3. Ambience Track (Secondary) — only load if enabled
+      if (audio.ambience?.file && this.ambienceEnabled) {
         try {
           this.ambience = new Audio(resolveSessionAsset(this.session.id, audio.ambience.file));
           this.ambience.preload = "auto";
@@ -106,7 +112,7 @@ export class AudioTrackManager {
           console.warn("Could not initialize ambience track:", e);
         }
       }
-      
+
       // 4. Cues Track (Secondary)
       if (audio.cues?.file) {
         try {
@@ -144,7 +150,7 @@ export class AudioTrackManager {
         this.setState("ended");
       }
     });
-    
+
     track.addEventListener("timeupdate", () => {
       if (this.state === "playing") {
         this.onTimeUpdate(track.currentTime, this.duration);
@@ -158,10 +164,14 @@ export class AudioTrackManager {
       return;
     }
 
+    // FIX A1: Capture wasPlaying BEFORE pause() changes the state
+    const wasPlaying = this.state === "playing";
+    const savedTime = this.masterTrack?.currentTime ?? 0;
+
     this.isUsingFallback = true;
     console.log("Activating pre-mixed fallback:", this.session.audio.final);
 
-    // Pause any existing tracks
+    // Pause any existing tracks (state becomes "paused" here)
     this.pause();
 
     try {
@@ -176,8 +186,20 @@ export class AudioTrackManager {
         this.setState("error");
       });
 
-      if (this.state === "playing") {
-        this.fallback.play().catch(() => this.setState("error"));
+      // FIX A1: Resume playback if we were playing, using saved position
+      if (wasPlaying) {
+        // Restore position once canplay fires
+        const onCanPlay = () => {
+          this.fallback?.removeEventListener("canplay", onCanPlay);
+          if (this.fallback && savedTime > 0) {
+            this.fallback.currentTime = savedTime;
+          }
+          this.fallback?.play().catch(() => this.setState("error"));
+          this.setState("playing");
+        };
+        this.fallback.addEventListener("canplay", onCanPlay);
+        // Also set state to playing now so the UI reacts
+        this.setState("playing");
       } else {
         this.setState("idle");
       }
@@ -189,7 +211,7 @@ export class AudioTrackManager {
 
   public play() {
     this.setState("playing");
-    
+
     const master = this.masterTrack;
     const time = master ? master.currentTime : 0;
 
@@ -202,9 +224,13 @@ export class AudioTrackManager {
       return;
     }
 
-    // Normal multi-track mode: play voice and secondary tracks
+    // FIX A2: Normal multi-track mode — only play enabled secondary tracks
     this.tracks.forEach(t => {
       try {
+        // Skip music/ambience tracks if they have been disabled by the user
+        if (t === this.music && !this.musicEnabled) return;
+        if (t === this.ambience && !this.ambienceEnabled) return;
+
         if (Math.abs(t.currentTime - time) > 0.5 && t.readyState >= 1) {
           t.currentTime = time;
         }
@@ -245,6 +271,9 @@ export class AudioTrackManager {
       try {
         t.currentTime = clamped;
         if (wasPlaying) {
+          // FIX A2: only resume tracks that are enabled
+          if (t === this.music && !this.musicEnabled) return;
+          if (t === this.ambience && !this.ambienceEnabled) return;
           t.play().catch(() => {});
         }
       } catch (e) {
@@ -268,17 +297,24 @@ export class AudioTrackManager {
   }
 
   public setTrackEnabled(type: "music" | "ambience", enabled: boolean) {
-    if (type === "music" && this.music) {
-      if (!enabled) {
-        this.music.pause();
-      } else if (this.state === "playing") {
-        this.music.play().catch(console.error);
+    // FIX A2: Persist the enabled state so play() respects it on future resumes
+    if (type === "music") {
+      this.musicEnabled = enabled;
+      if (this.music) {
+        if (!enabled) {
+          this.music.pause();
+        } else if (this.state === "playing") {
+          this.music.play().catch(console.error);
+        }
       }
-    } else if (type === "ambience" && this.ambience) {
-      if (!enabled) {
-        this.ambience.pause();
-      } else if (this.state === "playing") {
-        this.ambience.play().catch(console.error);
+    } else if (type === "ambience") {
+      this.ambienceEnabled = enabled;
+      if (this.ambience) {
+        if (!enabled) {
+          this.ambience.pause();
+        } else if (this.state === "playing") {
+          this.ambience.play().catch(console.error);
+        }
       }
     }
   }
@@ -289,6 +325,9 @@ export class AudioTrackManager {
   }
 
   public cleanup() {
+    // NOTE: Callers must capture getCurrentTime() BEFORE calling cleanup()
+    this.onStateChange = () => {};
+    this.onTimeUpdate = () => {};
     this.pause();
     this.tracks.forEach(t => {
       t.removeAttribute("src");

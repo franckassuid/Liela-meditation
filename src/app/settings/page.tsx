@@ -5,7 +5,7 @@ import {
   storage,
   AppSettings,
   DEFAULT_SETTINGS,
-  DownloadedSession,
+  DownloadRecord,
   Favori,
   ALL_DAYS,
   DayOfWeek,
@@ -22,6 +22,13 @@ import {
   NotificationPermissionState,
 } from "@/lib/notifications";
 import { NotificationPermissionModal } from "@/components/notifications/NotificationPermissionModal";
+import {
+  SettingsAccount,
+  SettingsDownloads,
+  SettingsHelp,
+  SettingsPrivacy
+} from "./components/SettingsSubScreens";
+
 
 type ScreenType = "main" | "compte" | "telechargements" | "aide" | "confidentialite";
 
@@ -34,7 +41,7 @@ export default function SettingsPage() {
   } = usePwa();
   const [currentScreen, setCurrentScreen] = useState<ScreenType>("main");
   const [settings, setSettings] = useState<AppSettings>(DEFAULT_SETTINGS);
-  const [downloads, setDownloads] = useState<DownloadedSession[]>([]);
+  const [downloads, setDownloads] = useState<DownloadRecord[]>([]);
   const [favorites, setFavorites] = useState<Favori[]>([]);
   const [showExportSheet, setShowExportSheet] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
@@ -42,7 +49,7 @@ export default function SettingsPage() {
   const [showDaysSheet, setShowDaysSheet] = useState(false);
   const [showTimeSheet, setShowTimeSheet] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
-  const [accountEmailModal, setAccountEmailModal] = useState<"email" | "apple" | null>(null);
+  const [accountEmailModal, setAccountEmailModal] = useState<"email" | null>(null);
   const [emailInput, setEmailInput] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
@@ -68,6 +75,7 @@ export default function SettingsPage() {
     // Initialisation et écoute de la permission de notifications
     if (typeof window !== "undefined") {
       const perm = getNotificationPermission();
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNotificationPermission(perm);
 
       if ("permissions" in navigator && navigator.permissions?.query) {
@@ -90,6 +98,7 @@ export default function SettingsPage() {
   // Mise à jour périodique du texte descriptif du prochain rappel
   useEffect(() => {
     if (!settings.dailyReminderEnabled || !settings.dailyReminderTime) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setNextReminderDesc("");
       return;
     }
@@ -124,24 +133,6 @@ export default function SettingsPage() {
     ) {
       await syncScheduledReminder(next);
     }
-  };
-
-  const handleToggleDownloadFavorites = async () => {
-    const nextVal = !settings.downloadFavorites;
-    await updateSetting("downloadFavorites", nextVal);
-    if (nextVal) {
-      await storage.syncFavoriteDownloads(true);
-      const d = await storage.getDownloads();
-      setDownloads(d);
-      showToast("Téléchargement des favoris activé");
-    } else {
-      showToast("Téléchargement des favoris désactivé");
-    }
-  };
-
-  const handleToggleWifiOnly = async () => {
-    const nextVal = !settings.downloadWifiOnly;
-    await updateSetting("downloadWifiOnly", nextVal);
   };
 
   const handleRequestPermission = async () => {
@@ -280,10 +271,18 @@ export default function SettingsPage() {
     await syncScheduledReminder(nextSettings);
   };
 
-  const totalDownloadedMo = downloads.reduce((acc, cur) => acc + (cur.sizeMo || 0), 0);
-  const favoritesCount = favorites.length;
-  const downloadedFavoritesCount = downloads.filter((d) => d.isFavorite).length;
-  const hasPendingFavorites = settings.downloadFavorites && favoritesCount > downloadedFavoritesCount;
+  const totalDownloadedBytes = downloads.reduce(
+    (acc, cur) => acc + (cur.sizeBytes || (cur.sizeMo ? cur.sizeMo * 1024 * 1024 : 0)),
+    0
+  );
+  const totalDownloadedMo = Math.round((totalDownloadedBytes / (1024 * 1024)) * 10) / 10;
+
+  const handleRemoveDownload = async (sessionId: string) => {
+    await storage.removeDownloadFiles(sessionId);
+    const fresh = await storage.getDownloads();
+    setDownloads(fresh);
+    showToast("Séance retirée des téléchargements");
+  };
 
   // Export JSON file
   const handleExportData = async () => {
@@ -309,37 +308,45 @@ export default function SettingsPage() {
   // Delete all data (local storage cleared, downloads preserved)
   const handleDeleteData = async () => {
     try {
-      await storage.clearAllData();
-      const freshSettings = await storage.getSettings();
-      setSettings(freshSettings);
-      setShowDeleteSheet(false);
-      showToast("Vos données locales ont été effacées");
+      // FIX B4: check the boolean — clearAllData returns false if any IDB deletion failed
+      const ok = await storage.clearAllData();
+      if (ok) {
+        const freshSettings = await storage.getSettings();
+        setSettings(freshSettings);
+        setShowDeleteSheet(false);
+        showToast("Vos données locales ont été effacées");
+      } else {
+        setShowDeleteSheet(false);
+        showToast("⚠️ Suppression partielle — relancez l'application et réessayez");
+      }
     } catch (e) {
       console.error(e);
-      showToast("Erreur lors de la suppression");
+      showToast("⚠️ Erreur lors de la suppression");
     }
   };
 
   // Clear downloads
   const handleClearDownloads = async () => {
-    await storage.clearDownloads();
-    setDownloads([]);
-    showToast("Téléchargements supprimés");
+    const ok = await storage.clearDownloads();
+    if (ok) {
+      setDownloads([]);
+      showToast("Téléchargements supprimés");
+    } else {
+      showToast("⚠️ Erreur lors de la suppression des téléchargements");
+    }
   };
 
-  // Save account
+  // Save account — email only, no Apple simulation
   const handleSaveAccount = async () => {
+    // FIX B3: Remove Apple simulation (utilisateur@icloud.com). Only email is supported locally.
     if (accountEmailModal === "email" && emailInput.trim()) {
       const accountUser = { email: emailInput.trim(), method: "email" };
       await updateSetting("accountUser", accountUser);
       setAccountEmailModal(null);
       setEmailInput("");
-      showToast("Compte associé");
-    } else if (accountEmailModal === "apple") {
-      const accountUser = { email: "utilisateur@icloud.com", method: "apple" };
-      await updateSetting("accountUser", accountUser);
+      showToast("Adresse enregistrée");
+    } else {
       setAccountEmailModal(null);
-      showToast("Connecté avec Apple");
     }
   };
 
@@ -427,59 +434,6 @@ export default function SettingsPage() {
               Téléchargements
             </p>
             <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
-              {/* Télécharger mes favoris */}
-              <div
-                onClick={handleToggleDownloadFavorites}
-                className="flex items-center gap-[9px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                    Télécharger mes favoris
-                  </b>
-                  {!settings.downloadFavorites && (
-                    <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
-                      Désactivé
-                    </i>
-                  )}
-                </div>
-                <div
-                  className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors cursor-pointer ${
-                    settings.downloadFavorites ? "bg-[#5F6A52]" : "bg-[#F0E5D6]"
-                  }`}
-                >
-                  <i
-                    className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all duration-150 ${
-                      settings.downloadFavorites ? "left-[18.5px]" : "left-[2.5px]"
-                    }`}
-                  />
-                </div>
-              </div>
-
-              {/* Sous-option indentée : En Wi-Fi uniquement */}
-              {settings.downloadFavorites && (
-                <div
-                  onClick={handleToggleWifiOnly}
-                  className="flex items-center gap-[9px] py-[12px] px-[13px] pl-[26px] bg-[#FDFBF7] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                      En Wi-Fi uniquement
-                    </b>
-                  </div>
-                  <div
-                    className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors cursor-pointer ${
-                      settings.downloadWifiOnly ? "bg-[#5F6A52]" : "bg-[#F0E5D6]"
-                    }`}
-                  >
-                    <i
-                      className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all duration-150 ${
-                        settings.downloadWifiOnly ? "left-[18.5px]" : "left-[2.5px]"
-                      }`}
-                    />
-                  </div>
-                </div>
-              )}
-
               {/* Gérer les téléchargements */}
               <div
                 onClick={() => setCurrentScreen("telechargements")}
@@ -489,6 +443,9 @@ export default function SettingsPage() {
                   <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
                     Gérer les téléchargements
                   </b>
+                  <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
+                    {downloads.length} {downloads.length > 1 ? "séances disponibles hors ligne" : "séance disponible hors ligne"}
+                  </i>
                 </div>
                 <span className="text-[12.5px] text-[#7A6E5E]">{totalDownloadedMo} Mo</span>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -496,11 +453,6 @@ export default function SettingsPage() {
                 </svg>
               </div>
             </div>
-            {settings.downloadFavorites && (
-              <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-[7px] mx-[3px]">
-                Une séance retirée des favoris est effacée de l’appareil.
-              </p>
-            )}
 
             {/* RAPPEL */}
             <div className="flex items-center justify-between mt-[15px] mb-[6px] ml-[3px] mr-[3px]">
@@ -527,10 +479,10 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <b className="block font-normal text-[13px] leading-[1.3] text-encre">
-                      Ouvrir dans l'application pour les rappels
+                      Ouvrir dans l&apos;application pour les rappels
                     </b>
                     <p className="text-[11px] text-[#7A6E5E] leading-[1.4] mt-1">
-                      L'application Liela est installée sur cet appareil. Ouvrez-la pour paramétrer vos rappels avec notifications en arrière-plan.
+                      L&apos;application Liela est installée sur cet appareil. Ouvrez-la pour paramétrer vos rappels avec notifications en arrière-plan.
                     </p>
                   </div>
                 </div>
@@ -544,7 +496,7 @@ export default function SettingsPage() {
                     <polyline points="15 3 21 3 21 9" />
                     <line x1="10" y1="14" x2="21" y2="3" />
                   </svg>
-                  <span>Ouvrir dans l'application</span>
+                  <span>Ouvrir dans l&apos;application</span>
                 </button>
               </div>
             )}
@@ -561,7 +513,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <b className="block font-normal text-[13px] leading-[1.3] text-encre">
-                      Installer l'application pour activer les rappels
+                      Installer l&apos;application pour activer les rappels
                     </b>
                     <p className="text-[11px] text-[#7A6E5E] leading-[1.4] mt-1">
                       Les rappels quotidiens nécessitent que Liela soit installée sur votre appareil pour fonctionner en arrière-plan.
@@ -578,7 +530,7 @@ export default function SettingsPage() {
                     <polyline points="7 10 12 15 17 10" />
                     <line x1="12" y1="15" x2="12" y2="3" />
                   </svg>
-                  <span>Installer l'application</span>
+                  <span>Installer l&apos;application</span>
                 </button>
               </div>
             )}
@@ -684,7 +636,7 @@ export default function SettingsPage() {
                     </i>
                   ) : notificationPermission !== "granted" ? (
                     <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
-                      Nécessite l'autorisation des notifications
+                      Nécessite l&apos;autorisation des notifications
                     </i>
                   ) : !settings.dailyReminderEnabled ? (
                     <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
@@ -777,7 +729,7 @@ export default function SettingsPage() {
                     </div>
                     {testCountdown !== null && (
                       <p className="text-[10.5px] text-[#5F6A52] font-medium text-center animate-pulse pt-0.5">
-                        💡 Verrouillez l'écran de votre téléphone pour tester la réception en veille !
+                        💡 Verrouillez l&apos;écran de votre téléphone pour tester la réception en veille !
                       </p>
                     )}
                   </div>
@@ -850,7 +802,7 @@ export default function SettingsPage() {
                       Application déjà installée
                     </b>
                     <i className="block not-italic text-[10.5px] text-[#5F6A52] mt-[2px] leading-[1.35]">
-                      Touchez pour ouvrir dans l'application
+                      Touchez pour ouvrir dans l&apos;application
                     </i>
                   </div>
                   <span className="shrink-0 px-2.5 py-1 bg-[#5F6A52] text-creme rounded-[8px] text-[11.5px] font-medium flex items-center gap-1">
@@ -869,7 +821,7 @@ export default function SettingsPage() {
                 >
                   <div className="flex-1 min-w-0">
                     <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                      Installer l'application
+                      Installer l&apos;application
                     </b>
                     <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
                       Plein écran, mode hors-ligne & accès direct
@@ -927,412 +879,43 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* =========================================================================
-          SCREEN 2: COMPTE
-      ========================================================================== */}
       {currentScreen === "compte" && (
-        <div className="p-marge pb-12 flex flex-col flex-1 max-w-[480px] w-full mx-auto animate-in fade-in">
-          {/* Top sub */}
-          <div className="flex items-center gap-[10px] pt-2 pb-[14px]">
-            <button
-              onClick={() => setCurrentScreen("main")}
-              className="p-1 -ml-1 text-encre active:opacity-60 transition-opacity"
-              aria-label="Retour aux réglages"
-            >
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#433528" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m15 5-7 7 7 7" />
-              </svg>
-            </button>
-            <span className="font-poppins font-light text-[18px]">Compte</span>
-          </div>
-
-          <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-1 mx-[3px]">
-            Un compte sert à une seule chose : retrouver vos favoris et votre historique sur un autre appareil. Rien n’est analysé, rien n’est partagé.
-          </p>
-
-          <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)] mt-[14px]">
-            {!settings.accountUser?.email ? (
-              <>
-                <div
-                  onClick={() => setAccountEmailModal("email")}
-                  className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-                >
-                  <span className="flex shrink-0">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A6E5E" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
-                      <path d="m4 7 8 6 8-6" />
-                    </svg>
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                      Continuer par e-mail
-                    </b>
-                  </div>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m9 5 7 7-7 7" />
-                  </svg>
-                </div>
-
-                <div
-                  onClick={() => setAccountEmailModal("apple")}
-                  className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-                >
-                  <span className="flex shrink-0">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A6E5E" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                      <rect x="5" y="10.5" width="14" height="9.5" rx="2" />
-                      <path d="M8.2 10.5V8a3.8 3.8 0 0 1 7.6 0v2.5" />
-                    </svg>
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                      Continuer avec Apple
-                    </b>
-                  </div>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m9 5 7 7-7 7" />
-                  </svg>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4]">
-                  <div className="flex-1 min-w-0">
-                    <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                      Compte connecté
-                    </b>
-                    <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
-                      {settings.accountUser.email}
-                    </i>
-                  </div>
-                </div>
-                <div
-                  onClick={handleDisconnectAccount}
-                  className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <b className="block font-normal text-[13.5px] leading-[1.3] text-[#A0483C]">
-                      Se déconnecter
-                    </b>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-3 mx-[3px]">
-            Vous pouvez continuer à utiliser Liela sans compte. Tout reste alors sur cet appareil.
-          </p>
-        </div>
+        <SettingsAccount
+          settings={settings}
+          setAccountEmailModal={setAccountEmailModal}
+          handleDisconnectAccount={handleDisconnectAccount}
+          onBack={() => setCurrentScreen("main")}
+        />
       )}
 
-      {/* =========================================================================
-          SCREEN 3: TÉLÉCHARGEMENTS
-      ========================================================================== */}
       {currentScreen === "telechargements" && (
-        <div className="p-marge pb-12 flex flex-col flex-1 max-w-[480px] w-full mx-auto animate-in fade-in">
-          {/* Top sub */}
-          <div className="flex items-center gap-[10px] pt-2 pb-[14px]">
-            <button
-              onClick={() => setCurrentScreen("main")}
-              className="p-1 -ml-1 text-encre active:opacity-60 transition-opacity"
-              aria-label="Retour aux réglages"
-            >
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#433528" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m15 5-7 7 7 7" />
-              </svg>
-            </button>
-            <span className="font-poppins font-light text-[18px]">Téléchargements</span>
-          </div>
-
-          {/* Jauge */}
-          <div className="bg-white rounded-[15px] p-[14px] mt-[2px] shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
-            <div className="flex items-baseline gap-2">
-              <b className="font-poppins font-light text-[22px]">{totalDownloadedMo} Mo</b>
-              <span className="text-[10.5px] text-[#9A8E7C]">
-                {downloads.length} séance{downloads.length > 1 ? "s" : ""} · {favoritesCount} favori{favoritesCount > 1 ? "s" : ""}
-              </span>
-            </div>
-            <div className="h-1 bg-[#F0E5D6] rounded-full mt-[10px] overflow-hidden">
-              <i
-                className="block h-full bg-[#5F6A52] rounded-full transition-all duration-300"
-                style={{
-                  width: `${Math.max(2, Math.min(100, Math.round((totalDownloadedMo / 650) * 100)))}%`,
-                }}
-              />
-            </div>
-          </div>
-
-          {hasPendingFavorites && (
-            <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-[7px] mx-[3px]">
-              Un favori est en cours de téléchargement.
-            </p>
-          )}
-
-          <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-[15px] mb-[6px] ml-[3px]">
-            Sur cet appareil
-          </p>
-          <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
-            {downloads.length === 0 ? (
-              <div className="p-4 text-center text-[12.5px] text-[#7A6E5E]">
-                Aucune séance téléchargée
-              </div>
-            ) : (
-              downloads.map((item, idx) => (
-                <div
-                  key={`${item.sessionId}-${idx}`}
-                  className="flex items-center gap-[9px] p-[12px_13px] border-b border-[#F8EFE4] last:border-b-0"
-                >
-                  <div className="flex-1 min-w-0">
-                    <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                      {item.title}
-                    </b>
-                  </div>
-                  {item.isFavorite && (
-                    <span className="flex shrink-0">
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 24 24"
-                        fill="#A26248"
-                        stroke="#A26248"
-                        strokeWidth="1.9"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-label="Téléchargé automatiquement"
-                      >
-                        <path d="M12 20s-7-4.4-7-9.2A3.8 3.8 0 0 1 12 8.4 3.8 3.8 0 0 1 19 10.8C19 15.6 12 20 12 20Z" />
-                      </svg>
-                    </span>
-                  )}
-                  <span className="text-[12.5px] text-[#7A6E5E] shrink-0">
-                    {Math.max(1, Math.round(item.duration / 60))} min
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-
-          {downloads.length > 0 && (
-            <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)] mt-[10px]">
-              <div
-                onClick={handleClearDownloads}
-                className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <b className="block font-normal text-[13.5px] leading-[1.3] text-[#A0483C]">
-                    Tout supprimer
-                  </b>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-[7px] mx-[3px]">
-            Le cœur signale une séance téléchargée automatiquement parce qu’elle est en favori. Les téléchargements ne sont pas effacés par « Effacer mes données ».
-          </p>
-        </div>
+        <SettingsDownloads
+          downloads={downloads}
+          favoritesCount={favorites.length}
+          hasPendingFavorites={false}
+          totalDownloadedMo={totalDownloadedMo}
+          handleClearDownloads={handleClearDownloads}
+          onRemoveDownload={handleRemoveDownload}
+          onBack={() => setCurrentScreen("main")}
+        />
       )}
 
-      {/* =========================================================================
-          SCREEN 4: AIDE ET CONTACT
-      ========================================================================== */}
       {currentScreen === "aide" && (
-        <div className="p-marge pb-12 flex flex-col flex-1 max-w-[480px] w-full mx-auto animate-in fade-in">
-          {/* Top sub */}
-          <div className="flex items-center gap-[10px] pt-2 pb-[14px]">
-            <button
-              onClick={() => setCurrentScreen("main")}
-              className="p-1 -ml-1 text-encre active:opacity-60 transition-opacity"
-              aria-label="Retour aux réglages"
-            >
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#433528" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m15 5-7 7 7 7" />
-              </svg>
-            </button>
-            <span className="font-poppins font-light text-[18px]">Aide et contact</span>
-          </div>
-
-          {/* FAQ */}
-          <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-2 mb-[7px] ml-[3px]">
-            Questions fréquentes
-          </p>
-          <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
-            {/* Q1 */}
-            <div
-              onClick={() => setExpandedFaq(expandedFaq === "q1" ? null : "q1")}
-              className="p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-            >
-              <div className="flex items-center justify-between gap-[10px]">
-                <b className="font-normal text-[13.5px] leading-[1.3] text-encre">
-                  L’audio se coupe quand je verrouille
-                </b>
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#C6BBA9"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={`transition-transform duration-200 ${expandedFaq === "q1" ? "rotate-90" : ""}`}
-                >
-                  <path d="m9 5 7 7-7 7" />
-                </svg>
-              </div>
-              {expandedFaq === "q1" && (
-                <p className="text-[11.5px] text-[#7A6E5E] leading-[1.55] mt-2 pt-2 border-t border-[#F8EFE4]">
-                  Sur iOS et Safari, assurez-vous de lancer la séance avec l'écran allumé. Liela maintient la session audio en arrière-plan et gère le verrouillage sans coupure via l'API audio web et les contrôles média du système.
-                </p>
-              )}
-            </div>
-
-            {/* Q2 */}
-            <div
-              onClick={() => setExpandedFaq(expandedFaq === "q2" ? null : "q2")}
-              className="p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-            >
-              <div className="flex items-center justify-between gap-[10px]">
-                <b className="font-normal text-[13.5px] leading-[1.3] text-encre">
-                  Comment fonctionne le minuteur
-                </b>
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#C6BBA9"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={`transition-transform duration-200 ${expandedFaq === "q2" ? "rotate-90" : ""}`}
-                >
-                  <path d="m9 5 7 7-7 7" />
-                </svg>
-              </div>
-              {expandedFaq === "q2" && (
-                <p className="text-[11.5px] text-[#7A6E5E] leading-[1.55] mt-2 pt-2 border-t border-[#F8EFE4]">
-                  Le minuteur d'arrêt éteint progressivement la voix et le fond sonore pour vous laisser vous endormir paisiblement, sans réveil brutal ni sursaut.
-                </p>
-              )}
-            </div>
-
-            {/* Q3 */}
-            <div
-              onClick={() => setExpandedFaq(expandedFaq === "q3" ? null : "q3")}
-              className="p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-            >
-              <div className="flex items-center justify-between gap-[10px]">
-                <b className="font-normal text-[13.5px] leading-[1.3] text-encre">
-                  Puis-je écouter hors ligne
-                </b>
-                <svg
-                  width="15"
-                  height="15"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#C6BBA9"
-                  strokeWidth="1.75"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className={`transition-transform duration-200 ${expandedFaq === "q3" ? "rotate-90" : ""}`}
-                >
-                  <path d="m9 5 7 7-7 7" />
-                </svg>
-              </div>
-              {expandedFaq === "q3" && (
-                <p className="text-[11.5px] text-[#7A6E5E] leading-[1.55] mt-2 pt-2 border-t border-[#F8EFE4]">
-                  Oui ! Toutes vos séances téléchargées restent disponibles dans le stockage local de votre appareil et se lisent sans aucune connexion Internet.
-                </p>
-              )}
-            </div>
-          </div>
-
-          {/* Nous écrire */}
-          <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-4 mb-[7px] ml-[3px]">
-            Nous écrire
-          </p>
-          <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
-            <a
-              href="mailto:bonjour@liela.app?subject=Question%20Liela"
-              className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-            >
-              <div className="flex-1 min-w-0">
-                <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                  Envoyer un message
-                </b>
-                <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
-                  Réponse sous quelques jours
-                </i>
-              </div>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m9 5 7 7-7 7" />
-              </svg>
-            </a>
-          </div>
-
-          <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-3 mx-[3px]">
-            Liela n’est pas un soin médical. Si vous traversez une période difficile, parlez-en à un professionnel de santé.
-          </p>
-        </div>
+        <SettingsHelp
+          expandedFaq={expandedFaq}
+          setExpandedFaq={setExpandedFaq}
+          onBack={() => setCurrentScreen("main")}
+        />
       )}
 
-      {/* =========================================================================
-          SCREEN 5: CONFIDENTIALITÉ
-      ========================================================================== */}
       {currentScreen === "confidentialite" && (
-        <div className="p-marge pb-12 flex flex-col flex-1 max-w-[480px] w-full mx-auto animate-in fade-in">
-          {/* Top sub */}
-          <div className="flex items-center gap-[10px] pt-2 pb-[14px]">
-            <button
-              onClick={() => setCurrentScreen("main")}
-              className="p-1 -ml-1 text-encre active:opacity-60 transition-opacity"
-              aria-label="Retour aux réglages"
-            >
-              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#433528" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m15 5-7 7 7 7" />
-              </svg>
-            </button>
-            <span className="font-poppins font-light text-[18px]">Confidentialité</span>
-          </div>
-
-          {/* Carte conf */}
-          <div className="bg-white rounded-[15px] p-4 shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
-            <p className="font-poppins font-light text-[14.5px]">Ce que Liela sait de vous</p>
-            <p className="text-[11.5px] text-[#7A6E5E] leading-[1.55] mt-[5px]">
-              Vos favoris, votre historique d’écoute et vos réglages sont enregistrés sur cet appareil, et nulle part ailleurs.
-            </p>
-
-            <p className="font-poppins font-light text-[14.5px] mt-[14px]">Ce qui ne sort jamais</p>
-            <p className="text-[11.5px] text-[#7A6E5E] leading-[1.55] mt-[5px]">
-              Aucune donnée d’usage n’est envoyée à un serveur. Les recommandations sont calculées sur votre téléphone. Il n’y a ni traceur, ni mesure d’audience, ni publicité.
-            </p>
-
-            <p className="font-poppins font-light text-[14.5px] mt-[14px]">Ce que vous pouvez faire</p>
-            <p className="text-[11.5px] text-[#7A6E5E] leading-[1.55] mt-[5px]">
-              Exporter vos données à tout moment, ou les effacer entièrement depuis les réglages.
-            </p>
-          </div>
-
-          <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)] mt-[10px]">
-            <div
-              onClick={() => setShowFullPrivacy(true)}
-              className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-            >
-              <div className="flex-1 min-w-0">
-                <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                  Politique complète
-                </b>
-              </div>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m9 5 7 7-7 7" />
-              </svg>
-            </div>
-          </div>
-        </div>
+        <SettingsPrivacy
+          setShowExportSheet={setShowExportSheet}
+          setShowDeleteSheet={setShowDeleteSheet}
+          setShowFullPrivacy={setShowFullPrivacy}
+          onBack={() => setCurrentScreen("main")}
+        />
       )}
-
-
 
       {/* =========================================================================
           MODAL 2: EXPORTER MES DONNÉES
@@ -1421,12 +1004,10 @@ export default function SettingsPage() {
           />
           <div className="relative w-full max-w-sm bg-creme rounded-[20px] p-5 z-51 shadow-2xl text-left border border-filet">
             <h3 className="font-poppins font-light text-[18px] mb-2">
-              {accountEmailModal === "email" ? "Connexion par e-mail" : "Connexion avec Apple"}
+              {accountEmailModal === "email" ? "Connexion par e-mail" : "Connexion"}
             </h3>
             <p className="text-[12px] text-[#7A6E5E] leading-[1.5] mb-4">
-              {accountEmailModal === "email"
-                ? "Entrez votre adresse e-mail pour synchroniser vos données locales."
-                : "Confirmez votre identifiant Apple pour synchroniser vos données locales."}
+              Entrez votre adresse e-mail pour synchroniser vos données locales.
             </p>
             {accountEmailModal === "email" && (
               <input
@@ -1473,7 +1054,7 @@ export default function SettingsPage() {
                 <b>1. Architecture locale par défaut :</b> Liela a été conçue pour fonctionner de manière autonome sur votre appareil. Vos séances écoutées, favoris, réglages et historique sont stockés dans la base de données locale (IndexedDB) de votre navigateur ou appareil.
               </p>
               <p>
-                <b>2. Absence de traceurs et d'analyse :</b> Liela n’intègre aucun outil d’analyse comportementale externe (comme Google Analytics ou Meta Pixel), ni aucun SDK de pistage ou régie publicitaire.
+                <b>2. Absence de traceurs et d&apos;analyse :</b> Liela n’intègre aucun outil d’analyse comportementale externe (comme Google Analytics ou Meta Pixel), ni aucun SDK de pistage ou régie publicitaire.
               </p>
               <p>
                 <b>3. Recommandations embarquées :</b> Toutes les suggestions de séances reposent sur des calculs réalisés localement sur votre téléphone selon vos réponses aux check-ins et vos écoutes passées.

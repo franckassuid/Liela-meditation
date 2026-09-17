@@ -91,7 +91,7 @@ export interface AvailableDuration {
 /**
  * Returns durations available across the catalogue: 3, 5, 10, 20 min + Je ne sais pas.
  */
-export function getAvailableDurations(situationId?: string | null): AvailableDuration[] {
+export function getAvailableDurations(): AvailableDuration[] {
   return [
     { value: 3, label: "3 minutes" },
     { value: 5, label: "5 minutes" },
@@ -125,6 +125,10 @@ export function recommendSession(situationId: string, targetDurationMinutes: num
   });
 
   return matching[0];
+}
+
+export function getSessionAssetsRoot(sessionId: string): string {
+  return `/sessions/${sessionId}`;
 }
 
 export function resolveSessionAsset(sessionId: string, relativePath: string): string {

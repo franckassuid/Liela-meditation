@@ -11,9 +11,9 @@ function DurationContent() {
   const searchParams = useSearchParams();
   const situation = searchParams.get("situation");
   
-  const durations = getAvailableDurations(situation);
+  const durations = getAvailableDurations();
   const [selectedDuration, setSelectedDuration] = useState<number | null>(() => {
-    const list = getAvailableDurations(situation);
+    const list = getAvailableDurations();
     return list.length === 1 ? list[0].value : null;
   });
 

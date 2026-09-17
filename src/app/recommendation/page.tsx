@@ -95,7 +95,7 @@ function RecommendationContent() {
         )}
         <button 
           className="text-[12px] text-gris-2 hover:text-encre text-center py-1.5 active:scale-[0.97] transition-transform"
-          onClick={() => router.push("/explore")}
+          onClick={() => router.push("/library")}
         >
           {session.isAvailable ? "Proposer autre chose" : "Explorer les séances gratuites"}
         </button>

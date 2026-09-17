@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { getNotificationPermission, NotificationPermissionState } from "@/lib/notifications";
+import { getNotificationPermission } from "@/lib/notifications";
 
 interface NotificationPermissionModalProps {
   isOpen: boolean;
@@ -71,7 +71,7 @@ export function NotificationPermissionModal({
         </h3>
 
         <p className="text-gris-2 text-[13px] leading-[1.45] mb-5">
-          Pour vous envoyer votre rappel quotidien, Liela a besoin de l'autorisation de votre appareil. Les notifications sont actuellement bloquées.
+          Pour vous envoyer votre rappel quotidien, Liela a besoin de l&apos;autorisation de votre appareil. Les notifications sont actuellement bloquées.
         </p>
 
         {/* Instructions détaillées Android */}
@@ -82,7 +82,7 @@ export function NotificationPermissionModal({
             </b>
             <ol className="text-[12px] text-gris-2 leading-[1.45] space-y-1.5 list-decimal list-inside">
               <li>
-                Appuyez sur l'icône de <strong>paramètres du site</strong> (les jauges ou le cadenas à gauche de la barre d'adresse dans Chrome) ou allez dans <strong>Paramètres Android &gt; Applications &gt; Liela (ou Chrome)</strong>.
+                Appuyez sur l&apos;icône de <strong>paramètres du site</strong> (les jauges ou le cadenas à gauche de la barre d&apos;adresse dans Chrome) ou allez dans <strong>Paramètres Android &gt; Applications &gt; Liela (ou Chrome)</strong>.
               </li>
               <li>
                 Sélectionnez <strong>Autorisations &gt; Notifications</strong>.
@@ -104,7 +104,7 @@ export function NotificationPermissionModal({
             onClick={handleRecheck}
             className="w-full bg-terre-p text-creme font-medium text-[14px] py-3 rounded-[13px] transition-transform active:scale-[0.98] shadow-sm"
           >
-            J'ai activé les notifications
+            J&apos;ai activé les notifications
           </button>
           <button
             onClick={onClose}

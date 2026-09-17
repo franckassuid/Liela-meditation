@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { LielaEmblem } from "./Icons";
-import { BreathingVisualizer } from "./BreathingVisualizer";
+import Image from "next/image";
 
-const SPLASH_STORAGE_KEY = "liela_splash_shown";
+import { STORAGE_KEYS } from "@/lib/storage";
 const DISPLAY_DURATION_MS = 2000;
 const FADE_DURATION_MS = 500;
 
@@ -17,15 +16,16 @@ export function SplashScreen() {
     if (typeof window === "undefined") return;
 
     // Si déjà affiché durant la session en cours, masquer immédiatement
-    const hasShown = sessionStorage.getItem(SPLASH_STORAGE_KEY);
+    const hasShown = sessionStorage.getItem(STORAGE_KEYS.SPLASH_SHOWN);
     if (hasShown) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMounted(false);
       return;
     }
 
     try {
-      sessionStorage.setItem(SPLASH_STORAGE_KEY, "true");
-    } catch (_) {}
+      sessionStorage.setItem(STORAGE_KEYS.SPLASH_SHOWN, "true");
+    } catch {}
 
     // Déclenche la transition douce : apparition soyeuse du slogan et du galet autour du logo
     const transitionTimer = setTimeout(() => {
@@ -59,11 +59,18 @@ export function SplashScreen() {
     >
       <div className="flex flex-col items-center text-center max-w-sm w-full relative">
         {/* Logo Liela : ancré au centre, naturel et serein */}
-        <div className="w-[88px] h-[88px] sm:w-[96px] sm:h-[96px] flex items-center justify-center drop-shadow-sm">
-          <LielaEmblem width={88} height={88} />
+        <div className="w-[88px] h-[88px] sm:w-[96px] sm:h-[96px] flex items-center justify-center">
+          <Image
+            src="/icon-192.png"
+            alt="Liela"
+            width={88}
+            height={88}
+            className="w-full h-full object-contain"
+            priority
+          />
         </div>
 
-        {/* Typographie de marque & Slogan : fondu velouté et émergence naturelle */}
+        {/* Slogan : fondu velouté et émergence naturelle */}
         <div
           className={`flex flex-col items-center text-center transition-all duration-700 ease-out ${
             hasStartedTransition
@@ -74,30 +81,9 @@ export function SplashScreen() {
             transitionDelay: hasStartedTransition ? "120ms" : "0ms",
           }}
         >
-          <h1 className="font-poppins font-light text-[32px] sm:text-[36px] tracking-[-0.02em] text-[#433528] mt-2.5 leading-none">
-            liela
-          </h1>
-
-          <p className="font-poppins font-light text-[15px] sm:text-[16px] text-[#7A6E5E] text-center mt-2.5 max-w-[280px] leading-snug">
+          <p className="font-poppins font-light text-[15px] sm:text-[16px] text-[#7A6E5E] text-center mt-4 max-w-[280px] leading-snug">
             La méditation qu&apos;il vous faut, maintenant.
           </p>
-        </div>
-
-        {/* Galet authentique identique à l'accueil avec éclosion douce et rotation zen pour le chargement */}
-        <div
-          className={`relative w-[160px] h-[160px] sm:w-[180px] sm:h-[180px] my-6 flex items-center justify-center transition-all duration-700 ease-out ${
-            hasStartedTransition
-              ? "opacity-100 scale-100"
-              : "opacity-0 scale-95 pointer-events-none"
-          }`}
-          style={{
-            transitionDelay: hasStartedTransition ? "200ms" : "0ms",
-            transitionTimingFunction: "cubic-bezier(0.16, 1, 0.3, 1)",
-          }}
-        >
-          <div className="w-full h-full relative flex items-center justify-center animate-[spin_8s_linear_infinite]">
-            <BreathingVisualizer color="#A26248" />
-          </div>
         </div>
       </div>
     </div>

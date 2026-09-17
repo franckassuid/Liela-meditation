@@ -1,5 +1,5 @@
-import { get, set, del, keys } from 'idb-keyval';
-import { getCatalogSessionById } from '@/config/sessionsCatalog';
+import { get, set, del, update } from 'idb-keyval';
+import { removeSessionFiles, verifySessionInCache, SESSIONS_CACHE_NAME } from '@/lib/download/SessionDownloader';
 
 export interface AudioPreferences {
   voiceVolume: number;
@@ -57,35 +57,41 @@ export function formatReminderDays(days: DayOfWeek[]): string {
 }
 
 export interface AppSettings {
-  // Lecture
   resumePlayback: boolean;
-
-  // Téléchargements
   downloadFavorites: boolean;
   downloadWifiOnly: boolean;
-
-  // Rappel
   dailyReminderEnabled: boolean;
   dailyReminderTime: string;
   dailyReminderDays: string;
   dailyReminderCustomDays: DayOfWeek[];
-
-  // Compte
   accountUser?: { email?: string; method?: string } | null;
-
-  // Compatibilité rétroactive (production / lecteur)
   fadeInDuration?: number;
   backgroundVolume?: "Désactivé" | "Faible" | "Moyen" | "Fort";
   defaultSleepTimer?: "15 min" | "30 min" | "45 min" | "1 heure" | "Jamais";
 }
 
-export interface DownloadedSession {
+/**
+ * Metadata for a fully downloaded session.
+ * sizeBytes: actual bytes in Cache Storage (not estimated).
+ * cachedUrls: exact URLs stored in liela-sessions-v1 (needed for deletion).
+ * status: "available" | "error" (only set to available after verification).
+ */
+export interface DownloadRecord {
   sessionId: string;
   title: string;
-  duration: number; // in seconds
-  sizeMo: number;
-  isFavorite?: boolean;
+  duration: number;        // seconds
+  sizeBytes: number;       // real bytes from Cache Storage
+  status: "available" | "error";
+  downloadedAt: string;    // ISO
+  manifestVersion: number;
+  cachedUrls: string[];    // exact URLs stored in liela-sessions-v1
+  /** @deprecated use sizeBytes — kept for backward compat display */
+  sizeMo?: number;
+  isFavorite?: boolean;    // kept for backward compat with old records
 }
+
+/** @deprecated use DownloadRecord */
+export type DownloadedSession = DownloadRecord;
 
 export const DEFAULT_SETTINGS: AppSettings = {
   resumePlayback: true,
@@ -101,16 +107,10 @@ export const DEFAULT_SETTINGS: AppSettings = {
   defaultSleepTimer: "30 min",
 };
 
-export const DEFAULT_DOWNLOADS: DownloadedSession[] = [
-  { sessionId: "sortir-de-la-boucle-10min", title: "Sortir de la boucle", duration: 600, sizeMo: 24, isFavorite: true },
-  { sessionId: "histoire-calme-25min", title: "Histoire calme", duration: 1500, sizeMo: 55, isFavorite: true },
-  { sessionId: "avant-une-reunion-5min", title: "Avant une réunion", duration: 300, sizeMo: 12, isFavorite: true },
-  { sessionId: "respirer-3-minutes-3min", title: "Respirer 3 minutes", duration: 180, sizeMo: 8, isFavorite: true },
-  { sessionId: "le-mental-du-soir-14min", title: "Le mental du soir", duration: 840, sizeMo: 30, isFavorite: false },
-  { sessionId: "descendre-dun-cran-9min", title: "Descendre d’un cran", duration: 540, sizeMo: 19, isFavorite: false },
-];
+// DEFAULT_DOWNLOADS removed — no longer seeded on empty storage.
+// Downloads represent real cached audio files only.
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   ONBOARDING_COMPLETED: "liela_onboarding",
   USER_PROFILE: "liela_profile",
   AUDIO_PREFERENCES: "liela_audio_prefs",
@@ -121,16 +121,77 @@ const STORAGE_KEYS = {
   RECOMMENDATION_HISTORY: "liela_recommendation_history",
   APP_SETTINGS: "liela_settings",
   DOWNLOADS: "liela_downloads",
+  DAILY_FAV_PROMPTS: "liela_daily_fav_prompts",
+  // Sync keys for local/sessionStorage
+  SPLASH_SHOWN: "liela_splash_shown",
+  PWA_INSTALLED: "liela_pwa_installed",
+  PWA_DISMISSED: "liela_pwa_dismissed",
 };
 
-// Demande la persistance permanente du stockage (évite la purge Safari des 7 jours)
+// In-memory fallback if IndexedDB is blocked
+const memoryFallback = new Map<string, unknown>();
+
+async function safeGet<T>(key: string): Promise<T | undefined> {
+  if (typeof window === "undefined") return undefined;
+  try {
+    const val = await get<T>(key);
+    return val !== undefined ? val : (memoryFallback.get(key) as T | undefined);
+  } catch (e) {
+    console.warn(`[Storage] Read failed for ${key}, using fallback.`, e);
+    return memoryFallback.get(key) as T | undefined;
+  }
+}
+
+async function safeSet<T>(key: string, val: T): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  try {
+    await set(key, val);
+    memoryFallback.set(key, val);
+    return true;
+  } catch (e) {
+    console.warn(`[Storage] Write failed for ${key}, using fallback.`, e);
+    memoryFallback.set(key, val);
+    return false;
+  }
+}
+
+async function safeUpdate<T>(key: string, updater: (val: T | undefined) => T): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  try {
+    await update(key, (val: unknown) => {
+      const newVal = updater(val as T);
+      memoryFallback.set(key, newVal);
+      return newVal;
+    });
+    return true;
+  } catch (e) {
+    console.warn(`[Storage] Update failed for ${key}, using fallback.`, e);
+    const oldVal = memoryFallback.get(key) as T | undefined;
+    const newVal = updater(oldVal);
+    memoryFallback.set(key, newVal);
+    return false; // Indicate IDB failed, but memory worked
+  }
+}
+
+async function safeDel(key: string): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  try {
+    await del(key);
+    memoryFallback.delete(key);
+    return true;
+  } catch (e) {
+    console.warn(`[Storage] Delete failed for ${key}, using fallback.`, e);
+    memoryFallback.delete(key);
+    return false;
+  }
+}
+
 export async function requestPersistence(): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
     try {
       const isPersisted = await navigator.storage.persisted();
       if (isPersisted) return true;
-      const granted = await navigator.storage.persist();
-      return granted;
+      return await navigator.storage.persist();
     } catch (e) {
       console.error("Erreur lors de la demande de persistance", e);
       return false;
@@ -141,23 +202,19 @@ export async function requestPersistence(): Promise<boolean> {
 
 export const storage = {
   getOnboardingCompleted: async (): Promise<boolean> => {
-    if (typeof window === "undefined") return false;
-    const val = await get(STORAGE_KEYS.ONBOARDING_COMPLETED);
+    const val = await safeGet<boolean>(STORAGE_KEYS.ONBOARDING_COMPLETED);
     return val === true;
   },
-  setOnboardingCompleted: async (completed: boolean): Promise<void> => {
-    if (typeof window === "undefined") return;
-    await set(STORAGE_KEYS.ONBOARDING_COMPLETED, completed);
+  setOnboardingCompleted: async (completed: boolean): Promise<boolean> => {
+    return safeSet(STORAGE_KEYS.ONBOARDING_COMPLETED, completed);
   },
 
   getProfile: async (): Promise<{ firstName: string }> => {
-    if (typeof window === "undefined") return { firstName: "" };
-    const data = await get(STORAGE_KEYS.USER_PROFILE);
-    return data ? (data as { firstName: string }) : { firstName: "" };
+    const data = await safeGet<{ firstName: string }>(STORAGE_KEYS.USER_PROFILE);
+    return data && typeof data.firstName === 'string' ? data : { firstName: "" };
   },
-  setProfile: async (profile: { firstName: string }): Promise<void> => {
-    if (typeof window === "undefined") return;
-    await set(STORAGE_KEYS.USER_PROFILE, profile);
+  setProfile: async (profile: { firstName: string }): Promise<boolean> => {
+    return safeSet(STORAGE_KEYS.USER_PROFILE, profile);
   },
 
   getAudioPreferences: async (): Promise<AudioPreferences> => {
@@ -168,9 +225,7 @@ export const storage = {
       musicEnabled: true,
       ambienceEnabled: true,
     };
-    if (typeof window === "undefined") return defaults;
-    
-    const parsed = await get<AudioPreferences>(STORAGE_KEYS.AUDIO_PREFERENCES);
+    const parsed = await safeGet<Partial<AudioPreferences>>(STORAGE_KEYS.AUDIO_PREFERENCES);
     if (!parsed) return defaults;
     
     return {
@@ -180,182 +235,126 @@ export const storage = {
       ambienceVolume: typeof parsed.ambienceVolume === "number" ? parsed.ambienceVolume : 0.50,
     };
   },
-  setAudioPreferences: async (prefs: Partial<AudioPreferences>): Promise<void> => {
-    if (typeof window === "undefined") return;
-    const current = await storage.getAudioPreferences();
-    await set(STORAGE_KEYS.AUDIO_PREFERENCES, { ...current, ...prefs });
+  setAudioPreferences: async (prefs: Partial<AudioPreferences>): Promise<boolean> => {
+    return safeUpdate<AudioPreferences>(STORAGE_KEYS.AUDIO_PREFERENCES, (current) => {
+      const base = current || {
+        voiceVolume: 1, musicVolume: 0.75, ambienceVolume: 0.5, musicEnabled: true, ambienceEnabled: true
+      };
+      return { ...base, ...prefs };
+    });
   },
 
   getHistory: async (): Promise<SessionHistoryItem[]> => {
-    if (typeof window === "undefined") return [];
-    const data = await get<SessionHistoryItem[]>(STORAGE_KEYS.HISTORY);
-    return data || [];
+    const data = await safeGet<SessionHistoryItem[]>(STORAGE_KEYS.HISTORY);
+    return Array.isArray(data) ? data : [];
   },
-  addHistoryItem: async (item: SessionHistoryItem): Promise<void> => {
-    if (typeof window === "undefined") return;
-    const history = await storage.getHistory();
-    const index = history.findIndex(i => i.sessionId === item.sessionId && i.startedAt === item.startedAt);
-    if (index >= 0) {
-      history[index] = item;
-    } else {
-      history.unshift(item);
-    }
-    await set(STORAGE_KEYS.HISTORY, history.slice(0, 50));
+  addHistoryItem: async (item: SessionHistoryItem): Promise<boolean> => {
+    return safeUpdate<SessionHistoryItem[]>(STORAGE_KEYS.HISTORY, (history) => {
+      const arr = Array.isArray(history) ? history : [];
+      const index = arr.findIndex(i => i.sessionId === item.sessionId && i.startedAt === item.startedAt);
+      if (index >= 0) {
+        arr[index] = item;
+      } else {
+        arr.unshift(item);
+      }
+      return arr.slice(0, 50);
+    });
   },
 
   getInProgressSession: async (): Promise<SessionHistoryItem | null> => {
-    if (typeof window === "undefined") return null;
-    const data = await get<SessionHistoryItem>(STORAGE_KEYS.IN_PROGRESS);
+    const data = await safeGet<SessionHistoryItem>(STORAGE_KEYS.IN_PROGRESS);
     return data || null;
   },
-  setInProgressSession: async (item: SessionHistoryItem | null): Promise<void> => {
-    if (typeof window === "undefined") return;
+  setInProgressSession: async (item: SessionHistoryItem | null): Promise<boolean> => {
     if (item) {
-      await set(STORAGE_KEYS.IN_PROGRESS, item);
+      return safeSet(STORAGE_KEYS.IN_PROGRESS, item);
     } else {
-      await del(STORAGE_KEYS.IN_PROGRESS);
+      return safeDel(STORAGE_KEYS.IN_PROGRESS);
     }
   },
 
   getFavorites: async (): Promise<Favori[]> => {
-    if (typeof window === "undefined") return [];
-    const data = await get<Favori[]>(STORAGE_KEYS.FAVORITES);
-    return data || [];
+    const data = await safeGet<Favori[]>(STORAGE_KEYS.FAVORITES);
+    return Array.isArray(data) ? data : [];
   },
   hasFavorite: async (sessionId: string): Promise<boolean> => {
     const favs = await storage.getFavorites();
     return favs.some(f => f.sessionId === sessionId);
   },
-  addFavorite: async (sessionId: string, source?: string): Promise<void> => {
-    if (typeof window === "undefined") return;
-    const favs = await storage.getFavorites();
-    if (!favs.some(f => f.sessionId === sessionId)) {
-      favs.unshift({ sessionId, addedAt: new Date().toISOString(), source });
-      await set(STORAGE_KEYS.FAVORITES, favs);
-
-      // Si le téléchargement automatique des favoris est activé
-      const settings = await storage.getSettings();
-      if (settings.downloadFavorites) {
-        const downloads = await storage.getDownloads();
-        if (!downloads.some(d => d.sessionId === sessionId)) {
-          const cat = getCatalogSessionById(sessionId);
-          const duration = cat?.durationSeconds || 600;
-          const title = cat?.title || "Séance";
-          const sizeMo = Math.max(5, Math.round((duration / 60) * 2.4));
-          downloads.unshift({
-            sessionId,
-            title,
-            duration,
-            sizeMo,
-            isFavorite: true,
-          });
-          await set(STORAGE_KEYS.DOWNLOADS, downloads);
-        }
+  addFavorite: async (sessionId: string, source?: string): Promise<boolean> => {
+    const updateSuccess = await safeUpdate<Favori[]>(STORAGE_KEYS.FAVORITES, (favs) => {
+      const arr = Array.isArray(favs) ? favs : [];
+      if (!arr.some(f => f.sessionId === sessionId)) {
+        arr.unshift({ sessionId, addedAt: new Date().toISOString(), source });
       }
-    }
+      return arr;
+    });
+    return updateSuccess;
   },
-  removeFavorite: async (sessionId: string): Promise<void> => {
-    if (typeof window === "undefined") return;
-    const favs = await storage.getFavorites();
-    const newFavs = favs.filter(f => f.sessionId !== sessionId);
-    await set(STORAGE_KEYS.FAVORITES, newFavs);
-
-    // Une séance retirée des favoris est effacée de l’appareil si elle y est présente comme favori
-    const settings = await storage.getSettings();
-    if (settings.downloadFavorites) {
-      const downloads = await storage.getDownloads();
-      const updatedDownloads = downloads.filter(d => !(d.sessionId === sessionId && d.isFavorite));
-      await set(STORAGE_KEYS.DOWNLOADS, updatedDownloads);
-    }
+  removeFavorite: async (sessionId: string): Promise<boolean> => {
+    return safeUpdate<Favori[]>(STORAGE_KEYS.FAVORITES, (favs) => {
+      return Array.isArray(favs) ? favs.filter(f => f.sessionId !== sessionId) : [];
+    });
   },
 
-  syncFavoriteDownloads: async (enable: boolean): Promise<void> => {
-    if (typeof window === "undefined") return;
-    if (enable) {
-      const favs = await storage.getFavorites();
-      const downloads = await storage.getDownloads();
-      let changed = false;
-      for (const f of favs) {
-        if (!downloads.some(d => d.sessionId === f.sessionId)) {
-          const cat = getCatalogSessionById(f.sessionId);
-          const duration = cat?.durationSeconds || 600;
-          const title = cat?.title || "Séance";
-          const sizeMo = Math.max(5, Math.round((duration / 60) * 2.4));
-          downloads.unshift({
-            sessionId: f.sessionId,
-            title,
-            duration,
-            sizeMo,
-            isFavorite: true,
-          });
-          changed = true;
-        }
-      }
-      if (changed) {
-        await set(STORAGE_KEYS.DOWNLOADS, downloads);
-      }
-    }
+  syncFavoriteDownloads: async (_enable: boolean): Promise<boolean> => {
+    // Auto-download of favorites is not yet implemented — no-op.
+    return true;
   },
 
   getFavoritesRefusals: async (): Promise<string[]> => {
-    if (typeof window === "undefined") return [];
-    const data = await get<string[]>(STORAGE_KEYS.FAVORITES_REFUSALS);
-    return data || [];
+    const data = await safeGet<string[]>(STORAGE_KEYS.FAVORITES_REFUSALS);
+    return Array.isArray(data) ? data : [];
   },
   hasRefusedFavorite: async (sessionId: string): Promise<boolean> => {
     const refusals = await storage.getFavoritesRefusals();
     return refusals.includes(sessionId);
   },
-  addFavoriteRefusal: async (sessionId: string): Promise<void> => {
-    if (typeof window === "undefined") return;
-    const refusals = await storage.getFavoritesRefusals();
-    if (!refusals.includes(sessionId)) {
-      refusals.push(sessionId);
-      await set(STORAGE_KEYS.FAVORITES_REFUSALS, refusals);
-    }
+  addFavoriteRefusal: async (sessionId: string): Promise<boolean> => {
+    return safeUpdate<string[]>(STORAGE_KEYS.FAVORITES_REFUSALS, (refusals) => {
+      const arr = Array.isArray(refusals) ? refusals : [];
+      if (!arr.includes(sessionId)) arr.push(sessionId);
+      return arr;
+    });
   },
 
   getDailyFavoritePrompts: async (): Promise<number> => {
-    if (typeof window === "undefined") return 0;
-    const data = await get<{ date: string; count: number }>("liela_daily_fav_prompts");
-    if (!data) return 0;
+    const data = await safeGet<{ date: string; count: number }>(STORAGE_KEYS.DAILY_FAV_PROMPTS);
+    if (!data || typeof data.count !== "number") return 0;
     const today = new Date().toISOString().split("T")[0];
-    if (data.date === today) {
-      return data.count;
-    }
-    return 0;
+    return data.date === today ? data.count : 0;
   },
-  incrementDailyFavoritePrompts: async (): Promise<void> => {
-    if (typeof window === "undefined") return;
-    const count = await storage.getDailyFavoritePrompts();
-    const today = new Date().toISOString().split("T")[0];
-    await set("liela_daily_fav_prompts", { date: today, count: count + 1 });
+  incrementDailyFavoritePrompts: async (): Promise<boolean> => {
+    return safeUpdate<{ date: string; count: number }>(STORAGE_KEYS.DAILY_FAV_PROMPTS, (data) => {
+      const today = new Date().toISOString().split("T")[0];
+      if (data && data.date === today) {
+        return { date: today, count: (data.count || 0) + 1 };
+      }
+      return { date: today, count: 1 };
+    });
   },
 
   getRecommendationHistory: async (): Promise<{ sessionId: string; recommendedAt: string }[]> => {
-    if (typeof window === "undefined") return [];
-    const data = await get<{ sessionId: string; recommendedAt: string }[]>(STORAGE_KEYS.RECOMMENDATION_HISTORY);
-    return data || [];
+    const data = await safeGet<{ sessionId: string; recommendedAt: string }[]>(STORAGE_KEYS.RECOMMENDATION_HISTORY);
+    return Array.isArray(data) ? data : [];
   },
-  addRecommendationHistory: async (sessionId: string): Promise<void> => {
-    if (typeof window === "undefined") return;
-    const history = await storage.getRecommendationHistory();
-    history.unshift({ sessionId, recommendedAt: new Date().toISOString() });
-    await set(STORAGE_KEYS.RECOMMENDATION_HISTORY, history.slice(0, 50)); // Keep last 50 recs
+  addRecommendationHistory: async (sessionId: string): Promise<boolean> => {
+    return safeUpdate<{ sessionId: string; recommendedAt: string }[]>(STORAGE_KEYS.RECOMMENDATION_HISTORY, (history) => {
+      const arr = Array.isArray(history) ? history : [];
+      arr.unshift({ sessionId, recommendedAt: new Date().toISOString() });
+      return arr.slice(0, 50);
+    });
   },
 
   getSettings: async (): Promise<AppSettings> => {
-    if (typeof window === "undefined") return DEFAULT_SETTINGS;
-    const data = await get<AppSettings>(STORAGE_KEYS.APP_SETTINGS);
+    const data = await safeGet<Partial<AppSettings>>(STORAGE_KEYS.APP_SETTINGS);
     return { ...DEFAULT_SETTINGS, ...(data || {}) };
   },
-  setSettings: async (partial: Partial<AppSettings>): Promise<void> => {
-    if (typeof window === "undefined") return;
-    const current = await storage.getSettings();
-    const updated = { ...current, ...partial };
-    await set(STORAGE_KEYS.APP_SETTINGS, updated);
+  setSettings: async (partial: Partial<AppSettings>): Promise<boolean> => {
+    const updated = await safeUpdate<AppSettings>(STORAGE_KEYS.APP_SETTINGS, (current) => {
+      return { ...DEFAULT_SETTINGS, ...(current || {}), ...partial };
+    });
 
-    // Synchronize backgroundVolume with audioPreferences if changed
     if (partial.backgroundVolume !== undefined) {
       if (partial.backgroundVolume === "Désactivé") {
         await storage.setAudioPreferences({ musicEnabled: false, ambienceEnabled: false });
@@ -367,38 +366,84 @@ export const storage = {
         await storage.setAudioPreferences({ musicEnabled: true, ambienceEnabled: true, musicVolume: 1.0, ambienceVolume: 0.85 });
       }
     }
+    return updated;
   },
 
-  getDownloads: async (): Promise<DownloadedSession[]> => {
-    if (typeof window === "undefined") return DEFAULT_DOWNLOADS;
-    const data = await get<DownloadedSession[]>(STORAGE_KEYS.DOWNLOADS);
-    if (data === undefined) {
-      await set(STORAGE_KEYS.DOWNLOADS, DEFAULT_DOWNLOADS);
-      return DEFAULT_DOWNLOADS;
-    }
-    return data || [];
+  getDownloads: async (): Promise<DownloadRecord[]> => {
+    const data = await safeGet<Partial<DownloadRecord>[]>(STORAGE_KEYS.DOWNLOADS);
+    if (!Array.isArray(data)) return [];
+    // Guard: migrate old DownloadedSession records that lack new fields
+    return data.map(d => ({
+      sessionId: d.sessionId ?? "",
+      title: d.title ?? "",
+      duration: d.duration ?? 0,
+      cachedUrls: d.cachedUrls ?? [],
+      status: d.status ?? "error",
+      downloadedAt: d.downloadedAt ?? new Date(0).toISOString(),
+      manifestVersion: d.manifestVersion ?? 1,
+      sizeBytes: d.sizeBytes ?? ((d.sizeMo ?? 0) * 1024 * 1024),
+      sizeMo: d.sizeMo,
+      isFavorite: d.isFavorite,
+    }));
   },
-  addDownload: async (download: DownloadedSession): Promise<void> => {
-    if (typeof window === "undefined") return;
-    const downloads = await storage.getDownloads();
-    if (!downloads.some((d) => d.sessionId === download.sessionId)) {
-      downloads.unshift(download);
-      await set(STORAGE_KEYS.DOWNLOADS, downloads);
-    }
+  addDownload: async (record: DownloadRecord): Promise<boolean> => {
+    return safeUpdate<DownloadRecord[]>(STORAGE_KEYS.DOWNLOADS, (downloads) => {
+      const arr = Array.isArray(downloads) ? downloads : [];
+      const idx = arr.findIndex(d => d.sessionId === record.sessionId);
+      if (idx >= 0) {
+        arr[idx] = record; // replace (re-download updates the record)
+      } else {
+        arr.unshift(record);
+      }
+      return arr;
+    });
   },
-  removeDownload: async (sessionId: string): Promise<void> => {
-    if (typeof window === "undefined") return;
+  removeDownload: async (sessionId: string): Promise<boolean> => {
+    return safeUpdate<DownloadRecord[]>(STORAGE_KEYS.DOWNLOADS, (downloads) => {
+      return Array.isArray(downloads) ? downloads.filter(d => d.sessionId !== sessionId) : [];
+    });
+  },
+  removeDownloadFiles: async (sessionId: string): Promise<boolean> => {
+    const record = await storage.getDownloadRecord(sessionId);
+    if (record?.cachedUrls && record.cachedUrls.length > 0) {
+      await removeSessionFiles(record.cachedUrls);
+    }
+    return storage.removeDownload(sessionId);
+  },
+  getDownloadRecord: async (sessionId: string): Promise<DownloadRecord | null> => {
     const downloads = await storage.getDownloads();
-    const updated = downloads.filter((d) => d.sessionId !== sessionId);
-    await set(STORAGE_KEYS.DOWNLOADS, updated);
+    return downloads.find(d => d.sessionId === sessionId) ?? null;
+  },
+  setDownloadStatus: async (sessionId: string, status: "available" | "error"): Promise<boolean> => {
+    return safeUpdate<DownloadRecord[]>(STORAGE_KEYS.DOWNLOADS, (downloads) => {
+      const arr = Array.isArray(downloads) ? downloads : [];
+      const idx = arr.findIndex(d => d.sessionId === sessionId);
+      if (idx >= 0) arr[idx] = { ...arr[idx], status };
+      return arr;
+    });
   },
   isSessionDownloaded: async (sessionId: string): Promise<boolean> => {
-    const downloads = await storage.getDownloads();
-    return downloads.some((d) => d.sessionId === sessionId);
+    const record = await storage.getDownloadRecord(sessionId);
+    return record?.status === "available" && (record.cachedUrls?.length ?? 0) > 0;
   },
-  clearDownloads: async (): Promise<void> => {
-    if (typeof window === "undefined") return;
-    await set(STORAGE_KEYS.DOWNLOADS, []);
+  verifyDownload: async (sessionId: string): Promise<boolean> => {
+    const record = await storage.getDownloadRecord(sessionId);
+    if (!record || !record.cachedUrls || record.cachedUrls.length === 0) {
+      return false;
+    }
+    const valid = await verifySessionInCache(record.cachedUrls);
+    if (!valid && record.status === "available") {
+      await storage.setDownloadStatus(sessionId, "error");
+    }
+    return valid;
+  },
+  clearDownloads: async (): Promise<boolean> => {
+    if (typeof window !== "undefined" && "caches" in window) {
+      try {
+        await caches.delete(SESSIONS_CACHE_NAME);
+      } catch {}
+    }
+    return safeSet(STORAGE_KEYS.DOWNLOADS, []);
   },
 
   exportAllData: async (): Promise<string> => {
@@ -420,17 +465,35 @@ export const storage = {
     return JSON.stringify(exportObject, null, 2);
   },
 
-  clearAllData: async (): Promise<void> => {
-    if (typeof window === "undefined") return;
-    await del(STORAGE_KEYS.HISTORY);
-    await del(STORAGE_KEYS.IN_PROGRESS);
-    await del(STORAGE_KEYS.FAVORITES);
-    await del(STORAGE_KEYS.FAVORITES_REFUSALS);
-    await del(STORAGE_KEYS.USER_PROFILE);
-    await del(STORAGE_KEYS.AUDIO_PREFERENCES);
-    await del(STORAGE_KEYS.RECOMMENDATION_HISTORY);
-    await del(STORAGE_KEYS.APP_SETTINGS);
-    // Note: Downloads are intentionally kept intact per spec!
+  clearAllData: async (): Promise<boolean> => {
+    if (typeof window === "undefined") return false;
+    let allOk = true;
+    const keysToRemove = [
+      STORAGE_KEYS.HISTORY,
+      STORAGE_KEYS.IN_PROGRESS,
+      STORAGE_KEYS.FAVORITES,
+      STORAGE_KEYS.FAVORITES_REFUSALS,
+      STORAGE_KEYS.USER_PROFILE,
+      STORAGE_KEYS.AUDIO_PREFERENCES,
+      STORAGE_KEYS.RECOMMENDATION_HISTORY,
+      STORAGE_KEYS.APP_SETTINGS,
+      STORAGE_KEYS.ONBOARDING_COMPLETED,
+      STORAGE_KEYS.DAILY_FAV_PROMPTS
+    ];
+    for (const k of keysToRemove) {
+      const ok = await safeDel(k);
+      allOk = allOk && ok;
+    }
+    // Also remove from local/sessionStorage
+    try {
+      localStorage.removeItem(STORAGE_KEYS.PWA_INSTALLED);
+      localStorage.removeItem(STORAGE_KEYS.PWA_DISMISSED);
+      // FIX B5: Also clear the key used by PwaContext for dismissal
+      localStorage.removeItem("liela_pwa_dismissed_until");
+      sessionStorage.removeItem(STORAGE_KEYS.SPLASH_SHOWN);
+    } catch {}
+    
+    // Note: Downloads are intentionally kept intact per spec unless the user explicitly removes them.
+    return allOk;
   },
 };
-

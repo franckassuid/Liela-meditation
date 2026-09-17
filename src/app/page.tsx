@@ -19,7 +19,10 @@ export default function HomePage() {
   const [recommendation, setRecommendation] = useState<RecommendationResult | null>(null);
   const [inProgress, setInProgress] = useState<SessionHistoryItem | null>(null);
   const [favorites, setFavorites] = useState<Favori[]>([]);
-  const [isOnline, setIsOnline] = useState(true);
+  // Lazy initializer: reads navigator.onLine at mount time — avoids synchronous setState in effect (set-state-in-effect lint rule)
+  const [isOnline, setIsOnline] = useState<boolean>(() =>
+    typeof navigator !== "undefined" ? navigator.onLine !== false : true
+  );
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [proModalSession, setProModalSession] = useState<CatalogSession | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -32,7 +35,6 @@ export default function HomePage() {
 
   useEffect(() => {
     if (typeof navigator !== "undefined") {
-      setIsOnline(navigator.onLine !== false);
       const handleOnline = () => setIsOnline(true);
       const handleOffline = () => setIsOnline(false);
       window.addEventListener("online", handleOnline);
@@ -95,12 +97,14 @@ export default function HomePage() {
     };
   }, []);
 
-  const session = recommendation?.session || SESSIONS_CATALOG[0];
-  const situation = getSituation(session.situationId);
-  const isFav = favorites.some((f) => f.sessionId === session.id);
-  const situationVoile = situation?.voile || "#F5E4DA";
+  // Calculé ici pour l'utiliser dans le useEffect ci-dessous (qui doit rester avant les early returns)
+  const situationVoile = (() => {
+    if (!isMounted || !recommendation) return "#F5E4DA";
+    const sit = getSituation(recommendation.session.situationId);
+    return sit?.voile || "#F5E4DA";
+  })();
 
-  // Applique la couleur de fond dynamique de la situation à toute la page et à AppShell
+  // Applique la couleur de fond dynamique — doit rester avant tous les early returns
   useEffect(() => {
     document.documentElement.style.setProperty("--home-bg", situationVoile);
     return () => {
@@ -108,15 +112,90 @@ export default function HomePage() {
     };
   }, [situationVoile]);
 
+  if (!isMounted) {
+    if (!showSkeleton) return null;
+    return (
+      <div
+        className="flex flex-col flex-1 pb-3 px-5 relative h-full max-h-full overflow-hidden select-none transition-colors duration-500"
+        style={{ backgroundColor: "#F5E4DA" }}
+      >
+        <div className="flex items-center justify-between pt-[14px] pb-[4px] px-[2px] shrink-0">
+          <span className="font-poppins font-light text-[26px] tracking-[-0.015em] text-encre">
+            liela
+          </span>
+          <span className="w-[20px] h-[20px]" />
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center gap-[18px] text-center min-h-0">
+          <span className="w-[140px] h-[26px] rounded-full bg-[rgba(67,53,40,.07)]" />
+          <span className="w-[220px] h-[220px] rounded-full bg-[rgba(67,53,40,.07)]" />
+          <div className="w-full flex flex-col items-center gap-2">
+            <span className="w-[40%] h-[14px] rounded-[7px] bg-[rgba(67,53,40,.07)]" />
+            <span className="w-[75%] h-[26px] rounded-[8px] bg-[rgba(67,53,40,.07)]" />
+            <span className="w-[60%] h-[14px] rounded-[7px] bg-[rgba(67,53,40,.07)]" />
+          </div>
+          <span className="w-[72px] h-[72px] rounded-full bg-[rgba(67,53,40,.07)]" />
+        </div>
+      </div>
+    );
+  }
+
+  // S'il n'y a pas de recommandation du tout (ex: hors ligne sans aucun téléchargement)
+  if (!recommendation) {
+    return (
+      <div
+        className="flex flex-col flex-1 pb-3 px-5 relative h-full max-h-full overflow-hidden select-none transition-colors duration-500 ease-out"
+        style={{ backgroundColor: "#F5E4DA" }}
+      >
+        <div className="flex items-center justify-between pt-[14px] pb-[6px] px-[2px] shrink-0">
+          <span className="font-poppins font-light text-[26px] tracking-[-0.015em] text-encre">
+            liela
+          </span>
+        </div>
+        <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
+          <h2 className="font-poppins font-light text-[24px] sm:text-[26px] mb-3 text-encre">
+            Aucune séance disponible hors ligne
+          </h2>
+          <p className="text-[14px] text-gris-2 max-w-[280px] leading-relaxed mb-8">
+            Connectez-vous à Internet pour télécharger des séances et pouvoir les écouter partout.
+          </p>
+          <Button onClick={() => router.push("/library")}>
+            Voir ma bibliothèque
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const session = recommendation.session;
+  const situation = getSituation(session.situationId);
+  const isFav = favorites.some((f) => f.sessionId === session.id);
+  // situationVoile already computed above
+
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Optimistic UI update
+    const previousFavorites = [...favorites];
     if (isFav) {
-      await storage.removeFavorite(session.id);
+      setFavorites(favorites.filter((f) => f.sessionId !== session.id));
     } else {
-      await storage.addFavorite(session.id, "home");
+      setFavorites([{ sessionId: session.id, addedAt: new Date().toISOString(), source: "home" }, ...favorites]);
     }
-    const newFavs = await storage.getFavorites();
-    setFavorites(newFavs);
+
+    let success = false;
+    if (isFav) {
+      success = await storage.removeFavorite(session.id);
+    } else {
+      success = await storage.addFavorite(session.id, "home");
+    }
+
+    if (!success) {
+      // Revert on failure
+      setFavorites(previousFavorites);
+    } else {
+      const newFavs = await storage.getFavorites();
+      setFavorites(newFavs);
+    }
   };
 
   const isDark = situation?.id === "trouver-le-sommeil";
@@ -145,33 +224,6 @@ export default function HomePage() {
     await storage.setOnboardingCompleted(true);
     setIsOnboarded(true);
   };
-
-  if (!isMounted) {
-    if (!showSkeleton) return null;
-    return (
-      <div
-        className="flex flex-col flex-1 pb-3 px-5 relative h-full max-h-full overflow-hidden select-none transition-colors duration-500"
-        style={{ backgroundColor: situationVoile }}
-      >
-        <div className="flex items-center justify-between pt-[14px] pb-[4px] px-[2px] shrink-0">
-          <span className="font-poppins font-light text-[26px] tracking-[-0.015em] text-encre">
-            liela
-          </span>
-          <span className="w-[20px] h-[20px]" />
-        </div>
-        <div className="flex-1 flex flex-col items-center justify-center gap-[18px] text-center min-h-0">
-          <span className="w-[140px] h-[26px] rounded-full bg-[rgba(67,53,40,.07)]" />
-          <span className="w-[220px] h-[220px] rounded-full bg-[rgba(67,53,40,.07)]" />
-          <div className="w-full flex flex-col items-center gap-2">
-            <span className="w-[40%] h-[14px] rounded-[7px] bg-[rgba(67,53,40,.07)]" />
-            <span className="w-[75%] h-[26px] rounded-[8px] bg-[rgba(67,53,40,.07)]" />
-            <span className="w-[60%] h-[14px] rounded-[7px] bg-[rgba(67,53,40,.07)]" />
-          </div>
-          <span className="w-[72px] h-[72px] rounded-full bg-[rgba(67,53,40,.07)]" />
-        </div>
-      </div>
-    );
-  }
 
   if (!isOnboarded) {
     return (

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { STORAGE_KEYS } from "@/lib/storage";
 
 export type PwaPlatform = "ios" | "android" | "desktop";
 
@@ -28,7 +29,7 @@ const PwaContext = createContext<PwaContextType | null>(null);
 
 const SNOOZE_KEY = "liela_pwa_dismissed_until";
 const SNOOZE_DAYS = 7;
-const INSTALLED_STORAGE_KEY = "liela_pwa_installed";
+
 
 export function PwaProvider({ children }: { children: React.ReactNode }) {
   const [isStandalone, setIsStandalone] = useState(false);
@@ -59,18 +60,19 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
     };
 
     const standalone = checkStandalone();
-    setIsStandalone(standalone);
+    const storedInstalled = localStorage.getItem(STORAGE_KEYS.PWA_INSTALLED) === "true";
 
-    // Vérification si déjà installée sur l'appareil (via localStorage)
-    const storedInstalled = localStorage.getItem(INSTALLED_STORAGE_KEY) === "true";
-    if (standalone || storedInstalled) {
-      setIsAppInstalled(true);
-      if (standalone) {
-        try {
-          localStorage.setItem(INSTALLED_STORAGE_KEY, "true");
-        } catch (_) {}
+    setTimeout(() => {
+      setIsStandalone(standalone);
+      if (standalone || storedInstalled) {
+        setIsAppInstalled(true);
+        if (standalone) {
+          try {
+            localStorage.setItem(STORAGE_KEYS.PWA_INSTALLED, "true");
+          } catch {}
+        }
       }
-    }
+    }, 0);
 
     // Vérification native Chromium getInstalledRelatedApps (Android Chrome 80+)
     if ("getInstalledRelatedApps" in navigator) {
@@ -80,15 +82,15 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
           if (Array.isArray(apps) && apps.length > 0) {
             setIsAppInstalled(true);
             try {
-              localStorage.setItem(INSTALLED_STORAGE_KEY, "true");
-            } catch (_) {}
+              localStorage.setItem(STORAGE_KEYS.PWA_INSTALLED, "true");
+            } catch {}
             setIsBannerVisible(false);
           } else if (Array.isArray(apps) && apps.length === 0 && !standalone) {
             // L'OS confirme qu'aucune app PWA liée n'est installée
             setIsAppInstalled(false);
             try {
-              localStorage.removeItem(INSTALLED_STORAGE_KEY);
-            } catch (_) {}
+              localStorage.removeItem(STORAGE_KEYS.PWA_INSTALLED);
+            } catch {}
           }
         })
         .catch(() => {});
@@ -101,8 +103,8 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
         setIsAppInstalled(true);
         setIsBannerVisible(false);
         try {
-          localStorage.setItem(INSTALLED_STORAGE_KEY, "true");
-        } catch (_) {}
+          localStorage.setItem(STORAGE_KEYS.PWA_INSTALLED, "true");
+        } catch {}
       }
     };
     mql.addEventListener("change", handleMediaChange);
@@ -115,16 +117,20 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
     const isAndroidDevice = /android/.test(ua);
 
     let detectedPlatform: PwaPlatform = "desktop";
+    let detectedSafari = false;
+    
     if (isIosDevice) {
       detectedPlatform = "ios";
       // Safari sur iOS (exclut Chrome CriOS, Firefox FxiOS, etc.)
-      const isIosSafari =
-        /safari/.test(ua) && !/crios|fxios|edgios|opios|opera/.test(ua);
-      setIsSafari(isIosSafari);
+      detectedSafari = /safari/.test(ua) && !/crios|fxios|edgios|opios|opera/.test(ua);
     } else if (isAndroidDevice) {
       detectedPlatform = "android";
     }
-    setPlatform(detectedPlatform);
+    
+    setTimeout(() => {
+      setPlatform(detectedPlatform);
+      setIsSafari(detectedSafari);
+    }, 0);
 
     // 4. Écoute du prompt natif (Android / Chromium)
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -138,8 +144,8 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
       setIsBannerVisible(false);
       setDeferredPrompt(null);
       try {
-        localStorage.setItem(INSTALLED_STORAGE_KEY, "true");
-      } catch (_) {}
+        localStorage.setItem(STORAGE_KEYS.PWA_INSTALLED, "true");
+      } catch {}
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
@@ -153,7 +159,7 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
       if (!isSnoozed) {
         // Apparition douce après 2.5 secondes
         const timer = setTimeout(() => {
-          if (localStorage.getItem(INSTALLED_STORAGE_KEY) !== "true") {
+          if (localStorage.getItem(STORAGE_KEYS.PWA_INSTALLED) !== "true") {
             setIsBannerVisible(true);
           }
         }, 2500);
@@ -209,16 +215,19 @@ export function PwaProvider({ children }: { children: React.ReactNode }) {
           setIsBannerVisible(false);
           setDeferredPrompt(null);
           try {
-            localStorage.setItem(INSTALLED_STORAGE_KEY, "true");
-          } catch (_) {}
+            localStorage.setItem(STORAGE_KEYS.PWA_INSTALLED, "true");
+          } catch {}
         }
       } catch (err) {
         console.error("Install prompt error:", err);
-        setIsModalOpen(true);
       }
     } else {
-      // Sur iOS ou si le prompt natif n'est pas disponible, ouvrir le guide illustré
-      setIsModalOpen(true);
+      // Sur iOS ou si le prompt natif n'est pas disponible, on indique simplement la marche à suivre
+      if (platform === "ios") {
+        alert("Sur iPhone/iPad, touchez l'icône de partage (Carré avec flèche) puis « Sur l'écran d'accueil » pour installer l'application.");
+      } else {
+        alert("L'installation automatique n'est pas disponible sur votre navigateur.");
+      }
     }
   }, [deferredPrompt, platform]);
 

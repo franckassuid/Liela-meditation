@@ -33,6 +33,8 @@ function run() {
 
   const sessions = [];
 
+  let hasErrors = false;
+
   for (const dir of dirs) {
     const sessionDir = path.join(PUBLIC_SESSIONS_DIR, dir);
     const sessionJsonPath = path.join(sessionDir, "session.json");
@@ -44,8 +46,7 @@ function run() {
 
       // Validate basic metadata
       if (!session.id || !session.metadata?.title || !session.metadata?.durationSeconds) {
-        console.warn(`Skipping invalid session in ${dir}: missing id, title, or durationSeconds`);
-        continue;
+        throw new Error(`Validation Error: Invalid session in ${dir}: missing id, title, or durationSeconds`);
       }
 
       if (session.metadata.title.length > 36) {
@@ -53,27 +54,23 @@ function run() {
       }
 
       if (!session.audio || typeof session.audio !== "object") {
-        console.warn(`Skipping invalid session in ${dir}: missing audio configuration object`);
-        continue;
+        throw new Error(`Validation Error: Invalid session in ${dir}: missing audio configuration object`);
       }
 
       // 1. Check audio.voice: must be defined and point to an existing file
       if (!session.audio.voice || typeof session.audio.voice !== "string") {
-        console.warn(`Skipping session in ${dir}: audio.voice is missing`);
-        continue;
+        throw new Error(`Validation Error: Session in ${dir}: audio.voice is missing`);
       }
       const voicePath = path.join(sessionDir, session.audio.voice);
       if (!fs.existsSync(voicePath)) {
-        console.warn(`Skipping session in ${dir}: voice file not found on disk (${session.audio.voice})`);
-        continue;
+        throw new Error(`Validation Error: Session in ${dir}: voice file not found on disk (${session.audio.voice})`);
       }
 
       // 2. Check audio.final: if specified, verify it exists
       if (session.audio.final && typeof session.audio.final === "string") {
         const finalPath = path.join(sessionDir, session.audio.final);
         if (!fs.existsSync(finalPath)) {
-          console.warn(`Skipping session in ${dir}: final file not found on disk (${session.audio.final})`);
-          continue;
+          throw new Error(`Validation Error: Session in ${dir}: final file not found on disk (${session.audio.final})`);
         }
       }
 
@@ -110,7 +107,13 @@ function run() {
       sessions.push(session);
     } catch (e) {
       console.error(`Error parsing ${sessionJsonPath}:`, e);
+      hasErrors = true;
     }
+  }
+
+  if (hasErrors) {
+    console.error("Sync aborted due to validation errors.");
+    process.exit(1);
   }
 
   fs.writeFileSync(GENERATED_FILE, JSON.stringify(sessions, null, 2));
