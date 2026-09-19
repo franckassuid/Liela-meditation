@@ -8,6 +8,7 @@ import { getSyncStatus, initializeSync, setGuestSyncStatus, startUserSync, subsc
 import { setStorageUser } from "@/lib/storage/local";
 import { startCatalogSync } from "@/lib/firebase/catalog";
 import { invalidateRecommendationCache } from "@/lib/recommendation";
+import { ProfileSetupGate } from "@/components/account/ProfileSetupGate";
 
 const AuthContext = createContext<{ user: User | null; error: string | null }>({ user: null, error: null });
 export const useFirebaseUser = () => useContext(AuthContext);
@@ -49,7 +50,7 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
     return () => { generation++; unsubscribe(); stopSync?.(); catalog.stop(); };
   }, []);
   return <AuthContext.Provider value={{ user, error }}>
-    {ready ? <div key={user?.uid || "guest"} className="contents">{children}</div> :
+    {ready ? <div key={user?.uid || "guest"} className="contents">{user ? <ProfileSetupGate>{children}</ProfileSetupGate> : children}</div> :
       <div role="status" className="min-h-screen flex items-center justify-center bg-creme text-gris-2">Chargement de votre espace…</div>}
   </AuthContext.Provider>;
 }

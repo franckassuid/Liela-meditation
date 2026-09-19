@@ -39,6 +39,18 @@ test("another user and unauthenticated clients cannot read, list or modify priva
   }
 });
 
+test("profile setup accepts optional answers and rejects unsupported values", async () => {
+  const db = env.authenticatedContext("alice").firestore();
+  const ref = doc(db, "users/alice");
+  await assertSucceeds(setDoc(ref, { ...profile, profileSetupCompleted: true, primarySituation: "trouver-le-sommeil", preferredDurationMinutes: 5 }));
+  await assertSucceeds(setDoc(ref, { ...profile, primarySituation: null, preferredDurationMinutes: 0 }));
+  await assertSucceeds(setDoc(ref, profile)); // Existing profiles remain valid.
+  await assertFails(setDoc(ref, { ...profile, primarySituation: "unknown" }));
+  await assertFails(setDoc(ref, { ...profile, preferredDurationMinutes: 900 }));
+  await assertFails(setDoc(ref, { ...profile, profileSetupCompleted: "yes" }));
+  await assertFails(setDoc(doc(env.authenticatedContext("bob").firestore(), "users/alice"), { ...profile, profileSetupCompleted: true }));
+});
+
 test("identity spoofing, invalid progress and injecting premium fields are rejected", async () => {
   const db = env.authenticatedContext("alice").firestore();
   await assertFails(setDoc(doc(db, "users/alice"), { ...profile, userId: "bob" }));

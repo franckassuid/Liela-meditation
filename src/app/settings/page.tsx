@@ -873,7 +873,7 @@ export default function SettingsPage() {
       )}
 
       {currentScreen === "compte" && (
-        <AccountScreen onBack={() => setCurrentScreen("main")} />
+        <AccountScreen onBack={() => setCurrentScreen("main")} onPrivacy={() => setCurrentScreen("confidentialite")} />
       )}
 
       {currentScreen === "telechargements" && (

@@ -64,7 +64,7 @@ réel n’ont pas été testées lors de cette vérification.
 
 | Chemin | Données | Écriture |
 | --- | --- | --- |
-| `users/{uid}` | userId, prénom, création ISO, langue, niveau, onboarding | Propriétaire |
+| `users/{uid}` | userId, prénom, création ISO, langue, niveau, onboarding, profil initial, besoin principal et durée préférée | Propriétaire |
 | `users/{uid}/preferences/audio` | voix, volumes 0–1, musique/ambiance activées | Propriétaire |
 | `users/{uid}/preferences/settings` | reprise, rappels et réglages | Propriétaire |
 | `users/{uid}/favorites/{sessionId}` | séance et date d’ajout | Propriétaire |
@@ -77,6 +77,26 @@ réel n’ont pas été testées lors de cette vérification.
 | `catalog/config` | enabled, schemaVersion | Backend Admin uniquement |
 
 Les identifiants documentaires sont encodés pour ne pas créer de sous-chemins.
+
+### Compte et premier profil
+
+L’accueil du compte propose Google, une entrée e-mail et Apple désactivé avec
+la mention « Bientôt disponible ». L’e-mail dispose d’écrans distincts de connexion,
+création de compte et réinitialisation du mot de passe. Le mode invité reste accessible.
+
+Après connexion, un profil sans `profileSetupCompleted: true` ouvre quatre étapes :
+prénom facultatif, expérience, besoin principal, durée préférée. Chaque étape validée
+est enregistrée ; « Plus tard » permet de reporter le parcours pour la session en cours.
+Les réponses sont modifiables depuis le compte. La dernière étape renseigne
+`profileSetupCompleted` et `onboardingCompleted`, ce dernier restant aussi utilisé
+par l’introduction de l’accueil. Les anciens profils restent acceptés.
+
+`primarySituation` vaut un identifiant de situation connu ou `null` pour découvrir.
+`preferredDurationMinutes` vaut 3, 5, 10, 20, ou 0 pour « Selon le moment ».
+Ces deux réponses constituent le profil initial ; elles ne modifient pas encore
+l’algorithme de recommandations. Déployer les règles Firestore actualisées avant
+de publier cette version de l’interface.
+
 Le nombre d’écoutes et les réécoutes se déduisent des entrées d’historique uniques,
 sans compteur incrémenté à chaque synchronisation. L’export inclut ces nombres.
 Les valeurs `listenedSeconds` mesurent l’avancement normal du lecteur, en excluant

@@ -1,3 +1,5 @@
+import type { SituationId } from "@/config/situations";
+
 export type ExperienceLevel = "beginner" | "intermediate" | "advanced";
 export interface UserProfile {
   userId?: string;
@@ -6,6 +8,9 @@ export interface UserProfile {
   language: string;
   level: ExperienceLevel;
   onboardingCompleted: boolean;
+  profileSetupCompleted?: boolean;
+  primarySituation?: SituationId | null;
+  preferredDurationMinutes?: number;
 }
 export interface SessionFeedback {
   sessionId: string;

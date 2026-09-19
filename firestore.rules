@@ -19,12 +19,15 @@ service cloud.firestore {
     match /users/{uid} {
       allow read, delete: if owner(uid);
       allow create, update: if owner(uid) && belongsTo(uid)
-        && request.resource.data.keys().hasOnly(['userId', 'firstName', 'createdAt', 'language', 'level', 'onboardingCompleted'])
+        && request.resource.data.keys().hasOnly(['userId', 'firstName', 'createdAt', 'language', 'level', 'onboardingCompleted', 'profileSetupCompleted', 'primarySituation', 'preferredDurationMinutes'])
         && text(request.resource.data.firstName, 80)
         && text(request.resource.data.createdAt, 40)
         && text(request.resource.data.language, 10)
         && request.resource.data.level in ['beginner', 'intermediate', 'advanced']
-        && request.resource.data.onboardingCompleted is bool;
+        && request.resource.data.onboardingCompleted is bool
+        && (!('profileSetupCompleted' in request.resource.data) || request.resource.data.profileSetupCompleted is bool)
+        && (!('primarySituation' in request.resource.data) || request.resource.data.primarySituation == null || request.resource.data.primarySituation in ['calmer-le-stress', 'trouver-le-sommeil', 'calmer-les-pensees', 'retrouver-sa-concentration', 'relacher-les-tensions', 'se-recentrer'])
+        && (!('preferredDurationMinutes' in request.resource.data) || request.resource.data.preferredDurationMinutes in [0, 3, 5, 10, 20]);
       match /preferences/{kind} {
         allow read, delete: if owner(uid);
         allow create, update: if owner(uid) && belongsTo(uid) && (
