@@ -3,6 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { getAvailableSituations } from "@/lib/sessions";
+import { storage } from "@/lib/storage";
 import { SituationCard } from "@/components/ui/SituationCard";
 
 export default function CheckInPage() {
@@ -30,7 +31,7 @@ export default function CheckInPage() {
           <SituationCard
             key={situation.id}
             situation={situation}
-            onClick={() => router.push(`/check-in/duration?situation=${situation.id}`)}
+            onClick={() => { void storage.recordEvent({ type: "situation_selected", situationId: situation.id }); router.push(`/check-in/duration?situation=${situation.id}`); }}
           />
         ))}
       </div>

@@ -1,14 +1,7 @@
 import React from "react";
-import { AppSettings, DownloadRecord } from "@/lib/storage";
+import { DownloadRecord } from "@/lib/storage";
 
 // ── Typed prop interfaces ────────────────────────────────────────────────────
-
-interface SettingsAccountProps {
-  settings: AppSettings;
-  setAccountEmailModal: (v: "email" | null) => void;
-  handleDisconnectAccount: () => void;
-  onBack: () => void;
-}
 
 interface SettingsDownloadsProps {
   downloads: DownloadRecord[];
@@ -34,82 +27,6 @@ interface SettingsPrivacyProps {
 }
 
 // ── Components ───────────────────────────────────────────────────────────────
-
-export function SettingsAccount({ settings, setAccountEmailModal, handleDisconnectAccount, onBack }: SettingsAccountProps) {
-  return (
-    <div className="p-marge pb-12 flex flex-col flex-1 max-w-[480px] w-full mx-auto animate-in fade-in">
-      {/* Top sub */}
-      <div className="flex items-center gap-[10px] pt-2 pb-[14px]">
-        <button
-          onClick={onBack}
-          className="p-1 -ml-1 text-encre active:opacity-60 transition-opacity"
-          aria-label="Retour aux réglages"
-        >
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#433528" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-            <path d="m15 5-7 7 7 7" />
-          </svg>
-        </button>
-        <span className="font-poppins font-light text-[18px]">Compte</span>
-      </div>
-
-      <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-1 mx-[3px]">
-        Un compte sert à une seule chose : retrouver vos favoris et votre historique sur un autre appareil. Rien n&apos;est analysé, rien n&apos;est partagé.
-      </p>
-
-      <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)] mt-[14px]">
-        {!settings.accountUser?.email ? (
-          /* B3: Apple sign-in removed — email only, no simulated iCloud account */
-          <div
-            onClick={() => setAccountEmailModal("email")}
-            className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-          >
-            <span className="flex shrink-0">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7A6E5E" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
-                <path d="m4 7 8 6 8-6" />
-              </svg>
-            </span>
-            <div className="flex-1 min-w-0">
-              <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                Continuer par e-mail
-              </b>
-            </div>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C6BBA9" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m9 5 7 7-7 7" />
-            </svg>
-          </div>
-        ) : (
-          <>
-            <div className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4]">
-              <div className="flex-1 min-w-0">
-                <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                  Compte connecté
-                </b>
-                <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
-                  {settings.accountUser.email}
-                </i>
-              </div>
-            </div>
-            <div
-              onClick={handleDisconnectAccount}
-              className="flex items-center gap-[10px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-            >
-              <div className="flex-1 min-w-0">
-                <b className="block font-normal text-[13.5px] leading-[1.3] text-[#A0483C]">
-                  Se déconnecter
-                </b>
-              </div>
-            </div>
-          </>
-        )}
-      </div>
-
-      <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-3 mx-[3px]">
-        Vous pouvez continuer à utiliser Liela sans compte. Tout reste alors sur cet appareil.
-      </p>
-    </div>
-  );
-}
 
 export function SettingsDownloads({
   downloads,
@@ -334,7 +251,7 @@ export function SettingsHelp({ expandedFaq, setExpandedFaq, onBack }: SettingsHe
           </div>
           {expandedFaq === "q3" && (
             <p className="text-[11.5px] text-[#7A6E5E] leading-[1.55] mt-2 pt-2 border-t border-[#F8EFE4]">
-              Uniquement sur votre appareil (téléphone ou ordinateur). Si vous effacez vos données de navigation sans avoir lié d&apos;adresse e-mail ou exporté vos paramètres, vous perdrez votre historique.
+              En mode invité, sur votre appareil. Avec un compte, vos données sont synchronisées avec Firebase pour les retrouver sur vos autres appareils. Les fichiers audio téléchargés restent locaux.
             </p>
           )}
         </div>
@@ -391,7 +308,7 @@ export function SettingsPrivacy({ setShowExportSheet, setShowDeleteSheet, setSho
       <div className="bg-white rounded-[15px] p-4 shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
         <p className="font-poppins font-light text-[14.5px]">Ce que Liela sait de vous</p>
         <p className="text-[11.5px] text-[#7A6E5E] leading-[1.55] mt-[5px]">
-          Vos favoris, votre historique d&apos;écoute et vos réglages sont enregistrés sur cet appareil, et nulle part ailleurs.
+          En mode invité, vos données restent sur cet appareil. Avec un compte, votre profil, vos favoris, votre historique, vos réglages et vos retours sont synchronisés avec Firebase.
         </p>
 
         <p className="font-poppins font-light text-[14.5px] mt-[14px]">Ce qui ne sort jamais</p>
@@ -401,7 +318,7 @@ export function SettingsPrivacy({ setShowExportSheet, setShowDeleteSheet, setSho
 
         <p className="font-poppins font-light text-[14.5px] mt-[14px]">Ce que vous pouvez faire</p>
         <p className="text-[11.5px] text-[#7A6E5E] leading-[1.55] mt-[5px]">
-          Exporter vos données à tout moment, ou les effacer entièrement depuis les réglages.
+          Exporter les données disponibles ou effacer vos données applicatives depuis les réglages. Le compte de connexion, les droits d’achat et les téléchargements sont conservés.
         </p>
       </div>
 

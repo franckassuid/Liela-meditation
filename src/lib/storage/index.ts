@@ -1,7 +1,9 @@
-import { get, set, del, update } from 'idb-keyval';
+import { safeGet as localGet, safeSet as localSet, safeUpdate as localUpdate, safeDel as localDel, getStorageUser } from "./local";
+import type { UserProfile, SessionFeedback, PersonalizationEvent } from "@/lib/firebase/schema";
 import { removeSessionFiles, verifySessionInCache, SESSIONS_CACHE_NAME } from '@/lib/download/SessionDownloader';
 
 export interface AudioPreferences {
+  voice?: string;
   voiceVolume: number;
   musicVolume: number;
   ambienceVolume: number;
@@ -16,6 +18,8 @@ export interface SessionHistoryItem {
   lastPosition: number;
   duration: number;
   completed: boolean; // >= 80%
+  listenedSeconds?: number;
+  lastListenedAt?: string;
   abandoned?: boolean; // < 90s
 }
 
@@ -115,6 +119,9 @@ export const STORAGE_KEYS = {
   USER_PROFILE: "liela_profile",
   AUDIO_PREFERENCES: "liela_audio_prefs",
   HISTORY: "liela_history",
+  PROGRESS: "liela_progress",
+  FEEDBACK: "liela_feedback",
+  EVENTS: "liela_events",
   IN_PROGRESS: "liela_in_progress",
   FAVORITES: "liela_favorites",
   FAVORITES_REFUSALS: "liela_favorites_refusals",
@@ -127,64 +134,6 @@ export const STORAGE_KEYS = {
   PWA_INSTALLED: "liela_pwa_installed",
   PWA_DISMISSED: "liela_pwa_dismissed",
 };
-
-// In-memory fallback if IndexedDB is blocked
-const memoryFallback = new Map<string, unknown>();
-
-async function safeGet<T>(key: string): Promise<T | undefined> {
-  if (typeof window === "undefined") return undefined;
-  try {
-    const val = await get<T>(key);
-    return val !== undefined ? val : (memoryFallback.get(key) as T | undefined);
-  } catch (e) {
-    console.warn(`[Storage] Read failed for ${key}, using fallback.`, e);
-    return memoryFallback.get(key) as T | undefined;
-  }
-}
-
-async function safeSet<T>(key: string, val: T): Promise<boolean> {
-  if (typeof window === "undefined") return false;
-  try {
-    await set(key, val);
-    memoryFallback.set(key, val);
-    return true;
-  } catch (e) {
-    console.warn(`[Storage] Write failed for ${key}, using fallback.`, e);
-    memoryFallback.set(key, val);
-    return false;
-  }
-}
-
-async function safeUpdate<T>(key: string, updater: (val: T | undefined) => T): Promise<boolean> {
-  if (typeof window === "undefined") return false;
-  try {
-    await update(key, (val: unknown) => {
-      const newVal = updater(val as T);
-      memoryFallback.set(key, newVal);
-      return newVal;
-    });
-    return true;
-  } catch (e) {
-    console.warn(`[Storage] Update failed for ${key}, using fallback.`, e);
-    const oldVal = memoryFallback.get(key) as T | undefined;
-    const newVal = updater(oldVal);
-    memoryFallback.set(key, newVal);
-    return false; // Indicate IDB failed, but memory worked
-  }
-}
-
-async function safeDel(key: string): Promise<boolean> {
-  if (typeof window === "undefined") return false;
-  try {
-    await del(key);
-    memoryFallback.delete(key);
-    return true;
-  } catch (e) {
-    console.warn(`[Storage] Delete failed for ${key}, using fallback.`, e);
-    memoryFallback.delete(key);
-    return false;
-  }
-}
 
 export async function requestPersistence(): Promise<boolean> {
   if (typeof navigator !== 'undefined' && navigator.storage && navigator.storage.persist) {
@@ -200,25 +149,32 @@ export async function requestPersistence(): Promise<boolean> {
   return false;
 }
 
-export const storage = {
+function createStorage(uid: string | null) {
+  const safeGet = <T>(key: string) => localGet<T>(key, uid);
+  const safeSet = <T>(key: string, value: T) => localSet(key, value, uid);
+  const safeUpdate = <T>(key: string, updater: (value: T | undefined) => T) => localUpdate(key, updater, uid);
+  const safeDel = (key: string) => localDel(key, uid);
+  const storage = {
   getOnboardingCompleted: async (): Promise<boolean> => {
-    const val = await safeGet<boolean>(STORAGE_KEYS.ONBOARDING_COMPLETED);
-    return val === true;
+    const profile = await storage.getProfile();
+    return profile.onboardingCompleted || (await safeGet<boolean>(STORAGE_KEYS.ONBOARDING_COMPLETED)) === true;
   },
   setOnboardingCompleted: async (completed: boolean): Promise<boolean> => {
-    return safeSet(STORAGE_KEYS.ONBOARDING_COMPLETED, completed);
+    await safeSet(STORAGE_KEYS.ONBOARDING_COMPLETED, completed);
+    return storage.setProfile({ onboardingCompleted: completed });
   },
-
-  getProfile: async (): Promise<{ firstName: string }> => {
-    const data = await safeGet<{ firstName: string }>(STORAGE_KEYS.USER_PROFILE);
-    return data && typeof data.firstName === 'string' ? data : { firstName: "" };
+  getProfile: async (): Promise<UserProfile> => {
+    const data = await safeGet<Partial<UserProfile>>(STORAGE_KEYS.USER_PROFILE);
+    return { firstName: "", createdAt: new Date().toISOString(), language: "fr", level: "beginner", onboardingCompleted: false, ...data };
   },
-  setProfile: async (profile: { firstName: string }): Promise<boolean> => {
-    return safeSet(STORAGE_KEYS.USER_PROFILE, profile);
+  setProfile: async (profile: Partial<UserProfile>): Promise<boolean> => {
+    const current = await storage.getProfile();
+    return safeSet(STORAGE_KEYS.USER_PROFILE, { ...current, ...profile });
   },
 
   getAudioPreferences: async (): Promise<AudioPreferences> => {
     const defaults: AudioPreferences = {
+      voice: "Algenib",
       voiceVolume: 1,
       musicVolume: 0.75,
       ambienceVolume: 0.50,
@@ -249,6 +205,7 @@ export const storage = {
     return Array.isArray(data) ? data : [];
   },
   addHistoryItem: async (item: SessionHistoryItem): Promise<boolean> => {
+    await storage.saveProgress(item);
     return safeUpdate<SessionHistoryItem[]>(STORAGE_KEYS.HISTORY, (history) => {
       const arr = Array.isArray(history) ? history : [];
       const index = arr.findIndex(i => i.sessionId === item.sessionId && i.startedAt === item.startedAt);
@@ -257,21 +214,43 @@ export const storage = {
       } else {
         arr.unshift(item);
       }
-      return arr.slice(0, 50);
+      return arr;
     });
   },
 
   getInProgressSession: async (): Promise<SessionHistoryItem | null> => {
     const data = await safeGet<SessionHistoryItem>(STORAGE_KEYS.IN_PROGRESS);
-    return data || null;
+    if (data) return data;
+    const progress = await storage.getProgress();
+    return progress.filter((item) => !item.completed).sort((a, b) => (b.lastListenedAt || b.startedAt).localeCompare(a.lastListenedAt || a.startedAt))[0] || null;
   },
   setInProgressSession: async (item: SessionHistoryItem | null): Promise<boolean> => {
     if (item) {
+      await storage.saveProgress(item);
       return safeSet(STORAGE_KEYS.IN_PROGRESS, item);
     } else {
       return safeDel(STORAGE_KEYS.IN_PROGRESS);
     }
   },
+
+  getProgress: async (): Promise<SessionHistoryItem[]> => (await safeGet<SessionHistoryItem[]>(STORAGE_KEYS.PROGRESS)) || [],
+  getSessionProgress: async (sessionId: string): Promise<SessionHistoryItem | null> =>
+    (await storage.getProgress()).find((item) => item.sessionId === sessionId) || null,
+  saveProgress: async (item: SessionHistoryItem): Promise<boolean> => {
+    return safeUpdate<SessionHistoryItem[]>(STORAGE_KEYS.PROGRESS, (items) => [
+      { ...item, lastListenedAt: item.lastListenedAt || new Date().toISOString() },
+      ...(items || []).filter((existing) => existing.sessionId !== item.sessionId),
+    ]);
+  },
+  saveFeedback: async (feedback: SessionFeedback): Promise<boolean> => safeUpdate<SessionFeedback[]>(STORAGE_KEYS.FEEDBACK, (items) => [
+    feedback, ...(items || []).filter((item) => item.sessionId !== feedback.sessionId || item.startedAt !== feedback.startedAt),
+  ]),
+  getFeedback: async (): Promise<SessionFeedback[]> => (await safeGet<SessionFeedback[]>(STORAGE_KEYS.FEEDBACK)) || [],
+  recordEvent: async (event: Omit<PersonalizationEvent, "id" | "createdAt">): Promise<boolean> =>
+    safeUpdate<PersonalizationEvent[]>(STORAGE_KEYS.EVENTS, (items) => [
+      { ...event, id: crypto.randomUUID(), createdAt: new Date().toISOString() }, ...(items || []),
+    ]),
+  getEvents: async (): Promise<PersonalizationEvent[]> => (await safeGet<PersonalizationEvent[]>(STORAGE_KEYS.EVENTS)) || [],
 
   getFavorites: async (): Promise<Favori[]> => {
     const data = await safeGet<Favori[]>(STORAGE_KEYS.FAVORITES);
@@ -295,11 +274,6 @@ export const storage = {
     return safeUpdate<Favori[]>(STORAGE_KEYS.FAVORITES, (favs) => {
       return Array.isArray(favs) ? favs.filter(f => f.sessionId !== sessionId) : [];
     });
-  },
-
-  syncFavoriteDownloads: async (_enable: boolean): Promise<boolean> => {
-    // Auto-download of favorites is not yet implemented — no-op.
-    return true;
   },
 
   getFavoritesRefusals: async (): Promise<string[]> => {
@@ -339,6 +313,7 @@ export const storage = {
     return Array.isArray(data) ? data : [];
   },
   addRecommendationHistory: async (sessionId: string): Promise<boolean> => {
+    await storage.recordEvent({ type: "recommendation", sessionId });
     return safeUpdate<{ sessionId: string; recommendedAt: string }[]>(STORAGE_KEYS.RECOMMENDATION_HISTORY, (history) => {
       const arr = Array.isArray(history) ? history : [];
       arr.unshift({ sessionId, recommendedAt: new Date().toISOString() });
@@ -461,6 +436,10 @@ export const storage = {
       audioPreferences: audioPrefs,
       favorites,
       history,
+      listeningCounts: Object.fromEntries(history.map((item) => [item.sessionId, history.filter((entry) => entry.sessionId === item.sessionId).length])),
+      progress: await storage.getProgress(),
+      feedback: await storage.getFeedback(),
+      personalization: await storage.getEvents(),
     };
     return JSON.stringify(exportObject, null, 2);
   },
@@ -470,6 +449,9 @@ export const storage = {
     let allOk = true;
     const keysToRemove = [
       STORAGE_KEYS.HISTORY,
+      STORAGE_KEYS.PROGRESS,
+      STORAGE_KEYS.FEEDBACK,
+      STORAGE_KEYS.EVENTS,
       STORAGE_KEYS.IN_PROGRESS,
       STORAGE_KEYS.FAVORITES,
       STORAGE_KEYS.FAVORITES_REFUSALS,
@@ -497,3 +479,11 @@ export const storage = {
     return allOk;
   },
 };
+
+  return storage;
+}
+
+// Each operation captures its owner once, including any awaits and nested calls.
+export const storage = new Proxy({} as ReturnType<typeof createStorage>, {
+  get(_target, key) { return Reflect.get(createStorage(getStorageUser()), key); },
+});

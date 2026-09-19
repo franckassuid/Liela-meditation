@@ -1,13 +1,17 @@
 "use client";
 
+import { useStorageRevision } from "@/hooks/useStorageRevision";
+import { useCatalogRevision } from "@/hooks/useCatalogRevision";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { storage, SessionHistoryItem } from "@/lib/storage";
 import { SessionCard } from "@/components/ui/SessionCard";
-import sessionsData from "@/generated/sessions.json";
+import { sessions as sessionsData } from "@/lib/sessions";
 import { getSituation } from "@/config/situations";
 
 export default function HistoryPage() {
+  const catalogRevision = useCatalogRevision();
+  const storageRevision = useStorageRevision();
   const router = useRouter();
   const [history, setHistory] = useState<SessionHistoryItem[]>([]);
   const [promptFavSessionId, setPromptFavSessionId] = useState<string | null>(null);
@@ -41,7 +45,7 @@ export default function HistoryPage() {
     };
     load();
     return () => { active = false; };
-  }, []);
+  }, [storageRevision, catalogRevision]);
 
   const handleAcceptFav = async () => {
     if (promptFavSessionId) {
@@ -61,7 +65,7 @@ export default function HistoryPage() {
     }
   };
 
-  const totalTimeMinutes = Math.round(history.reduce((acc, item) => acc + item.lastPosition, 0) / 60);
+  const totalTimeMinutes = Math.round(history.reduce((acc, item) => acc + (item.listenedSeconds ?? item.lastPosition), 0) / 60);
   const completedCount = history.filter((item) => item.completed).length;
 
   // Group by date

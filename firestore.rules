@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owner(uid) { return request.auth != null && request.auth.uid == uid; }
+    function belongsTo(uid) { return request.resource.data.userId == uid; }
+    function text(value, max) { return value is string && value.size() <= max; }
+    function volume(value) { return value is number && value >= 0 && value <= 1; }
+    function history(data) {
+      return data.keys().hasOnly(['userId', 'sessionId', 'startedAt', 'completedAt', 'lastPosition', 'duration', 'completed', 'abandoned', 'listenedSeconds', 'lastListenedAt'])
+        && text(data.sessionId, 200) && text(data.startedAt, 40)
+        && data.duration is number && data.duration > 0 && data.duration <= 86400
+        && data.lastPosition is number && data.lastPosition >= 0 && data.lastPosition <= data.duration
+        && data.completed is bool
+        && (!('listenedSeconds' in data) || (data.listenedSeconds is number && data.listenedSeconds >= 0 && data.listenedSeconds <= 604800))
+        && (!('abandoned' in data) || data.abandoned is bool)
+        && (!('lastListenedAt' in data) || text(data.lastListenedAt, 40))
+        && (!('completedAt' in data) || text(data.completedAt, 40));
+    }
+    match /users/{uid} {
+      allow read, delete: if owner(uid);
+      allow create, update: if owner(uid) && belongsTo(uid)
+        && request.resource.data.keys().hasOnly(['userId', 'firstName', 'createdAt', 'language', 'level', 'onboardingCompleted'])
+        && text(request.resource.data.firstName, 80)
+        && text(request.resource.data.createdAt, 40)
+        && text(request.resource.data.language, 10)
+        && request.resource.data.level in ['beginner', 'intermediate', 'advanced']
+        && request.resource.data.onboardingCompleted is bool;
+      match /preferences/{kind} {
+        allow read, delete: if owner(uid);
+        allow create, update: if owner(uid) && belongsTo(uid) && (
+          (kind == 'audio'
+            && request.resource.data.keys().hasOnly(['userId', 'voice', 'voiceVolume', 'musicVolume', 'ambienceVolume', 'musicEnabled', 'ambienceEnabled'])
+            && volume(request.resource.data.voiceVolume) && volume(request.resource.data.musicVolume) && volume(request.resource.data.ambienceVolume)
+            && request.resource.data.musicEnabled is bool && request.resource.data.ambienceEnabled is bool
+            && (!('voice' in request.resource.data) || text(request.resource.data.voice, 80)))
+          || (kind == 'settings'
+            && request.resource.data.keys().hasOnly(['userId', 'resumePlayback', 'downloadFavorites', 'downloadWifiOnly', 'dailyReminderEnabled', 'dailyReminderTime', 'dailyReminderDays', 'dailyReminderCustomDays', 'fadeInDuration', 'backgroundVolume', 'defaultSleepTimer'])
+            && request.resource.data.resumePlayback is bool
+            && request.resource.data.downloadFavorites is bool && request.resource.data.downloadWifiOnly is bool
+            && request.resource.data.dailyReminderEnabled is bool
+            && request.resource.data.dailyReminderTime.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
+            && text(request.resource.data.dailyReminderDays, 120)
+            && request.resource.data.dailyReminderCustomDays is list
+            && request.resource.data.dailyReminderCustomDays.size() <= 7
+            && request.resource.data.dailyReminderCustomDays.hasOnly(['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'])
+            && (!('fadeInDuration' in request.resource.data) || (request.resource.data.fadeInDuration is number && request.resource.data.fadeInDuration >= 0 && request.resource.data.fadeInDuration <= 60))
+            && (!('backgroundVolume' in request.resource.data) || request.resource.data.backgroundVolume in ['Désactivé', 'Faible', 'Moyen', 'Fort'])
+            && (!('defaultSleepTimer' in request.resource.data) || request.resource.data.defaultSleepTimer in ['15 min', '30 min', '45 min', '1 heure', 'Jamais'])));
+      }
+      match /favorites/{id} {
+        allow read, delete: if owner(uid);
+        allow create, update: if owner(uid) && belongsTo(uid)
+          && request.resource.data.keys().hasOnly(['userId', 'sessionId', 'addedAt', 'source'])
+          && text(request.resource.data.sessionId, 200) && text(request.resource.data.addedAt, 40)
+          && (!('source' in request.resource.data) || text(request.resource.data.source, 80));
+      }
+      match /history/{id} {
+        allow read, delete: if owner(uid);
+        allow create, update: if owner(uid) && belongsTo(uid) && history(request.resource.data);
+      }
+      match /progress/{id} {
+        allow read, delete: if owner(uid);
+        allow create, update: if owner(uid) && belongsTo(uid) && history(request.resource.data);
+      }
+      match /feedback/{id} {
+        allow read, delete: if owner(uid);
+        allow create, update: if owner(uid) && belongsTo(uid)
+          && request.resource.data.keys().hasOnly(['userId', 'sessionId', 'startedAt', 'rating', 'createdAt', 'before', 'after'])
+          && text(request.resource.data.sessionId, 200) && text(request.resource.data.startedAt, 40)
+          && text(request.resource.data.createdAt, 40)
+          && request.resource.data.rating in ['useful', 'somewhat', 'not-useful']
+          && (!('before' in request.resource.data) || request.resource.data.before in [1, 2, 3, 4, 5])
+          && (!('after' in request.resource.data) || request.resource.data.after in [1, 2, 3, 4, 5]);
+      }
+      match /events/{id} {
+        allow read, delete: if owner(uid);
+        allow create, update: if owner(uid) && belongsTo(uid)
+          && request.resource.data.keys().hasOnly(['userId', 'id', 'type', 'createdAt', 'sessionId', 'situationId', 'durationMinutes'])
+          && text(request.resource.data.id, 100) && text(request.resource.data.createdAt, 40)
+          && request.resource.data.type in ['situation_selected', 'duration_selected', 'recommendation']
+          && (!('sessionId' in request.resource.data) || text(request.resource.data.sessionId, 200))
+          && (!('situationId' in request.resource.data) || text(request.resource.data.situationId, 200))
+          && (!('durationMinutes' in request.resource.data) || request.resource.data.durationMinutes in [0, 3, 5, 10, 20]);
+      }
+      // Only a trusted backend using the Admin SDK validates purchases and grants rights.
+      match /entitlements/{id} { allow read: if owner(uid); allow write: if false; }
+    }
+    match /sessions/{id} {
+      allow read: if resource.data.published == true;
+      allow write: if false;
+    }
+    match /catalog/config { allow read: if true; allow write: if false; }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

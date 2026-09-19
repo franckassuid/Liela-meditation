@@ -57,7 +57,11 @@ self.addEventListener("fetch", (event) => {
   } catch {
     return;
   }
-  if (url.origin !== self.location.origin) return;
+  // Remote CDN audio is cached by the downloader under its absolute URL.
+  if (url.origin !== self.location.origin) {
+    event.respondWith(handleSessionRequest(request, url));
+    return;
+  }
 
   const isSessionFile = url.pathname.startsWith("/sessions/");
 

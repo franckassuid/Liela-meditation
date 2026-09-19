@@ -23,16 +23,22 @@ import {
 } from "@/lib/notifications";
 import { NotificationPermissionModal } from "@/components/notifications/NotificationPermissionModal";
 import {
-  SettingsAccount,
   SettingsDownloads,
   SettingsHelp,
   SettingsPrivacy
 } from "./components/SettingsSubScreens";
 
 
+import { AccountScreen } from "./components/AccountScreen";
+import { useFirebaseUser } from "@/components/firebase/FirebaseProvider";
+import { getSyncStatus } from "@/lib/firebase/sync";
+import { useStorageRevision } from "@/hooks/useStorageRevision";
+
 type ScreenType = "main" | "compte" | "telechargements" | "aide" | "confidentialite";
 
 export default function SettingsPage() {
+  const { user } = useFirebaseUser();
+  const storageRevision = useStorageRevision();
   const {
     isStandalone,
     isAppInstalled,
@@ -49,8 +55,6 @@ export default function SettingsPage() {
   const [showDaysSheet, setShowDaysSheet] = useState(false);
   const [showTimeSheet, setShowTimeSheet] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
-  const [accountEmailModal, setAccountEmailModal] = useState<"email" | null>(null);
-  const [emailInput, setEmailInput] = useState("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
   const [testCountdown, setTestCountdown] = useState<number | null>(null);
@@ -60,6 +64,7 @@ export default function SettingsPage() {
   // Load data on mount
   useEffect(() => {
     let active = true;
+    let permissionStatus: PermissionStatus | undefined;
     const load = async () => {
       const s = await storage.getSettings();
       const d = await storage.getDownloads();
@@ -82,6 +87,8 @@ export default function SettingsPage() {
         navigator.permissions
           .query({ name: "notifications" as PermissionName })
           .then((status) => {
+            if (!active) return;
+            permissionStatus = status;
             status.onchange = () => {
               setNotificationPermission(status.state as NotificationPermissionState);
             };
@@ -92,8 +99,9 @@ export default function SettingsPage() {
 
     return () => {
       active = false;
+      if (permissionStatus) permissionStatus.onchange = null;
     };
-  }, []);
+  }, [storageRevision]);
 
   // Mise à jour périodique du texte descriptif du prochain rappel
   useEffect(() => {
@@ -307,6 +315,10 @@ export default function SettingsPage() {
 
   // Delete all data (local storage cleared, downloads preserved)
   const handleDeleteData = async () => {
+    if (user && getSyncStatus().state !== "synced") {
+      showToast("Attendez la fin de la synchronisation avant d’effacer les données du compte.");
+      return;
+    }
     try {
       // FIX B4: check the boolean — clearAllData returns false if any IDB deletion failed
       const ok = await storage.clearAllData();
@@ -314,7 +326,7 @@ export default function SettingsPage() {
         const freshSettings = await storage.getSettings();
         setSettings(freshSettings);
         setShowDeleteSheet(false);
-        showToast("Vos données locales ont été effacées");
+        showToast("Données effacées de cet appareil ; la suppression des données sera synchronisée");
       } else {
         setShowDeleteSheet(false);
         showToast("⚠️ Suppression partielle — relancez l'application et réessayez");
@@ -334,25 +346,6 @@ export default function SettingsPage() {
     } else {
       showToast("⚠️ Erreur lors de la suppression des téléchargements");
     }
-  };
-
-  // Save account — email only, no Apple simulation
-  const handleSaveAccount = async () => {
-    // FIX B3: Remove Apple simulation (utilisateur@icloud.com). Only email is supported locally.
-    if (accountEmailModal === "email" && emailInput.trim()) {
-      const accountUser = { email: emailInput.trim(), method: "email" };
-      await updateSetting("accountUser", accountUser);
-      setAccountEmailModal(null);
-      setEmailInput("");
-      showToast("Adresse enregistrée");
-    } else {
-      setAccountEmailModal(null);
-    }
-  };
-
-  const handleDisconnectAccount = async () => {
-    await updateSetting("accountUser", null);
-    showToast("Compte déconnecté");
   };
 
   return (
@@ -388,11 +381,11 @@ export default function SettingsPage() {
               >
                 <div className="flex-1 min-w-0">
                   <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                    {settings.accountUser?.email ? "Mon compte" : "Se connecter"}
+                    {user?.email ? "Mon compte" : "Se connecter"}
                   </b>
                   <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
-                    {settings.accountUser?.email
-                      ? settings.accountUser.email
+                    {user?.email
+                      ? user?.email
                       : "Pour retrouver vos favoris sur un autre appareil"}
                   </i>
                 </div>
@@ -880,12 +873,7 @@ export default function SettingsPage() {
       )}
 
       {currentScreen === "compte" && (
-        <SettingsAccount
-          settings={settings}
-          setAccountEmailModal={setAccountEmailModal}
-          handleDisconnectAccount={handleDisconnectAccount}
-          onBack={() => setCurrentScreen("main")}
-        />
+        <AccountScreen onBack={() => setCurrentScreen("main")} />
       )}
 
       {currentScreen === "telechargements" && (
@@ -935,7 +923,7 @@ export default function SettingsPage() {
             </span>
             <p className="font-poppins font-light text-[19px]">Exporter mes données</p>
             <p className="text-[12px] text-[#7A6E5E] leading-[1.5] mt-2 max-w-[320px] mx-auto">
-              Un fichier contenant vos favoris, votre historique et vos réglages. Lisible, et réimportable si vous changez d’appareil.
+              Un fichier JSON contenant les données actuellement disponibles sur cet appareil. Avec un compte, attendez la fin de la synchronisation avant l’export.
             </p>
             <button
               onClick={handleExportData}
@@ -972,7 +960,7 @@ export default function SettingsPage() {
             </span>
             <p className="font-poppins font-light text-[19px]">Effacer mes données&nbsp;?</p>
             <p className="text-[12px] text-[#7A6E5E] leading-[1.5] mt-2 max-w-[320px] mx-auto">
-              Vos favoris, votre historique et vos réglages seront supprimés de cet appareil. Les séances téléchargées resteront disponibles.
+              Vos données applicatives seront effacées de cet appareil et, si vous êtes connecté, leur suppression sera synchronisée avec votre compte. Votre compte de connexion et vos droits d’abonnement seront conservés. Les séances téléchargées resteront disponibles.
             </p>
             <p className="text-[12px] text-[#7A6E5E] leading-[1.5] mt-[6px]">
               Cette action est définitive.
@@ -996,47 +984,6 @@ export default function SettingsPage() {
       {/* =========================================================================
           MODAL 4: CONNEXION MODAL (Email or Apple)
       ========================================================================== */}
-      {accountEmailModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="fixed inset-0 bg-[rgba(67,53,40,0.34)] animate-in fade-in"
-            onClick={() => setAccountEmailModal(null)}
-          />
-          <div className="relative w-full max-w-sm bg-creme rounded-[20px] p-5 z-51 shadow-2xl text-left border border-filet">
-            <h3 className="font-poppins font-light text-[18px] mb-2">
-              {accountEmailModal === "email" ? "Connexion par e-mail" : "Connexion"}
-            </h3>
-            <p className="text-[12px] text-[#7A6E5E] leading-[1.5] mb-4">
-              Entrez votre adresse e-mail pour synchroniser vos données locales.
-            </p>
-            {accountEmailModal === "email" && (
-              <input
-                type="email"
-                placeholder="votre@email.fr"
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                className="w-full bg-white border border-filet rounded-xl px-3 py-2 text-[13.5px] text-encre mb-4 outline-none focus:border-encre"
-                autoFocus
-              />
-            )}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setAccountEmailModal(null)}
-                className="flex-1 py-[10px] text-[13px] font-semibold rounded-xl border border-filet text-gris-2 active:bg-coquille"
-              >
-                Annuler
-              </button>
-              <button
-                onClick={handleSaveAccount}
-                className="flex-1 py-[10px] text-[13px] font-semibold rounded-xl bg-encre text-creme active:opacity-90"
-              >
-                Continuer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* =========================================================================
           MODAL 5: POLITIQUE COMPLÈTE
       ========================================================================== */}
@@ -1051,16 +998,16 @@ export default function SettingsPage() {
             <h3 className="font-poppins font-light text-[18px] mb-3">Politique de confidentialité</h3>
             <div className="text-[12px] text-[#7A6E5E] leading-[1.6] space-y-3">
               <p>
-                <b>1. Architecture locale par défaut :</b> Liela a été conçue pour fonctionner de manière autonome sur votre appareil. Vos séances écoutées, favoris, réglages et historique sont stockés dans la base de données locale (IndexedDB) de votre navigateur ou appareil.
+                <b>1. Architecture locale par défaut :</b> En mode invité, vos données restent sur cet appareil. Avec un compte, votre profil, vos préférences, favoris, progression, historique et retours sont synchronisés dans Firebase. Un cache local permet l’utilisation hors ligne.
               </p>
               <p>
                 <b>2. Absence de traceurs et d&apos;analyse :</b> Liela n’intègre aucun outil d’analyse comportementale externe (comme Google Analytics ou Meta Pixel), ni aucun SDK de pistage ou régie publicitaire.
               </p>
               <p>
-                <b>3. Recommandations embarquées :</b> Toutes les suggestions de séances reposent sur des calculs réalisés localement sur votre téléphone selon vos réponses aux check-ins et vos écoutes passées.
+                <b>3. Recommandations embarquées :</b> Les suggestions sont calculées dans l’application à partir de vos choix et écoutes. Ces données de personnalisation sont synchronisées avec votre compte.
               </p>
               <p>
-                <b>4. Maîtrise totale de vos données :</b> Vous pouvez exporter l’intégralité de vos données sous format standardisé (JSON) ou les détruire définitivement à tout instant depuis les réglages.
+                <b>4. Maîtrise totale de vos données :</b> Vous pouvez exporter les données disponibles sur cet appareil sous format standardisé (JSON) ou demander leur suppression depuis les réglages. Hors ligne, les suppressions sont transmises au retour de la connexion. Les téléchargements audio restent sur cet appareil.
               </p>
             </div>
             <button

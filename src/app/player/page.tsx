@@ -2,9 +2,11 @@
 
 import React, { useEffect, useRef, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getSessionById, Session } from "@/lib/sessions";
+import { getSessionById, resolveSessionAsset, Session } from "@/lib/sessions";
 import { getCatalogSessionById } from "@/config/sessionsCatalog";
 import { getSituation } from "@/config/situations";
+import { ListeningTracker } from "@/lib/audio/ListeningTracker";
+import type { SessionFeedback } from "@/lib/firebase/schema";
 import { AudioState, AudioTrackManager } from "@/lib/audio/AudioTrackManager";
 import { storage, SessionHistoryItem, AudioPreferences } from "@/lib/storage";
 import { downloadSession, abortDownload, isDownloadInProgress, DownloadProgress } from "@/lib/download/SessionDownloader";
@@ -21,14 +23,15 @@ import {
 import { ProgressBar } from "@/components/ui/ProgressBar";
 import { BreathingVisualizer } from "@/components/ui/BreathingVisualizer";
 
-function PlayerContent() {
+function PlayerContent({ sessionId }: { sessionId: string | null }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const sessionId = searchParams.get("id");
   const fromHome = searchParams.get("from") === "home";
   
   const [session] = useState<Session | null>(() => (sessionId ? getSessionById(sessionId) ?? null : null));
   const catalogSession = sessionId ? getCatalogSessionById(sessionId) : undefined;
+  const listenedRef = useRef(new ListeningTracker());
+  const [feedback, setFeedback] = useState<SessionFeedback["rating"] | null>(null);
   const managerRef = useRef<AudioTrackManager | null>(null);
   
   const [state, setState] = useState<AudioState>("idle");
@@ -94,7 +97,7 @@ function PlayerContent() {
           await docEl.webkitRequestFullscreen();
         }
       }
-    } catch (_) {}
+    } catch {}
   }, []);
 
   const exitFullscreen = useCallback(async () => {
@@ -112,7 +115,7 @@ function PlayerContent() {
           await doc.webkitExitFullscreen();
         }
       }
-    } catch (_) {}
+    } catch {}
   }, []);
 
   const toggleFullscreen = useCallback(async () => {
@@ -154,49 +157,67 @@ function PlayerContent() {
     // Capture startedAt once when the effect runs so cleanup gets a stable value
     // (react-hooks/exhaustive-deps warns that .current may change by cleanup time)
     const effectStartedAt = sessionStartedAt.current;
+    const listeningTracker = listenedRef.current;
+
+    let active = true;
+    let manager: AudioTrackManager | null = null;
+    const controller = new AbortController();
 
     const init = async () => {
       // Fetch RMS data for the visualization
       try {
-        const res = await fetch(`/sessions/${session.id}/audio/rms.json`);
+        const res = await fetch(session.rmsUrl || resolveSessionAsset(session.id, "audio/rms.json"), { signal: controller.signal });
         if (res.ok) {
           const data = await res.json();
-          setRmsData(data);
+          if (active) setRmsData(data);
         }
       } catch (e) {
-        console.warn("Failed to load RMS data", e);
+        if (active) console.warn("Failed to load RMS data", e);
       }
 
+      if (!active) return;
       const savedPrefs = await storage.getAudioPreferences();
+      if (!active) return;
       setPrefs(savedPrefs);
       
-      const manager = new AudioTrackManager(session, savedPrefs);
+      manager = new AudioTrackManager({ ...session, audio: { ...session.audio, voice: session.audio.voices?.[savedPrefs.voice || ""] || session.audio.voice } }, savedPrefs);
       managerRef.current = manager;
 
       manager.setCallbacks(
-        (s) => setState(s),
-        (t) => setCurrentTime(t)
+        (s) => {
+          const now = performance.now();
+          const position = manager?.getCurrentTime() || 0;
+          if (s === "playing") listenedRef.current.start(position, now);
+          else listeningTracker.stop(position, now);
+          setState(s);
+        },
+        (t) => { listenedRef.current.update(t, performance.now()); setCurrentTime(t); }
       );
 
       await manager.load();
+      if (!active) return;
       
       // Seek to saved position if resuming setting is enabled
       const userSettings = await storage.getSettings();
+      if (!active) return;
       if (userSettings.resumePlayback) {
-        const inProgress = await storage.getInProgressSession();
-        if (inProgress && inProgress.sessionId === session.id && inProgress.lastPosition > 0) {
+        const inProgress = await storage.getSessionProgress(session.id);
+        if (!active) return;
+        if (inProgress && !inProgress.completed && inProgress.lastPosition > 0) {
           manager.seek(inProgress.lastPosition);
           setCurrentTime(inProgress.lastPosition);
         }
       }
       
       const isFav = await storage.hasFavorite(session.id);
+      if (!active) return;
       setIsFavorite(isFav);
 
       if (isDownloadInProgress(session.id)) {
         setDownloadStatus("downloading");
       } else {
         const downloaded = await storage.verifyDownload(session.id);
+        if (!active) return;
         setIsDownloaded(downloaded);
         setDownloadStatus(downloaded ? "available" : "idle");
       }
@@ -205,25 +226,30 @@ function PlayerContent() {
     init();
 
     return () => {
+      active = false;
+      controller.abort();
       // FIX A3: Capture position BEFORE cleanup() nullifies all tracks
-      const savedTime = managerRef.current?.getCurrentTime() ?? 0;
+      const savedTime = manager?.getCurrentTime() ?? 0;
       const savedDur = session?.metadata.durationSeconds ?? 0;
+      listeningTracker.stop(savedTime, performance.now());
 
-      managerRef.current?.cleanup();
+      manager?.cleanup();
+      if (managerRef.current === manager) managerRef.current = null;
       if (controlsTimeout.current) clearTimeout(controlsTimeout.current);
       if (saveProgressInterval.current) clearInterval(saveProgressInterval.current);
 
       // Save stats on close if session didn't naturally end
       if (session && savedTime > 0 && savedTime < savedDur - 1) {
         const completed = savedTime >= savedDur * 0.8;
-        const abandoned = savedTime < 90;
         const item: SessionHistoryItem = {
           sessionId: session.id,
           startedAt: effectStartedAt,
+          listenedSeconds: listeningTracker.seconds,
+          lastListenedAt: new Date().toISOString(),
           lastPosition: savedTime,
           duration: savedDur,
           completed,
-          abandoned,
+          abandoned: listeningTracker.seconds < 90,
         };
         storage.addHistoryItem(item);
         storage.setInProgressSession(completed ? null : item);
@@ -347,7 +373,7 @@ function PlayerContent() {
     try {
       navigator.mediaSession.setActionHandler("previoustrack", null);
       navigator.mediaSession.setActionHandler("nexttrack", null);
-    } catch (e) {
+    } catch {
       // Ignored if browser doesn't support setting to null
     }
 
@@ -361,7 +387,7 @@ function PlayerContent() {
         try {
           navigator.mediaSession.setActionHandler("previoustrack", null);
           navigator.mediaSession.setActionHandler("nexttrack", null);
-        } catch (e) {}
+        } catch {}
       }
     };
   }, [session]);
@@ -398,12 +424,15 @@ function PlayerContent() {
           sessionId: session.id,
           // FIX A4: use the stable startedAt captured at session start, not a new Date() every 5s
           startedAt: sessionStartedAt.current,
+          listenedSeconds: listenedRef.current.seconds,
+          lastListenedAt: new Date().toISOString(),
           lastPosition: currentTimeRef.current,
           duration: session.metadata.durationSeconds,
           completed: false,
         };
         storage.setInProgressSession(item);
-      }, 5000);
+        storage.addHistoryItem(item);
+      }, 15000);
     } else {
       if (saveProgressInterval.current) clearInterval(saveProgressInterval.current);
     }
@@ -418,6 +447,8 @@ function PlayerContent() {
       const item: SessionHistoryItem = {
         sessionId: session.id,
         startedAt: sessionStartedAt.current,
+        listenedSeconds: listenedRef.current.seconds,
+        lastListenedAt: new Date().toISOString(),
         completedAt: new Date().toISOString(),
         lastPosition: session.metadata.durationSeconds,
         duration: session.metadata.durationSeconds,
@@ -854,6 +885,17 @@ function PlayerContent() {
           </div>
 
           <div className="px-6 pb-[max(2rem,env(safe-area-inset-bottom))] flex flex-col gap-4">
+            <div className="bg-white rounded-[18px] p-5 shadow-n1">
+              <p className="font-poppins text-[17px] mb-3">Cette séance vous a-t-elle aidé ?</p>
+              <div className="flex gap-2">
+                {([{ value: "useful", label: "Utile" }, { value: "somewhat", label: "Un peu" }, { value: "not-useful", label: "Non" }] as const).map(({ value, label }) => (
+                  <button key={value} aria-pressed={feedback === value} className={`flex-1 rounded-xl p-3 text-[13px] ${feedback === value ? "bg-encre text-creme" : "bg-coquille"}`} onClick={async () => {
+                    const saved = await storage.saveFeedback({ sessionId: session.id, startedAt: sessionStartedAt.current, rating: value, createdAt: new Date().toISOString() });
+                    if (saved) setFeedback(value); else showToast("Votre retour n’a pas pu être enregistré.");
+                  }}>{label}</button>
+                ))}
+              </div>
+            </div>
             {/* Fav prompt card — condition: not already fav, not refused, <2 today */}
             {showFavPrompt && (
               <div className="bg-white rounded-[18px] p-5 shadow-n1">
@@ -1291,10 +1333,15 @@ function PlayerContent() {
   );
 }
 
+function SessionPlayer() {
+  const sessionId = useSearchParams().get("id");
+  return <PlayerContent key={sessionId} sessionId={sessionId} />;
+}
+
 export default function PlayerPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-creme" />}>
-      <PlayerContent />
+      <SessionPlayer />
     </Suspense>
   );
 }

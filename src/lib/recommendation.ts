@@ -67,7 +67,7 @@ export async function getRepriseSession(): Promise<SessionHistoryItem | null> {
   if (!inProgress || inProgress.completed) return null;
   
   // Check if it's less than 24h old
-  const startedAt = new Date(inProgress.startedAt).getTime();
+  const startedAt = new Date(inProgress.lastListenedAt || inProgress.startedAt).getTime();
   if (Date.now() - startedAt > 24 * 60 * 60 * 1000) return null;
 
   return inProgress;

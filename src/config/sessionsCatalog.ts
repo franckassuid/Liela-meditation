@@ -7,6 +7,10 @@ export interface CatalogSession {
   durationMinutes: number;
   durationSeconds: number;
   situationId: SituationId | "discovery";
+  level?: string;
+  technique?: string;
+  artwork?: string;
+  order?: number;
   isAvailable: boolean; // dynamically computed based on real audio on disk
   realSessionId?: string; // id in generated/sessions.json
   description?: string;
@@ -335,6 +339,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
   },
   {
     id: "creer-un-peu-d-espace-10min",
+    realSessionId: "creer-un-peu-despace-10min",
     title: "Créer un peu d'espace",
     durationMinutes: 10,
     durationSeconds: 600,
@@ -381,7 +386,7 @@ const RAW_CATALOG: RawCatalogItem[] = [
 /**
  * Dynamically resolves availability against verified audio sessions in sessions.json
  */
-export const SESSIONS_CATALOG: CatalogSession[] = RAW_CATALOG.map((item) => {
+export let SESSIONS_CATALOG: CatalogSession[] = RAW_CATALOG.map((item) => {
   const real = (sessionsData as Array<{ id: string; metadata?: { durationSeconds?: number; estPorteEntree?: boolean } }>).find(
     (s) => s.id === item.id || (item.realSessionId && s.id === item.realSessionId)
   );
@@ -393,6 +398,8 @@ export const SESSIONS_CATALOG: CatalogSession[] = RAW_CATALOG.map((item) => {
     estPorteEntree: real?.metadata?.estPorteEntree ?? item.estPorteEntree ?? false,
   };
 });
+
+export function replaceCatalog(sessions: CatalogSession[]) { SESSIONS_CATALOG = sessions; }
 
 export function getCatalogSessionById(id: string): CatalogSession | undefined {
   return SESSIONS_CATALOG.find((s) => s.id === id || s.realSessionId === id);

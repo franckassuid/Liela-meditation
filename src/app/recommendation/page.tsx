@@ -1,5 +1,6 @@
 "use client";
 
+import { useCatalogRevision } from "@/hooks/useCatalogRevision";
 import React, { useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { recommendSession } from "@/lib/sessions";
@@ -10,6 +11,7 @@ import { LockIcon } from "@/components/ui/Icons";
 import { ProModal } from "@/components/ui/ProModal";
 
 function RecommendationContent() {
+  const catalogRevision = useCatalogRevision();
   const router = useRouter();
   const searchParams = useSearchParams();
   const situationId = searchParams.get("situation");
@@ -17,11 +19,12 @@ function RecommendationContent() {
   const [showProModal, setShowProModal] = useState(false);
   
   const session = useMemo(() => {
+    void catalogRevision;
     if (situationId && durationStr !== null) {
       return recommendSession(situationId, parseInt(durationStr, 10));
     }
     return null;
-  }, [situationId, durationStr]);
+  }, [situationId, durationStr, catalogRevision]);
 
   const situation = getSituation(situationId);
 

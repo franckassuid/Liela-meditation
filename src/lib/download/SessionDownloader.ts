@@ -1,3 +1,5 @@
+import { getSessionById, resolveSessionAsset } from "@/lib/sessions";
+
 /**
  * SessionDownloader — Real Cache Storage download engine for Liela
  */
@@ -22,7 +24,7 @@ export function isDownloadInProgress(sessionId: string): boolean {
 
 export function abortDownload(sessionId: string): void {
   activeDownloads.get(sessionId)?.abort();
-  activeDownloads.delete(sessionId);
+  // Keep ownership until cleanup finishes, so a retry cannot race with it.
 }
 
 export async function downloadSession(
@@ -36,6 +38,8 @@ export async function downloadSession(
   const controller = new AbortController();
   activeDownloads.set(sessionId, controller);
   const { signal } = controller;
+  let cache: Cache | undefined;
+  const createdUrls: string[] = [];
 
   try {
     // 1. Request persistent storage (best effort)
@@ -45,43 +49,39 @@ export async function downloadSession(
 
     // 2. Fetch the session manifest
     const manifestUrl = `/sessions/${sessionId}/session.json`;
-    const manifestRes = await fetch(manifestUrl, { signal });
-    if (!manifestRes.ok) {
-      throw new Error(`Manifest HTTP ${manifestRes.status} for ${sessionId}`);
-    }
-    const manifest = await manifestRes.json() as {
-      version?: number;
-      audio?: {
-        voice?: string;
-        music?: { file?: string };
-        ambience?: { file?: string };
-        cues?: { file?: string };
-        final?: string;
-      };
-    };
+    const catalogSession = getSessionById(sessionId);
+    const manifest = catalogSession || await (async () => {
+      const response = await fetch(manifestUrl, { signal });
+      if (!response.ok) throw new Error(`Manifest HTTP ${response.status} for ${sessionId}`);
+      return await response.json() as { version?: number; rmsUrl?: string; audio?: {
+        voice?: string; voices?: Record<string, string>; music?: { file?: string }; ambience?: { file?: string }; cues?: { file?: string }; final?: string;
+      } };
+    })();
     const manifestVersion: number = manifest.version ?? 1;
 
     // 3. Build file list from manifest — only present tracks
     const urlsToCache: string[] = [];
     const resolve = (p: string) =>
-      p.startsWith("/") ? p : `/sessions/${sessionId}/${p}`;
+      resolveSessionAsset(sessionId, p);
 
-    urlsToCache.push(manifestUrl);
-    urlsToCache.push(`/sessions/${sessionId}/audio/rms.json`);
+    if (!catalogSession) urlsToCache.push(manifestUrl);
+    if (manifest.rmsUrl || !catalogSession?.assetsBaseUrl) urlsToCache.push(manifest.rmsUrl || resolve("audio/rms.json"));
 
+    for (const voice of Object.values(manifest.audio?.voices || {})) urlsToCache.push(resolve(voice));
     if (manifest.audio?.voice) urlsToCache.push(resolve(manifest.audio.voice));
     if (manifest.audio?.music?.file) urlsToCache.push(resolve(manifest.audio.music.file));
     if (manifest.audio?.ambience?.file) urlsToCache.push(resolve(manifest.audio.ambience.file));
     if (manifest.audio?.cues?.file) urlsToCache.push(resolve(manifest.audio.cues.file));
     if (manifest.audio?.final) urlsToCache.push(resolve(manifest.audio.final));
 
-    const filesTotal = urlsToCache.length;
+    const files = [...new Set(urlsToCache)];
+    const filesTotal = files.length;
     let filesDone = 0;
     let bytesLoaded = 0;
     let bytesTotal = 0;
 
     // 4. Pre-flight HEAD to compute total size (best effort)
-    for (const url of urlsToCache) {
+    for (const url of files) {
       if (signal.aborted) break;
       try {
         const headRes = await fetch(url, { method: "HEAD", signal });
@@ -92,18 +92,17 @@ export async function downloadSession(
 
     onProgress({ sessionId, bytesLoaded, bytesTotal, filesDone, filesTotal });
 
-    const cache = await caches.open(SESSIONS_CACHE_NAME);
+    signal.throwIfAborted();
+    cache = await caches.open(SESSIONS_CACHE_NAME);
     const cachedUrls: string[] = [];
     let totalSizeBytes = 0;
 
     // 5. Download files one by one
-    for (const url of urlsToCache) {
-      if (signal.aborted) {
-        await cleanupPartial(cache, cachedUrls);
-        const err = new Error("Download cancelled");
-        err.name = "AbortError";
-        throw err;
-      }
+    for (const url of files) {
+      signal.throwIfAborted();
+
+      // Roll back only new entries; preserve files from an earlier download.
+      if (!(await cache.match(url))) createdUrls.push(url);
 
       const bytesForFile = await fetchAndCache(url, cache, signal, (loaded) => {
         onProgress({
@@ -124,25 +123,17 @@ export async function downloadSession(
     }
 
     // 6. Verify all files in cache
+    signal.throwIfAborted();
     const missing = await verifyInCache(cache, cachedUrls);
     if (missing.length > 0) {
-      await cleanupPartial(cache, cachedUrls);
       throw new Error(`Verification failed: ${missing.length} file(s) missing`);
     }
+    signal.throwIfAborted();
 
     return { cachedUrls, sizeBytes: totalSizeBytes, manifestVersion };
 
   } catch (err) {
-    const error = err as Error;
-    if (error.name === "QuotaExceededError") {
-      try {
-        const cache = await caches.open(SESSIONS_CACHE_NAME);
-        const keys = await cache.keys();
-        for (const req of keys) {
-          if (req.url.includes(`/sessions/${sessionId}/`)) await cache.delete(req);
-        }
-      } catch { /* ignore */ }
-    }
+    if (cache) await cleanupPartial(cache, createdUrls);
     throw err;
   } finally {
     activeDownloads.delete(sessionId);
@@ -186,17 +177,24 @@ async function fetchAndCache(
     throw Object.assign(new Error(`HTTP ${response.status} fetching ${url}`), { name: "DownloadError" });
   }
 
-  const reader = response.body!.getReader();
+  if (!response.body) throw new Error(`Empty response body fetching ${url}`);
+  const reader = response.body.getReader();
   const chunks: Uint8Array[] = [];
   let loaded = 0;
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    loaded += value.byteLength;
-    onFileProgress(loaded);
+  try {
+    while (true) {
+      signal.throwIfAborted();
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(value);
+      loaded += value.byteLength;
+      onFileProgress(loaded);
+    }
+  } finally {
+    reader.releaseLock();
   }
+  signal.throwIfAborted();
 
   const buffer = new Uint8Array(loaded);
   let offset = 0;

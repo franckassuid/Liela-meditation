@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins, Hanken_Grotesk } from "next/font/google";
 import "./globals.css";
+import { FirebaseProvider } from "@/components/firebase/FirebaseProvider";
 import { AppShell } from "@/components/navigation/AppShell";
 
 const poppins = Poppins({ 
@@ -64,7 +65,7 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans text-encre bg-creme antialiased" suppressHydrationWarning>
-        <AppShell>{children}</AppShell>
+        <FirebaseProvider><AppShell>{children}</AppShell></FirebaseProvider>
       </body>
     </html>
   );

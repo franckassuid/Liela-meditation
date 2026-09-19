@@ -26,6 +26,7 @@ export interface SessionAudioTrack {
 
 export interface SessionAudio {
   voice: string;
+  voices?: Record<string, string>;
   music?: SessionAudioTrack | null;
   ambience?: SessionAudioTrack | null;
   cues?: { file: string; defaultVolume?: number } | null;
@@ -48,6 +49,8 @@ export interface SessionAudioFormat {
 
 export interface Session {
   version?: number;
+  assetsBaseUrl?: string;
+  rmsUrl?: string;
   id: string;
   metadata: SessionMetadata;
   audio: SessionAudio;
@@ -61,7 +64,9 @@ export interface Session {
   cues?: Array<{ asset: string; timeSeconds: number }>;
 }
 
-export const sessions = (sessionsData as unknown) as Session[];
+export let sessions = (sessionsData as unknown) as Session[];
+
+export function replaceSessions(next: Session[]) { sessions = next; }
 
 export function getSessionById(id: string): Session | undefined {
   // First check real audio sessions
@@ -132,8 +137,8 @@ export function getSessionAssetsRoot(sessionId: string): string {
 }
 
 export function resolveSessionAsset(sessionId: string, relativePath: string): string {
-  if (relativePath.startsWith("/")) {
-    relativePath = relativePath.slice(1);
-  }
-  return `/sessions/${sessionId}/${relativePath}`;
+  if (/^https?:\/\//.test(relativePath)) return relativePath;
+  if (relativePath.startsWith("/")) return relativePath;
+  const base = getSessionById(sessionId)?.assetsBaseUrl;
+  return base ? `${base.replace(/\/$/, "")}/${relativePath}` : `/sessions/${sessionId}/${relativePath}`;
 }

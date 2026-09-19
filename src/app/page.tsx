@@ -1,28 +1,30 @@
 "use client";
 
+import { useStorageRevision } from "@/hooks/useStorageRevision";
+import { useCatalogRevision } from "@/hooks/useCatalogRevision";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { storage, SessionHistoryItem, Favori, requestPersistence } from "@/lib/storage";
-import sessionsData from "@/generated/sessions.json";
+import { sessions as sessionsData } from "@/lib/sessions";
 import { getSituation } from "@/lib/sessions";
 import { getRecommendedSession, getRepriseSession, RecommendationResult, isSameSession } from "@/lib/recommendation";
 import { SESSIONS_CATALOG, CatalogSession } from "@/config/sessionsCatalog";
 import { ProModal } from "@/components/ui/ProModal";
 import { BreathingVisualizer } from "@/components/ui/BreathingVisualizer";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { LielaEmblem } from "@/components/ui/Icons";
 
 export default function HomePage() {
+  const catalogRevision = useCatalogRevision();
+  const storageRevision = useStorageRevision();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState(false);
   const [recommendation, setRecommendation] = useState<RecommendationResult | null>(null);
   const [inProgress, setInProgress] = useState<SessionHistoryItem | null>(null);
   const [favorites, setFavorites] = useState<Favori[]>([]);
-  // Lazy initializer: reads navigator.onLine at mount time — avoids synchronous setState in effect (set-state-in-effect lint rule)
-  const [isOnline, setIsOnline] = useState<boolean>(() =>
-    typeof navigator !== "undefined" ? navigator.onLine !== false : true
-  );
+  const isOnline = useOnlineStatus();
   const [showSkeleton, setShowSkeleton] = useState(false);
   const [proModalSession, setProModalSession] = useState<CatalogSession | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -31,19 +33,6 @@ export default function HomePage() {
     return () => {
       document.body.classList.remove("transitioning-to-player");
     };
-  }, []);
-
-  useEffect(() => {
-    if (typeof navigator !== "undefined") {
-      const handleOnline = () => setIsOnline(true);
-      const handleOffline = () => setIsOnline(false);
-      window.addEventListener("online", handleOnline);
-      window.addEventListener("offline", handleOffline);
-      return () => {
-        window.removeEventListener("online", handleOnline);
-        window.removeEventListener("offline", handleOffline);
-      };
-    }
   }, []);
 
   useEffect(() => {
@@ -95,7 +84,7 @@ export default function HomePage() {
       active = false;
       clearTimeout(skeletonTimer);
     };
-  }, []);
+  }, [storageRevision, catalogRevision]);
 
   // Calculé ici pour l'utiliser dans le useEffect ci-dessous (qui doit rester avant les early returns)
   const situationVoile = (() => {

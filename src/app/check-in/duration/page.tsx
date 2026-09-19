@@ -4,6 +4,7 @@ import React, { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { DurationSelector } from "@/components/ui/DurationSelector";
+import { storage } from "@/lib/storage";
 import { getAvailableDurations } from "@/lib/sessions";
 
 function DurationContent() {
@@ -19,6 +20,7 @@ function DurationContent() {
 
   const handleNext = () => {
     if (selectedDuration !== null && situation) {
+      void storage.recordEvent({ type: "duration_selected", situationId: situation, durationMinutes: selectedDuration });
       router.push(`/recommendation?situation=${situation}&duration=${selectedDuration}`);
     }
   };

@@ -43,3 +43,10 @@ next-env.d.ts
 # audio backups
 *.original.m4a
 
+
+# Firebase local tooling
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+.firebase/
+!.env.example
