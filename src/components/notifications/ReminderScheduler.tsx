@@ -1,20 +1,26 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useFirebaseUser } from "@/components/firebase/FirebaseProvider";
+import { useStorageRevision } from "@/hooks/useStorageRevision";
 import { storage, AppSettings } from "@/lib/storage";
 import {
   getNotificationPermission,
   getMillisecondsUntilNextReminder,
   sendLocalNotification,
   DAY_MAP,
+  syncScheduledReminder,
 } from "@/lib/notifications";
 
 const LAST_SENT_SLOT_KEY = "liela_last_sent_reminder_slot";
 
 export function ReminderScheduler() {
+  const { user } = useFirebaseUser();
+  const settingsRevision = useStorageRevision(["liela_settings"]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (!user) return;
     let isMounted = true;
 
     // Vérifie si un rappel était prévu il y a peu de temps (ex: pendant que l'écran était éteint ou au réveil)
@@ -23,6 +29,7 @@ export function ReminderScheduler() {
       if (perm !== "granted") return;
 
       const settings = providedSettings || (await storage.getSettings());
+      if (!isMounted) return;
       if (!settings.dailyReminderEnabled || !settings.dailyReminderTime) return;
 
       const [targetHours, targetMinutes] = settings.dailyReminderTime.split(":").map(Number);
@@ -74,6 +81,7 @@ export function ReminderScheduler() {
       if (perm !== "granted") return;
 
       const settings = providedSettings || (await storage.getSettings());
+      if (!isMounted) return;
       if (!settings.dailyReminderEnabled || !settings.dailyReminderTime) {
         return;
       }
@@ -125,8 +133,10 @@ export function ReminderScheduler() {
     };
 
     // 1. Démarrage initial et vérification de rattrapage
-    checkAndTriggerDueReminder().then(() => {
-      if (isMounted) setupScheduler();
+    storage.getSettings().then((settings) => {
+      if (!isMounted) return;
+      // The update event below starts both the device timer and catch-up check.
+      void syncScheduledReminder(settings);
     });
 
     // 2. Écoute des mises à jour des réglages depuis Settings
@@ -162,7 +172,7 @@ export function ReminderScheduler() {
       window.removeEventListener("liela:reminder-updated", handleReminderUpdated);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, []);
+  }, [user, settingsRevision]);
 
   return null;
 }

@@ -1,4 +1,5 @@
 import { AppSettings, DayOfWeek } from "./storage";
+import { getStorageUser } from "./storage/local";
 
 export type NotificationPermissionState = "granted" | "denied" | "default" | "unsupported";
 
@@ -52,6 +53,8 @@ export async function sendLocalNotification(
   title: string,
   options?: EnhancedNotificationOptions
 ): Promise<boolean> {
+  const owner = getStorageUser();
+  if (!owner) return false;
   if (typeof window === "undefined" || !("Notification" in window)) {
     return false;
   }
@@ -77,6 +80,7 @@ export async function sendLocalNotification(
     // Méthode recommandée sur Android / PWA : via le Service Worker
     if ("serviceWorker" in navigator) {
       const registration = await navigator.serviceWorker.ready;
+      if (getStorageUser() !== owner) return false;
       if (registration && "showNotification" in registration) {
         await registration.showNotification(title, defaultOptions);
         return true;
@@ -114,6 +118,8 @@ export async function sendTestReminderNotification(time: string = "21:00"): Prom
  * Programme un test de notification dans X secondes (permet de tester l'écran verrouillé).
  */
 export async function scheduleTestNotificationInSeconds(seconds: number = 10): Promise<boolean> {
+  const owner = getStorageUser();
+  if (!owner) return false;
   if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") {
     return false;
   }
@@ -137,6 +143,7 @@ export async function scheduleTestNotificationInSeconds(seconds: number = 10): P
   if ("serviceWorker" in navigator) {
     try {
       const reg = await navigator.serviceWorker.ready;
+      if (getStorageUser() !== owner) return false;
       if (reg.active) {
         reg.active.postMessage({
           type: "SCHEDULE_REMINDER",
@@ -152,6 +159,7 @@ export async function scheduleTestNotificationInSeconds(seconds: number = 10): P
 
   // 2. Timer de secours côté fenêtre (au cas où le SW n'est pas encore prêt)
   setTimeout(async () => {
+    if (getStorageUser() !== owner) return;
     await sendLocalNotification(notifTitle, notifOptions);
   }, delayMs);
 
@@ -275,6 +283,8 @@ export function formatNextReminderDescription(
  */
 export async function syncScheduledReminder(settings: AppSettings): Promise<void> {
   if (typeof window === "undefined") return;
+  const owner = getStorageUser();
+  if (!owner) settings = { ...settings, dailyReminderEnabled: false };
 
   // Notifier l'application côté client pour que ReminderScheduler prenne immédiatement en compte le changement
   window.dispatchEvent(new CustomEvent("liela:reminder-updated", { detail: settings }));
@@ -283,10 +293,13 @@ export async function syncScheduledReminder(settings: AppSettings): Promise<void
     // Annuler auprès du Service Worker
     if ("serviceWorker" in navigator) {
       try {
-        const reg = await navigator.serviceWorker.ready;
+        const reg = await navigator.serviceWorker.getRegistration();
+        if (!reg) return;
         if (reg.active) {
           reg.active.postMessage({ type: "CANCEL_REMINDER" });
         }
+        const notifications = await reg.getNotifications({ includeTriggered: true } as GetNotificationOptions);
+        notifications.filter((notification) => notification.tag.startsWith("liela-")).forEach((notification) => notification.close());
       } catch (e) {
         console.log("Erreur annulation SW:", e);
       }
@@ -316,6 +329,7 @@ export async function syncScheduledReminder(settings: AppSettings): Promise<void
   if ("serviceWorker" in navigator) {
     try {
       const reg = await navigator.serviceWorker.ready;
+      if (getStorageUser() !== owner) return;
 
       // Si support de TimestampTrigger dans le navigateur
       if (

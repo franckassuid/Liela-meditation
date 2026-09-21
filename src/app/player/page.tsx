@@ -71,6 +71,30 @@ function PlayerContent({ sessionId }: { sessionId: string | null }) {
 
   const controlsTimeout = useRef<NodeJS.Timeout | null>(null);
   const saveProgressInterval = useRef<NodeJS.Timeout | null>(null);
+  const lastCloudCheckpoint = useRef(0);
+  const pendingAudioPrefs = useRef<Partial<AudioPreferences>>({});
+  const audioPrefsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const audioPrefsWriter = useRef<((prefs: Partial<AudioPreferences>) => Promise<boolean>) | null>(null);
+  const flushAudioPrefs = useCallback(() => {
+    if (audioPrefsTimer.current) clearTimeout(audioPrefsTimer.current);
+    audioPrefsTimer.current = null;
+    if (audioPrefsWriter.current && Object.keys(pendingAudioPrefs.current).length) {
+      void audioPrefsWriter.current(pendingAudioPrefs.current);
+    }
+    pendingAudioPrefs.current = {};
+    audioPrefsWriter.current = null;
+  }, []);
+  const queueAudioPrefs = (partial: Partial<AudioPreferences>) => {
+    audioPrefsWriter.current ??= storage.setAudioPreferences;
+    pendingAudioPrefs.current = { ...pendingAudioPrefs.current, ...partial };
+    if (audioPrefsTimer.current) clearTimeout(audioPrefsTimer.current);
+    audioPrefsTimer.current = setTimeout(flushAudioPrefs, 500);
+  };
+  useEffect(() => {
+    const onHidden = () => { if (document.visibilityState === "hidden") flushAudioPrefs(); };
+    document.addEventListener("visibilitychange", onHidden);
+    return () => { document.removeEventListener("visibilitychange", onHidden); flushAudioPrefs(); };
+  }, [flushAudioPrefs]);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   const showToast = (msg: string) => {
@@ -247,8 +271,7 @@ function PlayerContent({ sessionId }: { sessionId: string | null }) {
           completed,
           abandoned: listeningTracker.seconds < 90,
         };
-        storage.addHistoryItem(item);
-        storage.setInProgressSession(completed ? null : item);
+        void storage.savePlaybackCheckpoint(item, true);
       }
     };
   }, [session, router]);
@@ -412,23 +435,38 @@ function PlayerContent({ sessionId }: { sessionId: string | null }) {
     currentTimeRef.current = currentTime;
   }, [currentTime]);
 
-  // Handle saving progress periodically
+  // Device checkpoints stay precise; cloud updates are limited to once a minute.
   useEffect(() => {
     if (state === "playing" && session) {
-      saveProgressInterval.current = setInterval(() => {
+      const saveCheckpoint = (forceCloud = false) => {
         const item: SessionHistoryItem = {
           sessionId: session.id,
-          // FIX A4: use the stable startedAt captured at session start, not a new Date() every 5s
+          // One history entry per listening session.
           startedAt: sessionStartedAt.current,
           listenedSeconds: listenedRef.current.seconds,
           lastListenedAt: new Date().toISOString(),
-          lastPosition: currentTimeRef.current,
+          lastPosition: managerRef.current?.getCurrentTime() ?? currentTimeRef.current,
           duration: session.metadata.durationSeconds,
           completed: false,
         };
-        storage.setInProgressSession(item);
-        storage.addHistoryItem(item);
-      }, 15000);
+        const now = Date.now();
+        const sync = forceCloud || now - lastCloudCheckpoint.current >= 60_000;
+        if (sync) lastCloudCheckpoint.current = now;
+        void storage.savePlaybackCheckpoint(item, sync);
+      };
+      const onHidden = () => { if (document.visibilityState === "hidden") saveCheckpoint(true); };
+      const onPageHide = () => saveCheckpoint(true);
+      lastCloudCheckpoint.current = Date.now();
+      saveProgressInterval.current = setInterval(saveCheckpoint, 5000);
+      document.addEventListener("visibilitychange", onHidden);
+      window.addEventListener("pagehide", onPageHide);
+      return () => {
+        if (saveProgressInterval.current) clearInterval(saveProgressInterval.current);
+        document.removeEventListener("visibilitychange", onHidden);
+        window.removeEventListener("pagehide", onPageHide);
+        // Includes pause, seek-induced suspension and leaving the player.
+        if (managerRef.current) saveCheckpoint(true);
+      };
     } else {
       if (saveProgressInterval.current) clearInterval(saveProgressInterval.current);
     }
@@ -582,12 +620,12 @@ function PlayerContent({ sessionId }: { sessionId: string | null }) {
   const handleMusicSlider = (val: number) => {
     if (val <= 0) {
       setPrefs((prev) => ({ ...prev, musicEnabled: false, musicVolume: 0 }));
-      storage.setAudioPreferences({ musicEnabled: false, musicVolume: 0 });
+      queueAudioPrefs({ musicEnabled: false, musicVolume: 0 });
       managerRef.current?.setTrackEnabled("music", false);
     } else {
       const ratio = Math.min(1, val / 100);
       setPrefs((prev) => ({ ...prev, musicEnabled: true, musicVolume: ratio }));
-      storage.setAudioPreferences({ musicEnabled: true, musicVolume: ratio });
+      queueAudioPrefs({ musicEnabled: true, musicVolume: ratio });
       managerRef.current?.setTrackEnabled("music", true);
       managerRef.current?.setVolume("music", ratio);
     }
@@ -596,12 +634,12 @@ function PlayerContent({ sessionId }: { sessionId: string | null }) {
   const handleAmbienceSlider = (val: number) => {
     if (val <= 0) {
       setPrefs((prev) => ({ ...prev, ambienceEnabled: false, ambienceVolume: 0 }));
-      storage.setAudioPreferences({ ambienceEnabled: false, ambienceVolume: 0 });
+      queueAudioPrefs({ ambienceEnabled: false, ambienceVolume: 0 });
       managerRef.current?.setTrackEnabled("ambience", false);
     } else {
       const ratio = Math.min(1, val / 100);
       setPrefs((prev) => ({ ...prev, ambienceEnabled: true, ambienceVolume: ratio }));
-      storage.setAudioPreferences({ ambienceEnabled: true, ambienceVolume: ratio });
+      queueAudioPrefs({ ambienceEnabled: true, ambienceVolume: ratio });
       managerRef.current?.setTrackEnabled("ambience", true);
       managerRef.current?.setVolume("ambience", ratio);
     }

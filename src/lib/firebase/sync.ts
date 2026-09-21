@@ -36,7 +36,7 @@ async function migrateGuest(uid: string) {
     if (owner) return;
     const values: Record<string, unknown> = {};
     for (const key of SYNC_KEYS) values[key] = await rawGet(key);
-    if (values.liela_settings) values.liela_settings = { ...DEFAULT_SETTINGS, ...(values.liela_settings as JsonRecord) };
+    if (values.liela_settings) values.liela_settings = { ...DEFAULT_SETTINGS, ...(values.liela_settings as JsonRecord), dailyReminderEnabled: false };
     if (values.liela_audio_prefs) values.liela_audio_prefs = { voice: "Algenib", voiceVolume: 1, musicVolume: 0.75, ambienceVolume: 0.5, musicEnabled: true, ambienceEnabled: true, ...(values.liela_audio_prefs as JsonRecord) };
     const profile = values.liela_profile as JsonRecord | undefined;
     values.liela_profile = {
@@ -65,6 +65,9 @@ export async function startUserSync(db: Firestore, uid: string) {
   currentUid = uid;
   let stopped = false;
   let flushing = false;
+  let failures = 0;
+  let retryAt = 0;
+  let retryTimer: ReturnType<typeof setTimeout> | undefined;
   const unsubscribes: Unsubscribe[] = [];
   const remoteByKey = new Map<string, Record<string, JsonRecord>>();
   const errors = new Map<string, string>();
@@ -87,11 +90,13 @@ export async function startUserSync(db: Firestore, uid: string) {
     });
   }
   async function flush() {
-    if (stopped || flushing) return;
-    await updateStatus();
-    if (!navigator.onLine) return;
+    if (stopped || flushing || Date.now() < retryAt) return;
+    if (retryTimer) clearTimeout(retryTimer);
+    if (!navigator.onLine) { await updateStatus(); return; }
+    // Acquire before any await: simultaneous local changes must share one flush.
     flushing = true;
     try {
+      await updateStatus();
       let writes = await pendingFor(uid);
       while (!stopped && writes.length) {
         for (const write of writes) {
@@ -114,8 +119,15 @@ export async function startUserSync(db: Firestore, uid: string) {
         writes = await pendingFor(uid);
       }
       errors.delete("write");
+      failures = 0;
+      retryAt = 0;
     } catch (error) {
       errors.set("write", error instanceof Error ? error.message : "Synchronisation impossible");
+      failures++;
+      const code = (error as { code?: string })?.code || "";
+      const delay = code.endsWith("resource-exhausted") ? 60 * 60_000 : Math.min(60_000 * 2 ** Math.min(failures - 1, 4), 15 * 60_000);
+      retryAt = Date.now() + delay;
+      if (!stopped) retryTimer = setTimeout(() => { void flush(); }, delay);
     } finally {
       flushing = false;
       await updateStatus();
@@ -174,6 +186,7 @@ export async function startUserSync(db: Firestore, uid: string) {
     ready,
     stop: () => {
       stopped = true;
+      if (retryTimer) clearTimeout(retryTimer);
       unsubscribes.forEach((unsubscribe) => unsubscribe());
       window.removeEventListener("online", online);
       window.removeEventListener("offline", offline);

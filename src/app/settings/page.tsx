@@ -132,6 +132,7 @@ export default function SettingsPage() {
   };
 
   const updateSetting = async <K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<boolean> => {
+    if (!user && key.startsWith("dailyReminder")) { setCurrentScreen("compte"); return false; }
     const next = { ...settings, [key]: value };
     setSettings(next);
     const saved = await storage.setSettings({ [key]: value });
@@ -168,6 +169,7 @@ export default function SettingsPage() {
   };
 
   const handleRequestPermission = async () => {
+    if (!user) { setCurrentScreen("compte"); return; }
     const requested = await requestNotificationPermission();
     setNotificationPermission(requested);
 
@@ -185,6 +187,7 @@ export default function SettingsPage() {
   };
 
   const handleToggleDailyReminder = async () => {
+    if (!user) { setCurrentScreen("compte"); return; }
     // Si l'application n'est pas ouverte en standalone
     if (!isStandalone) {
       if (isAppInstalled) {
@@ -492,7 +495,7 @@ export default function SettingsPage() {
             )}
 
             {/* MESSAGE INCITATIF 1B : Application NON installée sur l'appareil */}
-            {!isStandalone && !isAppInstalled && (
+            {user && !isStandalone && !isAppInstalled && (
               <div className="bg-white rounded-[15px] p-[14px_16px] shadow-[0_1px_2px_rgba(67,53,40,0.04)] mb-2.5 border border-[#E5D9C7]/70">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#F5E4DA] text-terre-p flex items-center justify-center shrink-0 mt-0.5">
@@ -526,7 +529,7 @@ export default function SettingsPage() {
             )}
 
             {/* MESSAGE INCITATIF 2 : Application installée mais notifications NON autorisées */}
-            {isStandalone && notificationPermission !== "granted" && (
+            {user && isStandalone && notificationPermission !== "granted" && (
               <div className="bg-white rounded-[15px] p-[14px_16px] shadow-[0_1px_2px_rgba(67,53,40,0.04)] mb-2.5 border border-[#E5D9C7]/70">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-[#FAF6F0] text-[#5F6A52] flex items-center justify-center shrink-0 mt-0.5">
@@ -573,13 +576,22 @@ export default function SettingsPage() {
             )}
 
             {/* CARTE DES OPTIONS DE RAPPELS (Grisée si non installé ou non autorisé) */}
+            {!user && (
+              <div className="bg-white rounded-[15px] p-4 mb-2.5 text-[13px] text-gris-2">
+                <p>Connectez-vous pour activer et retrouver vos réglages de rappels.</p>
+                <button type="button" onClick={() => setCurrentScreen("compte")} className="mt-3 w-full rounded-[10px] bg-terre-p py-2.5 text-creme">
+                  Se connecter
+                </button>
+              </div>
+            )}
             <div
               className={`bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)] transition-opacity duration-200 ${
-                !isStandalone || notificationPermission !== "granted"
+                !user || !isStandalone || notificationPermission !== "granted"
                   ? "opacity-40 cursor-pointer select-none"
                   : ""
               }`}
               onClick={() => {
+                if (!user) { setCurrentScreen("compte"); return; }
                 if (!isStandalone) {
                   if (isAppInstalled) {
                     openPwaApp("/settings");
@@ -594,6 +606,8 @@ export default function SettingsPage() {
               {/* Rappel quotidien switch */}
               <div
                 onClick={(e) => {
+                  e.stopPropagation();
+                  if (!user) { setCurrentScreen("compte"); return; }
                   if (!isStandalone) {
                     e.stopPropagation();
                     if (isAppInstalled) {
@@ -609,7 +623,7 @@ export default function SettingsPage() {
                   }
                 }}
                 className={`flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors ${
-                  isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
+                  user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
                     ? "border-b border-[#F8EFE4]"
                     : ""
                 }`}
@@ -618,7 +632,9 @@ export default function SettingsPage() {
                   <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
                     Rappel quotidien
                   </b>
-                  {!isStandalone ? (
+                  {!user ? (
+                    <span className="block text-[11px] text-[#9A8E7C] mt-1">Connectez-vous pour activer vos rappels</span>
+                  ) : !isStandalone ? (
                     <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
                       {isAppInstalled
                         ? "Ouvrez l'application pour paramétrer ce rappel"
@@ -640,14 +656,14 @@ export default function SettingsPage() {
                 </div>
                 <div
                   className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors cursor-pointer ${
-                    isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
+                    user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
                       ? "bg-[#5F6A52]"
                       : "bg-[#F0E5D6]"
                   }`}
                 >
                   <i
                     className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all duration-150 ${
-                      isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
+                      user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
                         ? "left-[18.5px]"
                         : "left-[2.5px]"
                     }`}
@@ -656,7 +672,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Si activé: Heure, Jours et Tester */}
-              {isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled && (
+              {user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled && (
                 <>
                   <div
                     onClick={openReminderTimeSheet}
@@ -726,7 +742,7 @@ export default function SettingsPage() {
                 </>
               )}
             </div>
-            {isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled && (
+            {user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled && (
               <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-2 mx-[3px]">
                 Un seul rappel par jour, jamais de relance si vous ne l’ouvrez pas.
               </p>

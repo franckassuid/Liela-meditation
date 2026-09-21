@@ -235,8 +235,17 @@ function createStorage(uid: string | null) {
   },
 
   getProgress: async (): Promise<SessionHistoryItem[]> => (await safeGet<SessionHistoryItem[]>(STORAGE_KEYS.PROGRESS)) || [],
-  getSessionProgress: async (sessionId: string): Promise<SessionHistoryItem | null> =>
-    (await storage.getProgress()).find((item) => item.sessionId === sessionId) || null,
+  getSessionProgress: async (sessionId: string): Promise<SessionHistoryItem | null> => {
+    const local = await safeGet<SessionHistoryItem>(STORAGE_KEYS.IN_PROGRESS);
+    const remote = (await storage.getProgress()).find((item) => item.sessionId === sessionId);
+    if (local?.sessionId === sessionId && (!remote || (local.lastListenedAt || local.startedAt) > (remote.lastListenedAt || remote.startedAt))) return local;
+    return remote || null;
+  },
+  // Frequent device checkpoints remain independent of cloud snapshot refreshes.
+  savePlaybackCheckpoint: async (item: SessionHistoryItem, sync = false): Promise<boolean> => {
+    const saved = await safeSet(STORAGE_KEYS.IN_PROGRESS, item);
+    return sync ? (await storage.addHistoryItem(item)) && saved : saved;
+  },
   saveProgress: async (item: SessionHistoryItem): Promise<boolean> => {
     return safeUpdate<SessionHistoryItem[]>(STORAGE_KEYS.PROGRESS, (items) => [
       { ...item, lastListenedAt: item.lastListenedAt || new Date().toISOString() },
@@ -336,9 +345,10 @@ function createStorage(uid: string | null) {
 
   getSettings: async (): Promise<AppSettings> => {
     const data = await safeGet<Partial<AppSettings>>(STORAGE_KEYS.APP_SETTINGS);
-    return { ...DEFAULT_SETTINGS, ...(data || {}) };
+    return { ...DEFAULT_SETTINGS, ...(data || {}), ...(!uid ? { dailyReminderEnabled: false } : {}) };
   },
   setSettings: async (partial: Partial<AppSettings>): Promise<boolean> => {
+    if (!uid && partial.dailyReminderEnabled === true) return false;
     const updated = await safeUpdate<AppSettings>(STORAGE_KEYS.APP_SETTINGS, (current) => {
       return { ...DEFAULT_SETTINGS, ...(current || {}), ...partial };
     });
