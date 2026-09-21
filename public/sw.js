@@ -2,7 +2,7 @@
  * Liela Service Worker
  *
  * Two separate caches:
- *  - liela-shell-v10  : UI assets, scripts, styles, Next.js pages
+ *  - liela-shell-v11  : UI assets, scripts, styles, Next.js pages
  *  - liela-sessions-v1: downloaded session audio (never cleared by shell updates)
  *
  * Fetch strategy:
@@ -16,7 +16,7 @@
  *  This is required for audio seeking in Safari / iOS WebKit.
  */
 
-const SHELL_CACHE = "liela-shell-v10";
+const SHELL_CACHE = "liela-shell-v11";
 const SESSIONS_CACHE = "liela-sessions-v1";
 
 // ── Install ───────────────────────────────────────────────────────────────────
@@ -175,11 +175,21 @@ self.addEventListener("notificationclick", (event) => {
   if (event.action === "later" || event.action === "snooze") return;
 
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(async (clientList) => {
+      // A unique URL forces the home screen to recalculate its suggestion for
+      // the exact moment at which the reminder was opened.
+      const targetUrl = new URL(`/?from=reminder&t=${Date.now()}`, self.location.origin).href;
       for (const client of clientList) {
-        if (client.url && "focus" in client) return client.focus();
+        if ("navigate" in client) {
+          try {
+            await client.navigate(targetUrl);
+            return client.focus();
+          } catch {
+            // The existing window may not be navigable yet; open a new one below.
+          }
+        }
       }
-      if (clients.openWindow) return clients.openWindow("/");
+      if (clients.openWindow) return clients.openWindow(targetUrl);
     })
   );
 });

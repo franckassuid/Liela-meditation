@@ -53,6 +53,13 @@ test("migration, remote updates, offline queue and account isolation", async () 
     await env.withSecurityRulesDisabled(async (context) => { await setDoc(doc(context.firestore(), `users/${user.uid}/favorites/other-device`), { userId: user.uid, sessionId: "other-device", addedAt: new Date().toISOString() }); });
     await eventually(async () => (await storage.getFavorites()).some((item) => item.sessionId === "other-device"));
 
+    // Reminder changes must replace the complete settings document in Firestore.
+    await storage.setSettings({ dailyReminderEnabled: true, dailyReminderTime: "09:30" });
+    await eventually(async () => {
+      const settings = (await getDoc(doc(db, `users/${user.uid}/preferences/settings`))).data();
+      return settings?.dailyReminderEnabled === true && settings?.dailyReminderTime === "09:30";
+    });
+
     online = false;
     await storage.addFavorite("offline-session");
     assert.ok((await rawGet<Record<string, unknown>>(`user:${user.uid}:firestore-outbox`))?.["favorites/offline-session"]);

@@ -54,6 +54,8 @@ export default function SettingsPage() {
   const [showFullPrivacy, setShowFullPrivacy] = useState(false);
   const [showDaysSheet, setShowDaysSheet] = useState(false);
   const [showTimeSheet, setShowTimeSheet] = useState(false);
+  const [reminderTimeDraft, setReminderTimeDraft] = useState(DEFAULT_SETTINGS.dailyReminderTime);
+  const [isSavingReminderTime, setIsSavingReminderTime] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
@@ -129,10 +131,15 @@ export default function SettingsPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const updateSetting = async <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
+  const updateSetting = async <K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<boolean> => {
     const next = { ...settings, [key]: value };
     setSettings(next);
-    await storage.setSettings({ [key]: value });
+    const saved = await storage.setSettings({ [key]: value });
+    if (!saved) {
+      setSettings(settings);
+      showToast("La modification n’a pas pu être enregistrée. Réessayez.");
+      return false;
+    }
 
     if (
       key === "dailyReminderEnabled" ||
@@ -140,6 +147,23 @@ export default function SettingsPage() {
       key === "dailyReminderCustomDays"
     ) {
       await syncScheduledReminder(next);
+    }
+    return true;
+  };
+
+  const openReminderTimeSheet = () => {
+    setReminderTimeDraft(settings.dailyReminderTime);
+    setShowTimeSheet(true);
+  };
+
+  const saveReminderTime = async (time = reminderTimeDraft) => {
+    if (isSavingReminderTime || !/^([01][0-9]|2[0-3]):[0-5][0-9]$/.test(time)) return;
+    setIsSavingReminderTime(true);
+    const saved = await updateSetting("dailyReminderTime", time);
+    setIsSavingReminderTime(false);
+    if (saved) {
+      setShowTimeSheet(false);
+      showToast(`Rappel enregistré à ${time}`);
     }
   };
 
@@ -635,7 +659,7 @@ export default function SettingsPage() {
               {isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled && (
                 <>
                   <div
-                    onClick={() => setShowTimeSheet(true)}
+                    onClick={openReminderTimeSheet}
                     className="flex items-center gap-[9px] p-[12px_13px] border-b border-[#F8EFE4] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
@@ -1091,7 +1115,7 @@ export default function SettingsPage() {
         <div className="fixed inset-0 z-50 flex items-end justify-center">
           <div
             className="fixed inset-0 bg-[rgba(67,53,40,0.34)] animate-in fade-in"
-            onClick={() => setShowTimeSheet(false)}
+            onClick={() => { if (!isSavingReminderTime) setShowTimeSheet(false); }}
           />
           <div className="relative w-full max-w-[480px] bg-creme rounded-t-[24px] p-[10px_16px_24px] text-center z-51 shadow-2xl animate-in slide-in-from-bottom duration-200">
             <span className="block w-[32px] h-[3px] bg-[#E5D9C7] rounded-full mx-auto mb-[14px]" />
@@ -1102,13 +1126,13 @@ export default function SettingsPage() {
               <label className="text-[11px] text-[#9A8E7C] mb-2 font-medium">Choisir une heure précise</label>
               <input
                 type="time"
-                value={settings.dailyReminderTime}
-                onChange={(e) => updateSetting("dailyReminderTime", e.target.value)}
+                value={reminderTimeDraft}
+                onChange={(e) => setReminderTimeDraft(e.target.value)}
                 className="font-poppins font-light text-[32px] text-encre bg-[#F8EFE4] px-4 py-1 rounded-xl outline-none border border-[#E5D9C7] text-center"
               />
-              {settings.dailyReminderTime && (
+              {reminderTimeDraft && (
                 <p className="text-[11.5px] text-[#5F6A52] font-medium mt-2.5">
-                  Prochain rappel : {formatNextReminderDescription(settings.dailyReminderTime, settings.dailyReminderCustomDays)}
+                  Prochain rappel : {formatNextReminderDescription(reminderTimeDraft, settings.dailyReminderCustomDays)}
                 </p>
               )}
             </div>
@@ -1116,15 +1140,13 @@ export default function SettingsPage() {
             {/* Raccourcis fréquents */}
             <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)] mt-3 text-left">
               {["08:00", "12:30", "18:00", "20:00", "21:00", "22:00"].map((t) => {
-                const isSelected = settings.dailyReminderTime === t;
+                const isSelected = reminderTimeDraft === t;
                 return (
                   <div
                     key={t}
-                    onClick={() => {
-                      updateSetting("dailyReminderTime", t);
-                      setShowTimeSheet(false);
-                    }}
-                    className="flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] last:border-b-0 cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
+                    aria-disabled={isSavingReminderTime}
+                    onClick={() => void saveReminderTime(t)}
+                    className={`flex items-center gap-[10px] p-[12px_13px] border-b border-[#F8EFE4] last:border-b-0 active:bg-[#F8EFE4]/60 transition-colors ${isSavingReminderTime ? "cursor-wait opacity-60" : "cursor-pointer"}`}
                   >
                     <div className="flex-1 min-w-0">
                       <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
@@ -1151,10 +1173,11 @@ export default function SettingsPage() {
             </div>
 
             <button
-              onClick={() => setShowTimeSheet(false)}
+              disabled={isSavingReminderTime}
+              onClick={() => void saveReminderTime()}
               className="w-full bg-encre text-creme rounded-[12px] p-[13px] text-[13.5px] font-semibold mt-4 active:opacity-90 transition-opacity"
             >
-              Terminer
+              {isSavingReminderTime ? "Enregistrement…" : "Enregistrer"}
             </button>
           </div>
         </div>

@@ -48,12 +48,13 @@ export default function HomePage() {
       const onboarded = await storage.getOnboardingCompleted();
       const rep = await getRepriseSession();
       const favs = await storage.getFavorites();
+      const openedFromReminder = new URLSearchParams(window.location.search).get("from") === "reminder";
 
       // Suggestion calculée en excluant strictement la reprise en cours
       let rec = await getRecommendedSession(new Date(), {
         isOffline: typeof navigator !== "undefined" && !navigator.onLine,
         excludeSessionId: rep?.sessionId,
-        forceRecalculate: Boolean(rep),
+        forceRecalculate: openedFromReminder || Boolean(rep),
       });
 
       if (rep && rec && isSameSession(rec.session, rep.sessionId)) {
@@ -76,6 +77,7 @@ export default function HomePage() {
       setFavorites(favs);
       setRecommendation(rec);
       setIsMounted(true);
+      if (openedFromReminder) window.history.replaceState(window.history.state, "", "/");
     };
 
     loadData();
