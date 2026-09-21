@@ -31,6 +31,20 @@ test("device downloads and open-session state never produce cloud writes", () =>
   assert.deepEqual(toDocuments("liela_settings", { resumePlayback: true, accountUser: { email: "fake" } }), { "preferences/settings": { resumePlayback: true } });
 });
 
+test("trimming an oversized personalization history does not enqueue a deletion storm", () => {
+  const events = Array.from({ length: 250 }, (_, index) => ({
+    id: `event-${index}`,
+    type: "recommendation",
+    createdAt: new Date(2026, 8, 21, 12, 0, index).toISOString(),
+  }));
+  const next = [{ id: "event-new", type: "recommendation", createdAt: new Date().toISOString() }, ...events].slice(0, 200);
+  const writes = changesFor("liela_events", events, next);
+
+  assert.equal(writes.length, 1);
+  assert.equal(writes[0].path, "events/event-new");
+  assert.notEqual(writes[0].value, null);
+});
+
 test("listened duration excludes seeks and pauses while counting replayed passages", () => {
   const tracker = new ListeningTracker();
   tracker.start(0, 0);

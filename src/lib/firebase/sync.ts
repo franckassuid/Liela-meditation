@@ -1,8 +1,8 @@
-import { collection, doc, onSnapshot, runTransaction, setDoc, deleteDoc, type Firestore, type Unsubscribe } from "firebase/firestore";
+import { collection, doc, onSnapshot, runTransaction, setDoc, deleteDoc, query, orderBy, limit, type Firestore, type Unsubscribe } from "firebase/firestore";
 import { update } from "idb-keyval";
 import { rawGet, rawSet, scopedKey, registerSyncSink, withStorageLock, notifyStorageChanged } from "@/lib/storage/local";
 import { DEFAULT_SETTINGS } from "@/lib/storage";
-import { changesFor, overlayPending, SYNC_COLLECTIONS, SYNC_DOCUMENTS, SYNC_KEYS, toDocuments, type JsonRecord, type PendingWrite } from "./schema";
+import { changesFor, MAX_PERSONALIZATION_EVENTS, overlayPending, SYNC_COLLECTIONS, SYNC_DOCUMENTS, SYNC_KEYS, toDocuments, type JsonRecord, type PendingWrite } from "./schema";
 
 export type SyncStatus = { state: "guest" | "syncing" | "synced" | "offline" | "error"; pending: number; error?: string };
 let status: SyncStatus = { state: "guest", pending: 0 };
@@ -83,7 +83,7 @@ export async function startUserSync(db: Firestore, uid: string) {
       if (stopped || !remote) return;
       const value = overlayPending(key, remote, await pendingFor(uid));
       await rawSet(scopedKey(key, uid), value ?? (key in SYNC_COLLECTIONS ? [] : {}));
-      if (!stopped) notifyStorageChanged();
+      if (!stopped) notifyStorageChanged(key);
     });
   }
   async function flush() {
@@ -134,7 +134,6 @@ export async function startUserSync(db: Firestore, uid: string) {
     }, revision: crypto.randomUUID(), createOnly: true }]);
     const firstSnapshots = SYNC_KEYS.map((key) => new Promise<void>((resolve) => {
       const path = SYNC_COLLECTIONS[key]?.path ?? SYNC_DOCUMENTS[key];
-      const reference = key in SYNC_COLLECTIONS ? collection(db, `users/${uid}/${path}`) : doc(db, `users/${uid}${path ? `/${path}` : ""}`);
       const receive = (remote: Record<string, JsonRecord>) => {
         if (stopped) return;
         remoteByKey.set(key, remote);
@@ -143,13 +142,18 @@ export async function startUserSync(db: Firestore, uid: string) {
         void applyRemote(key).then(() => { resolve(); void updateStatus(); });
       };
       const fail = (error: Error) => { errors.set(key, error.message); resolve(); void updateStatus(); };
-      if (reference.type === "collection") {
+      if (key in SYNC_COLLECTIONS) {
+        const collectionReference = collection(db, `users/${uid}/${path}`);
+        const reference = key === "liela_events"
+          ? query(collectionReference, orderBy("createdAt", "desc"), limit(MAX_PERSONALIZATION_EVENTS))
+          : collectionReference;
         unsubscribes.push(onSnapshot(reference, (snapshot) => {
           // Empty cache snapshots must not erase a persistent offline cache.
           if (snapshot.metadata.fromCache && snapshot.empty) return;
           receive(Object.fromEntries(snapshot.docs.map((item) => [`${path}/${item.id}`, item.data()])));
         }, fail));
       } else {
+        const reference = doc(db, `users/${uid}${path ? `/${path}` : ""}`);
         unsubscribes.push(onSnapshot(reference, (snapshot) => {
           if (snapshot.metadata.fromCache && !snapshot.exists()) return;
           receive(snapshot.exists() ? { [path]: snapshot.data() } : {});

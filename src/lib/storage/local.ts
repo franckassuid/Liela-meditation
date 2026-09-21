@@ -58,6 +58,6 @@ export const safeUpdate = <T>(key: string, updater: (value: T | undefined) => T,
   write(key, (value) => updater(value as T | undefined), false, uid);
 export const safeDel = (key: string, uid: string | null = userId) => write(key, () => undefined, true, uid);
 
-export function notifyStorageChanged() {
-  window.dispatchEvent(new Event("liela:storage-changed"));
+export function notifyStorageChanged(key?: string) {
+  window.dispatchEvent(new CustomEvent<string | undefined>("liela:storage-changed", { detail: key }));
 }

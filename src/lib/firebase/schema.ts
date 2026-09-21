@@ -28,6 +28,7 @@ export interface PersonalizationEvent {
   situationId?: string;
   durationMinutes?: number;
 }
+export const MAX_PERSONALIZATION_EVENTS = 200;
 export interface Entitlements {
   plan: string;
   status: "active" | "trialing" | "expired" | "cancelled";
@@ -79,7 +80,11 @@ export function toDocuments(key: string, value: unknown): Record<string, JsonRec
 export function changesFor(key: string, before: unknown, after: unknown): PendingWrite[] {
   const previous = toDocuments(key, before);
   const next = toDocuments(key, after);
+  const isOversizedEventHistoryBeingTrimmed = key === "liela_events"
+    && Object.keys(previous).length > MAX_PERSONALIZATION_EVENTS
+    && Object.keys(next).length === MAX_PERSONALIZATION_EVENTS;
   return [...new Set([...Object.keys(previous), ...Object.keys(next)])]
+    .filter((path) => !isOversizedEventHistoryBeingTrimmed || path in next)
     .filter((path) => JSON.stringify(previous[path]) !== JSON.stringify(next[path]))
     .map((path) => ({ path, key, value: next[path] ?? null, revision: crypto.randomUUID() }));
 }

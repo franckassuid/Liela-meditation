@@ -1,5 +1,5 @@
 import { safeGet as localGet, safeSet as localSet, safeUpdate as localUpdate, safeDel as localDel, getStorageUser } from "./local";
-import type { UserProfile, SessionFeedback, PersonalizationEvent } from "@/lib/firebase/schema";
+import { MAX_PERSONALIZATION_EVENTS, type UserProfile, type SessionFeedback, type PersonalizationEvent } from "@/lib/firebase/schema";
 import { removeSessionFiles, verifySessionInCache, SESSIONS_CACHE_NAME } from '@/lib/download/SessionDownloader';
 
 export interface AudioPreferences {
@@ -250,7 +250,7 @@ function createStorage(uid: string | null) {
   recordEvent: async (event: Omit<PersonalizationEvent, "id" | "createdAt">): Promise<boolean> =>
     safeUpdate<PersonalizationEvent[]>(STORAGE_KEYS.EVENTS, (items) => [
       { ...event, id: crypto.randomUUID(), createdAt: new Date().toISOString() }, ...(items || []),
-    ]),
+    ].slice(0, MAX_PERSONALIZATION_EVENTS)),
   getEvents: async (): Promise<PersonalizationEvent[]> => (await safeGet<PersonalizationEvent[]>(STORAGE_KEYS.EVENTS)) || [],
 
   getFavorites: async (): Promise<Favori[]> => {
@@ -314,12 +314,24 @@ function createStorage(uid: string | null) {
     return Array.isArray(data) ? data : [];
   },
   addRecommendationHistory: async (sessionId: string): Promise<boolean> => {
-    await storage.recordEvent({ type: "recommendation", sessionId });
-    return safeUpdate<{ sessionId: string; recommendedAt: string }[]>(STORAGE_KEYS.RECOMMENDATION_HISTORY, (history) => {
+    const now = Date.now();
+    let shouldRecordEvent = false;
+    const updated = await safeUpdate<{ sessionId: string; recommendedAt: string }[]>(STORAGE_KEYS.RECOMMENDATION_HISTORY, (history) => {
       const arr = Array.isArray(history) ? history : [];
-      arr.unshift({ sessionId, recommendedAt: new Date().toISOString() });
+      const latest = arr[0];
+      const isRecentDuplicate = latest?.sessionId === sessionId
+        && now - new Date(latest.recommendedAt).getTime() < 30 * 60 * 1000;
+      if (isRecentDuplicate) return arr;
+
+      shouldRecordEvent = true;
+      arr.unshift({ sessionId, recommendedAt: new Date(now).toISOString() });
       return arr.slice(0, 50);
     });
+
+    if (updated && shouldRecordEvent) {
+      return storage.recordEvent({ type: "recommendation", sessionId });
+    }
+    return updated;
   },
 
   getSettings: async (): Promise<AppSettings> => {

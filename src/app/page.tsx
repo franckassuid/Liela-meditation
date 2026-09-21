@@ -5,7 +5,7 @@ import { useCatalogRevision } from "@/hooks/useCatalogRevision";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
-import { storage, SessionHistoryItem, Favori, requestPersistence } from "@/lib/storage";
+import { storage, SessionHistoryItem, Favori, requestPersistence, STORAGE_KEYS } from "@/lib/storage";
 import { sessions as sessionsData } from "@/lib/sessions";
 import { getSituation } from "@/lib/sessions";
 import { getRecommendedSession, getRepriseSession, RecommendationResult, isSameSession } from "@/lib/recommendation";
@@ -15,9 +15,17 @@ import { BreathingVisualizer } from "@/components/ui/BreathingVisualizer";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import { LielaEmblem } from "@/components/ui/Icons";
 
+const HOME_STORAGE_KEYS = [
+  STORAGE_KEYS.USER_PROFILE,
+  STORAGE_KEYS.HISTORY,
+  STORAGE_KEYS.PROGRESS,
+  STORAGE_KEYS.IN_PROGRESS,
+  STORAGE_KEYS.FAVORITES,
+] as const;
+
 export default function HomePage() {
   const catalogRevision = useCatalogRevision();
-  const storageRevision = useStorageRevision();
+  const storageRevision = useStorageRevision(HOME_STORAGE_KEYS);
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState(false);
@@ -54,7 +62,7 @@ export default function HomePage() {
       let rec = await getRecommendedSession(new Date(), {
         isOffline: typeof navigator !== "undefined" && !navigator.onLine,
         excludeSessionId: rep?.sessionId,
-        forceRecalculate: openedFromReminder || Boolean(rep),
+        forceRecalculate: openedFromReminder,
       });
 
       if (rep && rec && isSameSession(rec.session, rep.sessionId)) {
