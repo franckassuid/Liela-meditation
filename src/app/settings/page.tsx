@@ -393,33 +393,6 @@ export default function SettingsPage() {
                   <path d="m9 5 7 7-7 7" />
                 </svg>
               </div>
-            </div>            {/* LECTURE */}
-            <p className="text-[10.5px] font-semibold text-[#9A8E7C] tracking-[0.02em] mt-[15px] mb-[6px] ml-[3px]">
-              Lecture
-            </p>
-            <div className="bg-white rounded-[15px] overflow-hidden shadow-[0_1px_2px_rgba(67,53,40,0.04)]">
-              {/* Reprendre où je me suis arrêté */}
-              <div
-                onClick={() => updateSetting("resumePlayback", !settings.resumePlayback)}
-                className="flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <b className="block font-normal text-[13.5px] leading-[1.3] text-encre">
-                    Reprendre où je me suis arrêté
-                  </b>
-                </div>
-                <div
-                  className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors cursor-pointer ${
-                    settings.resumePlayback ? "bg-[#5F6A52]" : "bg-[#F0E5D6]"
-                  }`}
-                >
-                  <i
-                    className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all duration-150 ${
-                      settings.resumePlayback ? "left-[18.5px]" : "left-[2.5px]"
-                    }`}
-                  />
-                </div>
-              </div>
             </div>
 
             {/* TÉLÉCHARGEMENTS */}

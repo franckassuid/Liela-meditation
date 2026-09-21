@@ -197,16 +197,12 @@ function PlayerContent({ sessionId }: { sessionId: string | null }) {
       await manager.load();
       if (!active) return;
       
-      // Seek to saved position if resuming setting is enabled
-      const userSettings = await storage.getSettings();
+      // Unfinished sessions always resume, regardless of the legacy preference.
+      const inProgress = await storage.getSessionProgress(session.id);
       if (!active) return;
-      if (userSettings.resumePlayback) {
-        const inProgress = await storage.getSessionProgress(session.id);
-        if (!active) return;
-        if (inProgress && !inProgress.completed && inProgress.lastPosition > 0) {
-          manager.seek(inProgress.lastPosition);
-          setCurrentTime(inProgress.lastPosition);
-        }
+      if (inProgress && !inProgress.completed && inProgress.lastPosition > 0) {
+        manager.seek(inProgress.lastPosition);
+        setCurrentTime(inProgress.lastPosition);
       }
       
       const isFav = await storage.hasFavorite(session.id);

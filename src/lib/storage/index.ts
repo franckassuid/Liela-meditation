@@ -61,6 +61,7 @@ export function formatReminderDays(days: DayOfWeek[]): string {
 }
 
 export interface AppSettings {
+  /** Legacy field retained for Firestore compatibility; playback always resumes. */
   resumePlayback: boolean;
   downloadFavorites: boolean;
   downloadWifiOnly: boolean;
