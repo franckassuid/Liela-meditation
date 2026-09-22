@@ -1,5 +1,6 @@
 import { AppSettings, DayOfWeek } from "./storage";
 import { getStorageUser } from "./storage/local";
+import { nextReminderAt } from "./push/schedule";
 
 export type NotificationPermissionState = "granted" | "denied" | "default" | "unsupported";
 
@@ -71,7 +72,6 @@ export async function sendLocalNotification(
     renotify: true,
     actions: [
       { action: "start-session", title: "Commencer ma séance" },
-      { action: "snooze", title: "Reporter" },
     ],
     ...options,
   };
@@ -101,7 +101,7 @@ export async function sendLocalNotification(
  */
 export async function sendTestReminderNotification(time: string = "21:00"): Promise<boolean> {
   return sendLocalNotification("Liela · Moment de respiration", {
-    body: `Vos rappels sont configurés pour ${time}. Prenez 5 minutes chaque jour pour vous recentrer.`,
+    body: `Test d’affichage sur cet appareil. Heure choisie : ${time}.`,
     icon: "/notification-icon.png",
     badge: "/badge-monochrome.png",
     tag: "liela-test-reminder",
@@ -109,7 +109,6 @@ export async function sendTestReminderNotification(time: string = "21:00"): Prom
     renotify: true,
     actions: [
       { action: "start-session", title: "Commencer ma séance" },
-      { action: "snooze", title: "Reporter" },
     ],
   });
 }
@@ -119,50 +118,8 @@ export async function sendTestReminderNotification(time: string = "21:00"): Prom
  */
 export async function scheduleTestNotificationInSeconds(seconds: number = 10): Promise<boolean> {
   const owner = getStorageUser();
-  if (!owner) return false;
-  if (typeof window === "undefined" || !("Notification" in window) || Notification.permission !== "granted") {
-    return false;
-  }
-
-  const delayMs = seconds * 1000;
-  const notifTitle = "Liela · Moment de respiration";
-  const notifOptions: EnhancedNotificationOptions = {
-    body: "Bravo ! Vos rappels fonctionnent parfaitement. Prenez un instant pour respirer.",
-    icon: "/notification-icon.png",
-    badge: "/badge-monochrome.png",
-    tag: "liela-test-countdown",
-    vibrate: [120, 80, 120],
-    renotify: true,
-    actions: [
-      { action: "start-session", title: "Commencer ma séance" },
-      { action: "snooze", title: "Reporter" },
-    ],
-  };
-
-  // 1. Envoi au Service Worker pour qu'il le gère en arrière-plan
-  if ("serviceWorker" in navigator) {
-    try {
-      const reg = await navigator.serviceWorker.ready;
-      if (getStorageUser() !== owner) return false;
-      if (reg.active) {
-        reg.active.postMessage({
-          type: "SCHEDULE_REMINDER",
-          delayMs,
-          title: notifTitle,
-          options: notifOptions,
-        });
-      }
-    } catch (e) {
-      console.log("Erreur SW test countdown:", e);
-    }
-  }
-
-  // 2. Timer de secours côté fenêtre (au cas où le SW n'est pas encore prêt)
-  setTimeout(async () => {
-    if (getStorageUser() !== owner) return;
-    await sendLocalNotification(notifTitle, notifOptions);
-  }, delayMs);
-
+  if (!owner || getNotificationPermission() !== "granted") return false;
+  setTimeout(() => { if (getStorageUser() === owner) void sendTestReminderNotification(); }, seconds * 1000);
   return true;
 }
 
@@ -194,57 +151,9 @@ export function getMillisecondsUntilNextReminder(
   timeStr: string,
   customDays: DayOfWeek[] = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"]
 ): ReminderCalculation | null {
-  if (!timeStr) return null;
-
-  const [targetHours, targetMinutes] = timeStr.split(":").map(Number);
-  if (isNaN(targetHours) || isNaN(targetMinutes)) return null;
-
   const now = new Date();
-
-  // On teste aujourd'hui puis les 7 prochains jours
-  for (let offset = 0; offset <= 7; offset++) {
-    const candidate = new Date(now.getTime());
-    candidate.setDate(candidate.getDate() + offset);
-    candidate.setHours(targetHours, targetMinutes, 0, 0);
-
-    const diffMs = candidate.getTime() - now.getTime();
-
-    // Si c'est aujourd'hui :
-    if (offset === 0) {
-      // Cas A : L'heure est dans le futur aujourd'hui
-      if (diffMs > 0) {
-        const dayKey = DAY_MAP[candidate.getDay()];
-        if (customDays.includes(dayKey)) {
-          return { delayMs: diffMs, nextDate: candidate };
-        }
-      }
-
-      // Cas B : L'heure est passée depuis moins de 90 secondes (ex: test de la minute en cours)
-      // On vérifie si ce créneau précis n'a pas déjà été envoyé aujourd'hui
-      if (diffMs <= 0 && Math.abs(diffMs) <= 90 * 1000) {
-        const slotKey = `${candidate.getFullYear()}-${candidate.getMonth() + 1}-${candidate.getDate()}_${timeStr}`;
-        const lastSentSlot = typeof window !== "undefined" ? localStorage.getItem("liela_last_sent_reminder_slot") : null;
-        const dayKey = DAY_MAP[candidate.getDay()];
-
-        if (customDays.includes(dayKey) && lastSentSlot !== slotKey) {
-          // Déclencher dans 1.5s pour laisser le temps à l'UI de réagir
-          return { delayMs: 1500, nextDate: candidate, isImmediateCatchup: true };
-        }
-      }
-
-      // Sinon, pour aujourd'hui c'est dépassé, on passe aux jours suivants
-      continue;
-    }
-
-    // Pour les jours suivants (offset > 0)
-    const dayKey = DAY_MAP[candidate.getDay()];
-    if (customDays.includes(dayKey)) {
-      const delayMs = Math.max(1000, candidate.getTime() - now.getTime());
-      return { delayMs, nextDate: candidate };
-    }
-  }
-
-  return null;
+  const nextDate = nextReminderAt({ time: timeStr, days: customDays, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone }, now);
+  return nextDate ? { nextDate, delayMs: nextDate.getTime() - now.getTime() } : null;
 }
 
 /**
@@ -255,105 +164,24 @@ export function formatNextReminderDescription(
   customDays: DayOfWeek[] = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"]
 ): string {
   const next = getMillisecondsUntilNextReminder(timeStr, customDays);
-  if (!next) return "";
-
-  if (next.isImmediateCatchup) {
-    return "Imminent (dans quelques secondes)";
-  }
-
-  const now = new Date();
-  const isToday = next.nextDate.getDate() === now.getDate() && next.nextDate.getMonth() === now.getMonth();
-  const diffSeconds = Math.round(next.delayMs / 1000);
-
-  if (diffSeconds < 60) {
-    return `Dans ${diffSeconds}s (${isToday ? "aujourd'hui" : "demain"} à ${timeStr})`;
-  }
-  const diffMinutes = Math.round(diffSeconds / 60);
-  if (diffMinutes < 60) {
-    return `${isToday ? "Aujourd'hui" : "Demain"} à ${timeStr} (dans ${diffMinutes} min)`;
-  }
-  const diffHours = Math.floor(diffMinutes / 60);
-  const remainingMin = diffMinutes % 60;
-  return `${isToday ? "Aujourd'hui" : "Demain"} à ${timeStr} (dans ${diffHours}h${remainingMin > 0 ? remainingMin : ""})`;
+  if (!next) return "Aucun jour sélectionné";
+  return next.nextDate.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }) + ` à ${timeStr}`;
 }
 
-/**
- * Synchronise la programmation du rappel avec le Service Worker et l'API Notification Triggers
- * ATTENTION : Ne JAMAIS appeler cette fonction depuis l'intérieur du scheduler pour éviter les boucles.
- */
+/** Cancel legacy local schedules without touching a user's server schedule. */
+export async function cancelLocalReminder(): Promise<void> {
+  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
+  const registration = await navigator.serviceWorker.getRegistration();
+  if (!registration) return;
+  registration.active?.postMessage({ type: "CANCEL_REMINDER" });
+  const notifications = await registration.getNotifications({ includeTriggered: true } as GetNotificationOptions).catch(() => []);
+  notifications.filter(notification => notification.tag.startsWith("liela-")).forEach(notification => notification.close());
+}
+
 export async function syncScheduledReminder(settings: AppSettings): Promise<void> {
   if (typeof window === "undefined") return;
-  const owner = getStorageUser();
-  if (!owner) settings = { ...settings, dailyReminderEnabled: false };
-
-  // Notifier l'application côté client pour que ReminderScheduler prenne immédiatement en compte le changement
-  window.dispatchEvent(new CustomEvent("liela:reminder-updated", { detail: settings }));
-
-  if (!settings.dailyReminderEnabled || !settings.dailyReminderTime) {
-    // Annuler auprès du Service Worker
-    if ("serviceWorker" in navigator) {
-      try {
-        const reg = await navigator.serviceWorker.getRegistration();
-        if (!reg) return;
-        if (reg.active) {
-          reg.active.postMessage({ type: "CANCEL_REMINDER" });
-        }
-        const notifications = await reg.getNotifications({ includeTriggered: true } as GetNotificationOptions);
-        notifications.filter((notification) => notification.tag.startsWith("liela-")).forEach((notification) => notification.close());
-      } catch (e) {
-        console.log("Erreur annulation SW:", e);
-      }
-    }
-    return;
-  }
-
-  const days = settings.dailyReminderCustomDays || ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
-  const next = getMillisecondsUntilNextReminder(settings.dailyReminderTime, days);
-  if (!next) return;
-
-  const notifTitle = "Liela · Moment de respiration";
-  const notifOptions: EnhancedNotificationOptions = {
-    body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
-    icon: "/notification-icon.png",
-    badge: "/badge-monochrome.png",
-    tag: "liela-daily-reminder",
-    vibrate: [120, 80, 120],
-    renotify: true,
-    actions: [
-      { action: "start-session", title: "Commencer ma séance" },
-      { action: "snooze", title: "Reporter" },
-    ],
-  };
-
-  // 1. Essai avec Notification Triggers API (Chromium / Android natif pour alarmes hors-ligne)
-  if ("serviceWorker" in navigator) {
-    try {
-      const reg = await navigator.serviceWorker.ready;
-      if (getStorageUser() !== owner) return;
-
-      // Si support de TimestampTrigger dans le navigateur
-      if (
-        "showTrigger" in Notification.prototype &&
-        typeof (window as unknown as { TimestampTrigger?: new (ts: number) => unknown }).TimestampTrigger !== "undefined"
-      ) {
-        const TimestampTriggerClass = (window as unknown as { TimestampTrigger: new (ts: number) => unknown }).TimestampTrigger;
-        (notifOptions as unknown as { showTrigger: unknown }).showTrigger = new TimestampTriggerClass(next.nextDate.getTime());
-        await reg.showNotification(notifTitle, notifOptions);
-        console.log("Rappel programmé avec TimestampTrigger natif pour:", next.nextDate);
-      }
-
-      // 2. Envoi du message au Service Worker actif (reg.active) pour minuterie d'arrière-plan
-      if (reg.active) {
-        reg.active.postMessage({
-          type: "SCHEDULE_REMINDER",
-          delayMs: next.delayMs,
-          targetTimestamp: next.nextDate.getTime(),
-          title: notifTitle,
-          options: notifOptions,
-        });
-      }
-    } catch (err) {
-      console.log("Note sur la planification SW:", err);
-    }
-  }
+  await cancelLocalReminder();
+  if (!getStorageUser()) return;
+  const { syncPushReminder } = await import("./push/client");
+  await syncPushReminder(settings, true);
 }

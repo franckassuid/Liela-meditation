@@ -2,7 +2,7 @@
  * Liela Service Worker
  *
  * Two separate caches:
- *  - liela-shell-v11  : UI assets, scripts, styles, Next.js pages
+ *  - liela-shell-v12  : UI assets, scripts, styles, Next.js pages
  *  - liela-sessions-v1: downloaded session audio (never cleared by shell updates)
  *
  * Fetch strategy:
@@ -16,7 +16,7 @@
  *  This is required for audio seeking in Safari / iOS WebKit.
  */
 
-const SHELL_CACHE = "liela-shell-v11";
+const SHELL_CACHE = "liela-shell-v12";
 const SESSIONS_CACHE = "liela-sessions-v1";
 
 // ── Install ───────────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ self.addEventListener("activate", (event) => {
           // Only touch Liela-owned caches (prefix "liela-")
           if (!key.startsWith("liela-")) return;
           // Never delete the sessions cache
-          if (key === SESSIONS_CACHE) return;
+          if (key === SESSIONS_CACHE || key === "liela-push-state-v1") return;
           // Delete any old shell cache version
           if (key !== SHELL_CACHE) return caches.delete(key);
         })
@@ -194,58 +194,5 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
-// ── Scheduled reminders ───────────────────────────────────────────────────────
-
-let swReminderTimer = null;
-
-self.addEventListener("message", (event) => {
-  if (!event.data) return;
-
-  if (event.data.type === "SCHEDULE_REMINDER") {
-    if (swReminderTimer) {
-      clearTimeout(swReminderTimer);
-      swReminderTimer = null;
-    }
-
-    const { delayMs, title, options } = event.data;
-    if (typeof delayMs === "number" && delayMs > 0) {
-      const showNotifPromise = new Promise((resolve) => {
-        swReminderTimer = setTimeout(async () => {
-          try {
-            await self.registration.showNotification(
-              title || "Liela · Moment de respiration",
-              {
-                body: "Prenez 5 minutes pour vous recentrer et faire une pause.",
-                icon: "/notification-icon.png",
-                badge: "/badge-monochrome.png",
-                tag: "liela-daily-reminder",
-                vibrate: [120, 80, 120],
-                renotify: true,
-                actions: [
-                  { action: "start-session", title: "Commencer ma séance" },
-                  { action: "snooze", title: "Reporter" },
-                ],
-                ...options,
-              }
-            );
-          } catch (e) {
-            console.error("Erreur d'affichage notif SW:", e);
-          } finally {
-            resolve();
-          }
-        }, delayMs);
-      });
-
-      if (delayMs <= 60000 && event.waitUntil) {
-        event.waitUntil(showNotifPromise);
-      }
-    }
-  }
-
-  if (event.data.type === "CANCEL_REMINDER") {
-    if (swReminderTimer) {
-      clearTimeout(swReminderTimer);
-      swReminderTimer = null;
-    }
-  }
-});
+// Firebase is bundled locally; our notificationclick handler is registered first.
+importScripts("/push-worker.js");

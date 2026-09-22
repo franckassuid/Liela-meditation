@@ -9,8 +9,8 @@ import { setStorageUser } from "@/lib/storage/local";
 import { startCatalogSync } from "@/lib/firebase/catalog";
 import { invalidateRecommendationCache } from "@/lib/recommendation";
 import { ProfileSetupGate } from "@/components/account/ProfileSetupGate";
-import { syncScheduledReminder } from "@/lib/notifications";
-import { DEFAULT_SETTINGS } from "@/lib/storage";
+import { cancelLocalReminder } from "@/lib/notifications";
+import { resetPushOwner } from "@/lib/push/client";
 
 const AuthContext = createContext<{ user: User | null; error: string | null }>({ user: null, error: null });
 export const useFirebaseUser = () => useContext(AuthContext);
@@ -35,7 +35,8 @@ export function FirebaseProvider({ children }: { children: React.ReactNode }) {
       invalidateRecommendationCache();
       setError(null);
       try {
-        await syncScheduledReminder({ ...DEFAULT_SETTINGS, dailyReminderEnabled: false });
+        await cancelLocalReminder();
+        await resetPushOwner().catch(() => {});
         if (token !== generation) return;
         if (nextUser) {
           const sync = await startUserSync(db, nextUser.uid);

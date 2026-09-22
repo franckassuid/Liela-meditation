@@ -1,0 +1,9 @@
+{
+  "name": "liela-reminders",
+  "main": "index.ts",
+  "compatibility_date": "2026-09-21",
+  "workers_dev": false,
+  "vars": { "REMINDERS_ENABLED": "false" },
+  "triggers": { "crons": ["* * * * *"] },
+  "observability": { "enabled": true }
+}

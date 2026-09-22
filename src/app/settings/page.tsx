@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useSyncExternalStore } from "react";
 import {
   storage,
   AppSettings,
@@ -16,7 +16,6 @@ import {
   getNotificationPermission,
   requestNotificationPermission,
   sendTestReminderNotification,
-  scheduleTestNotificationInSeconds,
   syncScheduledReminder,
   formatNextReminderDescription,
   NotificationPermissionState,
@@ -33,6 +32,9 @@ import { AccountScreen } from "./components/AccountScreen";
 import { useFirebaseUser } from "@/components/firebase/FirebaseProvider";
 import { getSyncStatus } from "@/lib/firebase/sync";
 import { useStorageRevision } from "@/hooks/useStorageRevision";
+
+import { PUSH_ENABLED } from "@/lib/push/config";
+import { getPushStatus, subscribePushStatus } from "@/lib/push/client";
 
 type ScreenType = "main" | "compte" | "telechargements" | "aide" | "confidentialite";
 
@@ -59,7 +61,8 @@ export default function SettingsPage() {
   const [expandedFaq, setExpandedFaq] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [showNotificationModal, setShowNotificationModal] = useState(false);
-  const [testCountdown, setTestCountdown] = useState<number | null>(null);
+  const reminderBusy = useRef(false);
+  const pushStatus = useSyncExternalStore(subscribePushStatus, getPushStatus, () => "");
   const [nextReminderDesc, setNextReminderDesc] = useState("");
   const [notificationPermission, setNotificationPermission] = useState<NotificationPermissionState>("default");
 
@@ -131,25 +134,34 @@ export default function SettingsPage() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const updateSetting = async <K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<boolean> => {
-    if (!user && key.startsWith("dailyReminder")) { setCurrentScreen("compte"); return false; }
-    const next = { ...settings, [key]: value };
-    setSettings(next);
-    const saved = await storage.setSettings({ [key]: value });
-    if (!saved) {
-      setSettings(settings);
-      showToast("La modification n’a pas pu être enregistrée. Réessayez.");
-      return false;
-    }
-
-    if (
-      key === "dailyReminderEnabled" ||
-      key === "dailyReminderTime" ||
-      key === "dailyReminderCustomDays"
-    ) {
+  const saveReminderSettings = async (partial: Partial<AppSettings>): Promise<boolean> => {
+    if (!user) { setCurrentScreen("compte"); return false; }
+    if (!PUSH_ENABLED) { showToast("Les rappels seront bientôt disponibles."); return false; }
+    if (!navigator.onLine) { showToast("Reconnectez-vous pour modifier vos rappels."); return false; }
+    if (reminderBusy.current) return false;
+    reminderBusy.current = true;
+    try {
+      const next = { ...await storage.getSettings(), ...partial };
+      if (next.dailyReminderEnabled && !next.dailyReminderCustomDays.length) {
+        showToast("Choisissez au moins un jour de rappel."); return false;
+      }
+      // Persist desired settings first. A failed server sync stays visible and retries on reconnection.
+      if (!await storage.setSettings(partial)) throw new Error("La modification n’a pas pu être enregistrée.");
+      setSettings(next);
       await syncScheduledReminder(next);
-    }
-    return true;
+      return true;
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : "Rappel non synchronisé. Réessayez.");
+      return false;
+    } finally { reminderBusy.current = false; }
+  };
+
+  const updateSetting = async <K extends keyof AppSettings>(key: K, value: AppSettings[K]): Promise<boolean> => {
+    if (key.startsWith("dailyReminder")) return saveReminderSettings({ [key]: value });
+    const saved = await storage.setSettings({ [key]: value });
+    if (saved) setSettings({ ...settings, [key]: value });
+    else showToast("La modification n’a pas pu être enregistrée. Réessayez.");
+    return saved;
   };
 
   const openReminderTimeSheet = () => {
@@ -170,11 +182,12 @@ export default function SettingsPage() {
 
   const handleRequestPermission = async () => {
     if (!user) { setCurrentScreen("compte"); return; }
+    if (!PUSH_ENABLED) { showToast("Les rappels seront bientôt disponibles."); return; }
     const requested = await requestNotificationPermission();
     setNotificationPermission(requested);
 
     if (requested === "granted") {
-      await updateSetting("dailyReminderEnabled", true);
+      if (!await updateSetting("dailyReminderEnabled", true)) return;
       const desc = formatNextReminderDescription(settings.dailyReminderTime, settings.dailyReminderCustomDays);
       showToast(desc ? `Notifications autorisées · Rappel activé (${desc})` : "Notifications autorisées ✓");
       await sendTestReminderNotification(settings.dailyReminderTime);
@@ -206,13 +219,13 @@ export default function SettingsPage() {
 
     // Si on désactive
     if (settings.dailyReminderEnabled) {
-      await updateSetting("dailyReminderEnabled", false);
+      if (!await updateSetting("dailyReminderEnabled", false)) return;
       showToast("Rappel quotidien désactivé");
       return;
     }
 
     // Si on active
-    await updateSetting("dailyReminderEnabled", true);
+    if (!await updateSetting("dailyReminderEnabled", true)) return;
     const desc = formatNextReminderDescription(settings.dailyReminderTime, settings.dailyReminderCustomDays);
     showToast(desc ? `Rappel activé (${desc})` : "Rappels quotidiens activés ✓");
   };
@@ -232,35 +245,6 @@ export default function SettingsPage() {
     }
   };
 
-  const handleTestCountdown = async () => {
-    const perm = getNotificationPermission();
-    if (perm !== "granted") {
-      setShowNotificationModal(true);
-      return;
-    }
-
-    if (testCountdown !== null) return;
-
-    const ok = await scheduleTestNotificationInSeconds(10);
-    if (!ok) {
-      showToast("Impossible de programmer le test.");
-      return;
-    }
-
-    setTestCountdown(10);
-    showToast("Test lancé dans 10s ! Vous pouvez verrouiller votre téléphone.");
-
-    const interval = setInterval(() => {
-      setTestCountdown((prev) => {
-        if (prev === null || prev <= 1) {
-          clearInterval(interval);
-          return null;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
   const handleToggleDay = async (dayKey: DayOfWeek) => {
     const currentDays = settings.dailyReminderCustomDays || ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
     let updatedDays: DayOfWeek[];
@@ -270,17 +254,7 @@ export default function SettingsPage() {
       updatedDays = [...currentDays, dayKey];
     }
     const formatted = formatReminderDays(updatedDays);
-    const nextSettings = {
-      ...settings,
-      dailyReminderCustomDays: updatedDays,
-      dailyReminderDays: formatted,
-    };
-    setSettings(nextSettings);
-    await storage.setSettings({
-      dailyReminderCustomDays: updatedDays,
-      dailyReminderDays: formatted,
-    });
-    await syncScheduledReminder(nextSettings);
+    await saveReminderSettings({ dailyReminderCustomDays: updatedDays, dailyReminderDays: formatted });
   };
 
   const handleSetPresetDays = async (type: "all" | "weekdays" | "weekend") => {
@@ -293,17 +267,7 @@ export default function SettingsPage() {
       updatedDays = ["sam", "dim"];
     }
     const formatted = formatReminderDays(updatedDays);
-    const nextSettings = {
-      ...settings,
-      dailyReminderCustomDays: updatedDays,
-      dailyReminderDays: formatted,
-    };
-    setSettings(nextSettings);
-    await storage.setSettings({
-      dailyReminderCustomDays: updatedDays,
-      dailyReminderDays: formatted,
-    });
-    await syncScheduledReminder(nextSettings);
+    await saveReminderSettings({ dailyReminderCustomDays: updatedDays, dailyReminderDays: formatted });
   };
 
   const totalDownloadedBytes = downloads.reduce(
@@ -348,6 +312,7 @@ export default function SettingsPage() {
     }
     try {
       // FIX B4: check the boolean — clearAllData returns false if any IDB deletion failed
+      if (user && PUSH_ENABLED) await syncScheduledReminder({ ...settings, dailyReminderEnabled: false });
       const ok = await storage.clearAllData();
       if (ok) {
         const freshSettings = await storage.getSettings();
@@ -608,6 +573,7 @@ export default function SettingsPage() {
                 onClick={(e) => {
                   e.stopPropagation();
                   if (!user) { setCurrentScreen("compte"); return; }
+                  if (!PUSH_ENABLED) { showToast("Les rappels seront bientôt disponibles."); return; }
                   if (!isStandalone) {
                     e.stopPropagation();
                     if (isAppInstalled) {
@@ -623,7 +589,7 @@ export default function SettingsPage() {
                   }
                 }}
                 className={`flex items-center gap-[9px] p-[12px_13px] cursor-pointer active:bg-[#F8EFE4]/60 transition-colors ${
-                  user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
+                  PUSH_ENABLED && user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
                     ? "border-b border-[#F8EFE4]"
                     : ""
                 }`}
@@ -634,6 +600,8 @@ export default function SettingsPage() {
                   </b>
                   {!user ? (
                     <span className="block text-[11px] text-[#9A8E7C] mt-1">Connectez-vous pour activer vos rappels</span>
+                  ) : !PUSH_ENABLED ? (
+                    <span className="block text-[11px] text-[#9A8E7C] mt-1">Rappels bientôt disponibles</span>
                   ) : !isStandalone ? (
                     <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
                       {isAppInstalled
@@ -650,20 +618,20 @@ export default function SettingsPage() {
                     </i>
                   ) : (
                     <i className="block not-italic text-[10.5px] text-[#5F6A52] mt-[2px] leading-[1.35]">
-                      {nextReminderDesc || `Actif à ${settings.dailyReminderTime}`}
+                      {pushStatus || nextReminderDesc || `Actif à ${settings.dailyReminderTime}`}
                     </i>
                   )}
                 </div>
                 <div
                   className={`w-[38px] h-[22px] rounded-full shrink-0 relative transition-colors cursor-pointer ${
-                    user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
+                    PUSH_ENABLED && user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
                       ? "bg-[#5F6A52]"
                       : "bg-[#F0E5D6]"
                   }`}
                 >
                   <i
                     className={`absolute top-[2.5px] w-[17px] h-[17px] rounded-full bg-white shadow-[0_1px_2px_rgba(67,53,40,0.2)] transition-all duration-150 ${
-                      user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
+                      PUSH_ENABLED && user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled
                         ? "left-[18.5px]"
                         : "left-[2.5px]"
                     }`}
@@ -672,7 +640,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Si activé: Heure, Jours et Tester */}
-              {user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled && (
+              {PUSH_ENABLED && user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled && (
                 <>
                   <div
                     onClick={openReminderTimeSheet}
@@ -709,10 +677,10 @@ export default function SettingsPage() {
                     <div className="flex items-center justify-between">
                       <div>
                         <b className="block font-normal text-[13px] leading-[1.3] text-encre">
-                          Tester les notifications
+                          Tester l’affichage
                         </b>
                         <i className="block not-italic text-[10.5px] text-[#9A8E7C] mt-[2px] leading-[1.35]">
-                          Vérifiez la réception sur votre appareil
+                          Ce test vérifie l’affichage local, pas l’envoi depuis le serveur
                         </i>
                       </div>
                     </div>
@@ -724,25 +692,12 @@ export default function SettingsPage() {
                       >
                         Envoyer maintenant
                       </button>
-                      <button
-                        type="button"
-                        onClick={handleTestCountdown}
-                        disabled={testCountdown !== null}
-                        className="flex-1 py-2 px-2.5 text-[11.5px] font-medium text-creme bg-[#5F6A52] hover:bg-[#525C46] active:scale-[0.98] disabled:opacity-75 rounded-[10px] transition-all text-center"
-                      >
-                        {testCountdown !== null ? `Dans ${testCountdown}s...` : "Tester dans 10s"}
-                      </button>
                     </div>
-                    {testCountdown !== null && (
-                      <p className="text-[10.5px] text-[#5F6A52] font-medium text-center animate-pulse pt-0.5">
-                        💡 Verrouillez l&apos;écran de votre téléphone pour tester la réception en veille !
-                      </p>
-                    )}
                   </div>
                 </>
               )}
             </div>
-            {user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled && (
+            {PUSH_ENABLED && user && isStandalone && notificationPermission === "granted" && settings.dailyReminderEnabled && (
               <p className="text-[10.5px] text-[#9A8E7C] leading-[1.5] mt-2 mx-[3px]">
                 Un seul rappel par jour, jamais de relance si vous ne l’ouvrez pas.
               </p>
@@ -1204,7 +1159,7 @@ export default function SettingsPage() {
         isOpen={showNotificationModal}
         onClose={() => setShowNotificationModal(false)}
         onPermissionGranted={async () => {
-          await updateSetting("dailyReminderEnabled", true);
+          if (!await updateSetting("dailyReminderEnabled", true)) return;
           showToast("Rappels quotidiens activés ✓");
           await sendTestReminderNotification(settings.dailyReminderTime);
         }}

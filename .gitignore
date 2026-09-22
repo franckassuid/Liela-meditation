@@ -50,3 +50,10 @@ firestore-debug.log*
 ui-debug.log*
 .firebase/
 !.env.example
+
+# Push build output and private worker credentials
+/public/push-worker.js
+/workers/reminders/dist/
+.wrangler/
+.dev.vars*
+*service-account*.json

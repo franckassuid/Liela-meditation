@@ -5,8 +5,8 @@
   "scripts": {
     "sync:sessions": "tsx scripts/sync-sessions.ts",
     "boost:cues": "tsx scripts/boost-all-cues.ts",
-    "predev": "npm run sync:sessions",
-    "prebuild": "tsx scripts/sync-sessions.ts",
+    "predev": "npm run sync:sessions && npm run build:push",
+    "prebuild": "tsx scripts/sync-sessions.ts && node scripts/build-push-worker.mjs",
     "dev": "next dev --webpack",
     "build": "next build --webpack",
     "start": "next start",
@@ -16,7 +16,9 @@
     "firebase:emulators": "firebase emulators:start --only auth,firestore --project demo-liela",
     "firebase:deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes,storage --project liela-9426c",
     "firebase:catalog": "node --import tsx scripts/import-firebase-catalog.ts",
-    "test:firebase": "firebase emulators:exec --only auth,firestore --project demo-liela \"node --import tsx --test --test-concurrency=1 tests/firebase/*.test.ts\""
+    "test:firebase": "firebase emulators:exec --only auth,firestore --project demo-liela \"node --import tsx --test --test-concurrency=1 tests/firebase/*.test.ts\"",
+    "build:push": "node scripts/build-push-worker.mjs",
+    "build:reminders": "node scripts/build-reminder-worker.mjs"
   },
   "dependencies": {
     "firebase": "^12.19.0",
@@ -43,7 +45,8 @@
     "jimp": "^1.6.1",
     "postcss": "^8.5.26",
     "tailwindcss": "^3.4.19",
-    "typescript": "^5"
+    "typescript": "^5",
+    "esbuild": "^0.28.2"
   },
   "allowScripts": {
     "ffmpeg-static@5.3.0": true

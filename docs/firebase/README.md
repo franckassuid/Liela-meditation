@@ -160,8 +160,8 @@ simulé et aucun backend d’achat n’est inclus dans cette intégration.
 - `liela_in_progress`, les fichiers téléchargés, les métadonnées de téléchargement,
   les permissions navigateur et les caches d’interface ne sont pas envoyés à Firestore.
   La progression par séance, elle, est synchronisée pour la reprise sur un autre appareil.
-- La progression est enregistrée toutes les 15 secondes et à la fermeture normale du
-  lecteur. Une fermeture brutale du navigateur peut perdre les dernières secondes.
+- La progression est enregistrée localement toutes les 5 secondes et envoyée au cloud
+  toutes les 60 secondes, ainsi qu’à la pause, à la fermeture normale et au passage en arrière-plan. Une fermeture brutale du navigateur peut perdre les dernières secondes.
 - La suppression dans Confidentialité vise les données applicatives chargées dans le
   cache du compte et synchronise leurs suppressions. Elle ne supprime pas l’identité
   Firebase Auth, les droits d’achat backend ni les fichiers audio téléchargés.
@@ -191,3 +191,7 @@ et `npm run dev`. Ne jamais activer ces variables pour une compilation de produc
 Références officielles : [installation du SDK](https://firebase.google.com/docs/web/setup),
 [règles Firestore](https://firebase.google.com/docs/firestore/security/rules-conditions),
 [émulateur Firestore](https://firebase.google.com/docs/emulator-suite/connect_firestore).
+
+## Rappels push
+
+Voir [la configuration Cloudflare + FCM](push-notifications.md).

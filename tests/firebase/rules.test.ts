@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { after, before, beforeEach, test } from "node:test";
 import { initializeTestEnvironment, assertFails, assertSucceeds, type RulesTestEnvironment } from "@firebase/rules-unit-testing";
-import { collection, doc, getDoc, getDocs, query, setDoc, where, deleteDoc } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, setDoc, where, deleteDoc, serverTimestamp, Timestamp, deleteField } from "firebase/firestore";
 let env: RulesTestEnvironment;
 before(async () => {
   env = await initializeTestEnvironment({ projectId: "demo-liela", firestore: { rules: readFileSync("firestore.rules", "utf8"), host: "127.0.0.1", port: 8080 } });
@@ -74,4 +74,42 @@ test("only published catalogue entries are public and clients cannot edit them",
   await assertFails(setDoc(doc(env.authenticatedContext("alice").firestore(), "sessions/public"), { published: true }));
   await assertSucceeds(getDoc(doc(env.authenticatedContext("alice").firestore(), "users/alice/entitlements/current")));
   await assertFails(getDoc(doc(env.authenticatedContext("bob").firestore(), "users/alice/entitlements/current")));
+});
+
+test("push schedules are private and server delivery fields cannot be forged", async () => {
+  const alice = env.authenticatedContext("alice").firestore();
+  const ref = doc(alice, "reminderSchedules/alice");
+  const schedule = { userId: "alice", time: "09:30", days: ["lun", "mar"], timeZone: "Europe/Paris", nextAt: Timestamp.fromMillis(Date.now() + 60_000), updatedAt: serverTimestamp() };
+  await assertSucceeds(setDoc(ref, schedule));
+  await assertFails(setDoc(ref, { ...schedule, lastAttemptDate: "2026-09-22" }));
+  await env.withSecurityRulesDisabled(async context => {
+    await setDoc(doc(context.firestore(), "reminderSchedules/alice"), { lastAttemptDate: "2026-09-22" }, { merge: true });
+  });
+  await assertSucceeds(setDoc(ref, { ...schedule, time: "10:30" }, { merge: true }));
+  await assertFails(setDoc(ref, { lastAttemptDate: deleteField(), updatedAt: serverTimestamp() }, { merge: true }));
+  await assertSucceeds(setDoc(ref, { nextAt: deleteField(), updatedAt: serverTimestamp() }, { merge: true }));
+  for (const db of [env.authenticatedContext("bob").firestore(), env.unauthenticatedContext().firestore()]) {
+    await assertFails(getDoc(doc(db, "reminderSchedules/alice")));
+    await assertFails(setDoc(doc(db, "reminderSchedules/alice"), schedule));
+    await assertFails(deleteDoc(doc(db, "reminderSchedules/alice")));
+  }
+  await assertFails(getDocs(collection(alice, "reminderSchedules")));
+  await assertFails(setDoc(ref, { ...schedule, time: "25:30" }, { merge: true }));
+  await assertFails(setDoc(ref, { ...schedule, days: ["bad"] }, { merge: true }));
+  await assertFails(setDoc(ref, { ...schedule, nextAt: Timestamp.fromMillis(0) }, { merge: true }));
+});
+
+test("only an owner can register a device and change its timestamp", async () => {
+  const fid = "abcdefghijklmnopqrstuv";
+  const path = `users/alice/pushDevices/${fid}`;
+  const alice = env.authenticatedContext("alice").firestore();
+  const payload = { userId: "alice", fid, updatedAt: serverTimestamp() };
+  await assertSucceeds(setDoc(doc(alice, path), payload));
+  await assertFails(setDoc(doc(alice, path), { ...payload, userId: "bob" }));
+  await assertFails(setDoc(doc(alice, path), { ...payload, fid: "wrong-id" }));
+  await assertFails(setDoc(doc(alice, path), { ...payload, token: "unexpected" }));
+  const bob = env.authenticatedContext("bob").firestore();
+  await assertFails(setDoc(doc(bob, path), payload));
+  await assertFails(getDoc(doc(bob, path)));
+  await assertSucceeds(deleteDoc(doc(alice, path)));
 });

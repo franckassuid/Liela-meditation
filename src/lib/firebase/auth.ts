@@ -1,13 +1,15 @@
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup, signOut, sendPasswordResetEmail } from "firebase/auth";
 import { getFirebase } from "./client";
+import { detachPushDevice } from "../push/client";
 
 export const signInEmail = (email: string, password: string) => signInWithEmailAndPassword(getFirebase().auth, email.trim(), password);
 export const registerEmail = (email: string, password: string) => createUserWithEmailAndPassword(getFirebase().auth, email.trim(), password);
 export const signInGoogle = () => signInWithPopup(getFirebase().auth, new GoogleAuthProvider());
-export const signOutAccount = () => signOut(getFirebase().auth);
+export const signOutAccount = async () => { await detachPushDevice(); await signOut(getFirebase().auth); };
 export const resetPassword = (email: string) => sendPasswordResetEmail(getFirebase().auth, email.trim());
 export function authErrorMessage(error: unknown): string {
   const code = (error as { code?: string })?.code;
+  if (!code && error instanceof Error) return error.message;
   const messages: Record<string, string> = {
     "auth/invalid-credential": "Adresse e-mail ou mot de passe incorrect.",
     "auth/email-already-in-use": "Cette adresse a déjà un compte. Connectez-vous ou réinitialisez votre mot de passe.",

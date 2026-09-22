@@ -56,8 +56,8 @@ Avant de modifier les API Next.js, lire les guides livrés dans
 - Le lecteur est réinitialisé lorsque l'identifiant de séance change ; les chargements
   asynchrones obsolètes sont ignorés à la fermeture.
 - Le téléchargement automatique des favoris n'est pas implémenté, même si son réglage existe.
-- Les rappels reposent sur les API du navigateur ; les temporisateurs du service worker
-  ne garantissent pas un réveil de l'application fermée.
+- Les rappels push utilisent FCM et un Worker Cloudflare planifié. Ils restent désactivés
+  tant que le déploiement décrit dans [le guide push](docs/firebase/push-notifications.md) n’est pas effectué.
 
 Pour une validation sur appareil, vérifier aussi la lecture audio, la reprise,
 les contrôles système, le téléchargement et la lecture hors ligne sur iOS/Android.

@@ -50,6 +50,13 @@ service cloud.firestore {
             && (!('backgroundVolume' in request.resource.data) || request.resource.data.backgroundVolume in ['Désactivé', 'Faible', 'Moyen', 'Fort'])
             && (!('defaultSleepTimer' in request.resource.data) || request.resource.data.defaultSleepTimer in ['15 min', '30 min', '45 min', '1 heure', 'Jamais'])));
       }
+      match /pushDevices/{fid} {
+        allow read, delete: if owner(uid);
+        allow create, update: if owner(uid) && belongsTo(uid)
+          && request.resource.data.keys().hasOnly(['userId', 'fid', 'updatedAt'])
+          && request.resource.data.fid == fid && fid.matches('^[a-zA-Z0-9_-]{20,200}$')
+          && request.resource.data.updatedAt == request.time;
+      }
       match /favorites/{id} {
         allow read, delete: if owner(uid);
         allow create, update: if owner(uid) && belongsTo(uid)
@@ -87,6 +94,25 @@ service cloud.firestore {
       }
       // Only a trusted backend using the Admin SDK validates purchases and grants rights.
       match /entitlements/{id} { allow read: if owner(uid); allow write: if false; }
+    }
+    match /reminderSchedules/{uid} {
+      function validReminder() {
+        let data = request.resource.data;
+        return belongsTo(uid)
+          && data.time is string && data.time.matches('^([01][0-9]|2[0-3]):[0-5][0-9]$')
+          && data.days is list && data.days.size() <= 7
+          && data.days.hasOnly(['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'])
+          && text(data.timeZone, 80) && data.timeZone.size() > 0
+          && data.updatedAt == request.time
+          && (!('nextAt' in data) || (data.days.size() > 0 && data.nextAt is timestamp
+            && data.nextAt > request.time - duration.value(1, 'm')
+            && data.nextAt < request.time + duration.value(9, 'd')));
+      }
+      allow read, delete: if owner(uid);
+      allow create: if owner(uid) && validReminder()
+        && request.resource.data.keys().hasOnly(['userId', 'time', 'days', 'timeZone', 'nextAt', 'updatedAt']);
+      allow update: if owner(uid) && validReminder()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['userId', 'time', 'days', 'timeZone', 'nextAt', 'updatedAt']);
     }
     match /sessions/{id} {
       allow read: if resource.data.published == true;
