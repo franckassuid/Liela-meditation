@@ -3,7 +3,7 @@
   "main": "index.ts",
   "compatibility_date": "2026-09-21",
   "workers_dev": false,
-  "vars": { "REMINDERS_ENABLED": "false" },
+  "vars": { "REMINDERS_ENABLED": "true" },
   "triggers": { "crons": ["* * * * *"] },
   "observability": { "enabled": true }
 }
